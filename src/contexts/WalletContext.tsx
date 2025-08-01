@@ -1,0 +1,176 @@
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
+import { WalletContextType, WalletState } from '@/types/wallet';
+import Toast from 'react-native-toast-message';
+
+const WalletContext = createContext<WalletContextType | undefined>(undefined);
+
+interface WalletProviderProps {
+  children: ReactNode;
+}
+
+export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
+  const [state, setState] = useState<WalletState>({
+    connected: false,
+    connecting: false,
+    publicKey: null,
+    balance: null,
+    error: null,
+  });
+
+  // Solana connection
+  const connection = new Connection(
+    process.env.EXPO_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+    'confirmed'
+  );
+
+  const connect = useCallback(async () => {
+    try {
+      setState(prev => ({ ...prev, connecting: true, error: null }));
+
+      const result = await transact(async (wallet) => {
+        const authorizationResult = await wallet.authorize({
+          cluster: 'devnet',
+          identity: {
+            name: 'AI Solana Mobile',
+            uri: 'https://ai-solana-mobile.app',
+            icon: 'favicon.ico',
+          },
+        });
+
+        return {
+          publicKey: new PublicKey(authorizationResult.accounts[0].address),
+          authToken: authorizationResult.auth_token,
+        };
+      });
+
+      const publicKey = result.publicKey.toBase58();
+      
+      // Get initial balance
+      const balance = await connection.getBalance(result.publicKey);
+      
+      setState({
+        connected: true,
+        connecting: false,
+        publicKey,
+        balance: balance / 1000000000, // Convert lamports to SOL
+        error: null,
+      });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Wallet Connected',
+        text2: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-8)}`,
+      });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
+      setState(prev => ({
+        ...prev,
+        connecting: false,
+        error: errorMessage,
+      }));
+
+      Toast.show({
+        type: 'error',
+        text1: 'Connection Failed',
+        text2: errorMessage,
+      });
+    }
+  }, [connection]);
+
+  const disconnect = useCallback(async () => {
+    try {
+      await transact(async (wallet) => {
+        await wallet.deauthorize({ auth_token: 'current_session' });
+      });
+
+      setState({
+        connected: false,
+        connecting: false,
+        publicKey: null,
+        balance: null,
+        error: null,
+      });
+
+      Toast.show({
+        type: 'info',
+        text1: 'Wallet Disconnected',
+        text2: 'Successfully disconnected from wallet',
+      });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to disconnect wallet';
+      setState(prev => ({ ...prev, error: errorMessage }));
+
+      Toast.show({
+        type: 'error',
+        text1: 'Disconnect Failed',
+        text2: errorMessage,
+      });
+    }
+  }, []);
+
+  const refreshBalance = useCallback(async () => {
+    if (!state.publicKey) return;
+
+    try {
+      const publicKey = new PublicKey(state.publicKey);
+      const balance = await connection.getBalance(publicKey);
+      
+      setState(prev => ({
+        ...prev,
+        balance: balance / 1000000000, // Convert lamports to SOL
+      }));
+    } catch (error) {
+      console.error('Failed to refresh balance:', error);
+    }
+  }, [state.publicKey, connection]);
+
+  const signAndSendTransaction = useCallback(async (transaction: Transaction): Promise<string> => {
+    if (!state.connected) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      const result = await transact(async (wallet) => {
+        const signedTransactions = await wallet.signTransactions({
+          transactions: [transaction],
+        });
+
+        return signedTransactions[0];
+      });
+
+      const signature = await connection.sendRawTransaction(result.serialize());
+      await connection.confirmTransaction(signature, 'confirmed');
+
+      return signature;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
+      throw new Error(errorMessage);
+    }
+  }, [state.connected, connection]);
+
+  const value: WalletContextType = {
+    ...state,
+    connect,
+    disconnect,
+    refreshBalance,
+    signAndSendTransaction,
+  };
+
+  return (
+    <WalletContext.Provider value={value}>
+      {children}
+    </WalletContext.Provider>
+  );
+};
+
+export const useWallet = (): WalletContextType => {
+  const context = useContext(WalletContext);
+  if (!context) {
+    throw new Error('useWallet must be used within a WalletProvider');
+  }
+  return context;
+};
