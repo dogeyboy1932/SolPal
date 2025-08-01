@@ -12,6 +12,7 @@ import { AccountSwitcher } from '@/components/AccountSwitcher';
 import { TransferSOL } from '@/components/TransferSOL';
 import { TransferSPLToken } from '@/components/TransferSPLToken';
 import { TransactionHistory } from '@/components/TransactionHistory';
+import { TransactionTemplates } from '@/components/TransactionTemplates';
 import { WalletTester } from '@/components/WalletTester';
 
 export const HomeScreen: React.FC = () => {
@@ -33,6 +34,8 @@ export const HomeScreen: React.FC = () => {
         <TransferSOL />
 
         <TransferSPLToken />
+
+        <TransactionTemplates />
 
         <TransactionHistory />
 

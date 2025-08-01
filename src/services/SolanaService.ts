@@ -217,6 +217,17 @@ export class SolanaService {
       return [];
     }
   }
+
+  async requestAirdrop(publicKey: PublicKey, lamports: number): Promise<string> {
+    try {
+      const signature = await this.connection.requestAirdrop(publicKey, lamports);
+      await this.connection.confirmTransaction(signature);
+      return signature;
+    } catch (error) {
+      console.error('Failed to request airdrop:', error);
+      throw new Error('Airdrop request failed');
+    }
+  }
 }
 
 export const solanaService = new SolanaService();

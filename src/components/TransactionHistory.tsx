@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { useWallet } from '@/contexts/WalletContext';
 import { solanaService } from '@/services/SolanaService';
@@ -22,11 +23,57 @@ interface TransactionHistoryItem {
   transaction: any;
 }
 
+type FilterType = 'all' | 'success' | 'failed' | 'pending';
+
 export const TransactionHistory: React.FC = () => {
   const { connected, publicKey } = useWallet();
   const [transactions, setTransactions] = useState<TransactionHistoryItem[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<TransactionHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+
+  const applyFilters = (txList: TransactionHistoryItem[], search: string, filter: FilterType) => {
+    let filtered = [...txList];
+
+    // Apply search filter
+    if (search.trim()) {
+      filtered = filtered.filter(tx => 
+        tx.signature.toLowerCase().includes(search.toLowerCase()) ||
+        formatDate(tx.timestamp).toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    switch (filter) {
+      case 'success':
+        filtered = filtered.filter(tx => !tx.err && tx.confirmationStatus === 'finalized');
+        break;
+      case 'failed':
+        filtered = filtered.filter(tx => tx.err);
+        break;
+      case 'pending':
+        filtered = filtered.filter(tx => !tx.err && tx.confirmationStatus !== 'finalized');
+        break;
+      case 'all':
+      default:
+        // No additional filtering
+        break;
+    }
+
+    setFilteredTransactions(filtered);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    applyFilters(transactions, query, activeFilter);
+  };
+
+  const handleFilterChange = (filter: FilterType) => {
+    setActiveFilter(filter);
+    applyFilters(transactions, searchQuery, filter);
+  };
 
   const loadTransactionHistory = async (isRefresh = false) => {
     if (!publicKey) return;
@@ -41,6 +88,7 @@ export const TransactionHistory: React.FC = () => {
       const pubKey = new PublicKey(publicKey);
       const history = await solanaService.getTransactionHistory(pubKey, 20);
       setTransactions(history);
+      applyFilters(history, searchQuery, activeFilter);
 
     } catch (error) {
       console.error('Failed to load transaction history:', error);
@@ -112,12 +160,51 @@ export const TransactionHistory: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Search Input */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by signature or date..."
+          value={searchQuery}
+          onChangeText={handleSearchChange}
+          placeholderTextColor="#6b7280"
+        />
+      </View>
+
+      {/* Filter Buttons */}
+      <View style={styles.filterContainer}>
+        {(['all', 'success', 'failed', 'pending'] as FilterType[]).map((filter) => (
+          <TouchableOpacity
+            key={filter}
+            style={[
+              styles.filterButton,
+              activeFilter === filter && styles.activeFilterButton
+            ]}
+            onPress={() => handleFilterChange(filter)}
+          >
+            <Text style={[
+              styles.filterText,
+              activeFilter === filter && styles.activeFilterText
+            ]}>
+              {filter.charAt(0).toUpperCase() + filter.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {loading && transactions.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#3b82f6" />
           <Text style={styles.loadingText}>Loading transactions...</Text>
         </View>
-      ) : transactions.length === 0 ? (
+      ) : filteredTransactions.length === 0 && transactions.length > 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No transactions match your filters</Text>
+          <Text style={styles.emptySubtext}>
+            Try adjusting your search or filter criteria
+          </Text>
+        </View>
+      ) : filteredTransactions.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No transactions found</Text>
           <Text style={styles.emptySubtext}>
@@ -132,7 +219,7 @@ export const TransactionHistory: React.FC = () => {
           }
           showsVerticalScrollIndicator={false}
         >
-          {transactions.map((tx, index) => (
+          {filteredTransactions.map((tx, index) => (
             <View key={tx.signature} style={styles.transactionItem}>
               <View style={styles.transactionHeader}>
                 <Text style={styles.transactionSignature}>
@@ -289,5 +376,44 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontSize: 16,
     padding: 20,
+  },
+  searchContainer: {
+    marginBottom: 16,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#f9fafb',
+    color: '#374151',
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    gap: 8,
+  },
+  filterButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    backgroundColor: '#f9fafb',
+    alignItems: 'center',
+  },
+  activeFilterButton: {
+    backgroundColor: '#3b82f6',
+    borderColor: '#3b82f6',
+  },
+  filterText: {
+    fontSize: 14,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  activeFilterText: {
+    color: 'white',
   },
 });
