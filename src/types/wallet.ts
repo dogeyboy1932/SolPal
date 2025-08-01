@@ -4,6 +4,8 @@ export interface WalletState {
   publicKey: string | null;
   balance: number | null;
   error: string | null;
+  accounts: string[];
+  activeAccountIndex: number;
 }
 
 export interface WalletContextType extends WalletState {
@@ -11,6 +13,7 @@ export interface WalletContextType extends WalletState {
   disconnect: () => Promise<void>;
   refreshBalance: () => Promise<void>;
   signAndSendTransaction: (transaction: any) => Promise<string>;
+  switchAccount: (accountIndex: number) => Promise<void>;
 }
 
 export interface Transaction {

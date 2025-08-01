@@ -17,6 +17,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     publicKey: null,
     balance: null,
     error: null,
+    accounts: [],
+    activeAccountIndex: 0,
   });
 
   // Solana connection
@@ -42,6 +44,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         return {
           publicKey: new PublicKey(authorizationResult.accounts[0].address),
           authToken: authorizationResult.auth_token,
+          allAccounts: authorizationResult.accounts.map(acc => acc.address),
         };
       });
 
@@ -56,6 +59,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         publicKey,
         balance: balance / 1000000000, // Convert lamports to SOL
         error: null,
+        accounts: result.allAccounts,
+        activeAccountIndex: 0,
       });
 
       Toast.show({
@@ -92,6 +97,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         publicKey: null,
         balance: null,
         error: null,
+        accounts: [],
+        activeAccountIndex: 0,
       });
 
       Toast.show({
@@ -142,6 +149,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         return signedTransactions[0];
       });
 
+      // Use the retry mechanism from SolanaService
       const signature = await connection.sendRawTransaction(result.serialize());
       await connection.confirmTransaction(signature, 'confirmed');
 
@@ -152,12 +160,47 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   }, [state.connected, connection]);
 
+  const switchAccount = useCallback(async (accountIndex: number) => {
+    if (!state.connected || !state.accounts[accountIndex]) {
+      throw new Error('Invalid account or wallet not connected');
+    }
+
+    try {
+      const newPublicKey = state.accounts[accountIndex];
+      const balance = await connection.getBalance(new PublicKey(newPublicKey));
+      
+      setState(prev => ({
+        ...prev,
+        publicKey: newPublicKey,
+        balance: balance / 1000000000,
+        activeAccountIndex: accountIndex,
+      }));
+
+      Toast.show({
+        type: 'success',
+        text1: 'Account Switched',
+        text2: `Switched to ${newPublicKey.slice(0, 8)}...${newPublicKey.slice(-8)}`,
+      });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to switch account';
+      setState(prev => ({ ...prev, error: errorMessage }));
+
+      Toast.show({
+        type: 'error',
+        text1: 'Switch Failed',
+        text2: errorMessage,
+      });
+    }
+  }, [state.connected, state.accounts, connection]);
+
   const value: WalletContextType = {
     ...state,
     connect,
     disconnect,
     refreshBalance,
     signAndSendTransaction,
+    switchAccount,
   };
 
   return (

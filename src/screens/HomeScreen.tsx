@@ -8,7 +8,11 @@ import {
 } from 'react-native';
 import { WalletConnectButton } from '@/components/WalletConnectButton';
 import { WalletBalance } from '@/components/WalletBalance';
+import { AccountSwitcher } from '@/components/AccountSwitcher';
 import { TransferSOL } from '@/components/TransferSOL';
+import { TransferSPLToken } from '@/components/TransferSPLToken';
+import { TransactionHistory } from '@/components/TransactionHistory';
+import { WalletTester } from '@/components/WalletTester';
 
 export const HomeScreen: React.FC = () => {
   return (
@@ -21,11 +25,18 @@ export const HomeScreen: React.FC = () => {
 
         <View style={styles.walletSection}>
           <WalletConnectButton />
+          <AccountSwitcher />
         </View>
 
         <WalletBalance />
         
         <TransferSOL />
+
+        <TransferSPLToken />
+
+        <TransactionHistory />
+
+        <WalletTester />
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
