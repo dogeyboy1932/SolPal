@@ -6,11 +6,15 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native';
 import { useWallet } from '@/contexts/WalletContext';
 import { PublicKey } from '@solana/web3.js';
 import { solanaService } from '@/services/SolanaService';
+import { webWalletAdapter } from '@/services/WebWalletAdapter';
 import Toast from 'react-native-toast-message';
+
+const isWeb = Platform.OS === 'web';
 
 export const WalletTester: React.FC = () => {
   const { connected, publicKey, signAndSendTransaction } = useWallet();
@@ -142,10 +146,11 @@ export const WalletTester: React.FC = () => {
       <View style={styles.infoBox}>
         <Text style={styles.infoTitle}>Testing Instructions:</Text>
         <Text style={styles.infoText}>
-          1. Make sure you have Phantom wallet installed{'\n'}
-          2. Switch to Devnet in Phantom settings{'\n'}
-          3. Get some devnet SOL from a faucet{'\n'}
-          4. Run the tests above to verify integration
+          {isWeb ? (
+            `1. Make sure you have Phantom browser extension installed{'\n'}2. Switch to Devnet in Phantom settings{'\n'}3. Get some devnet SOL from a faucet{'\n'}4. Run the tests above to verify integration`
+          ) : (
+            `1. Make sure you have Phantom wallet installed{'\n'}2. Switch to Devnet in Phantom settings{'\n'}3. Get some devnet SOL from a faucet{'\n'}4. Run the tests above to verify integration`
+          )}
         </Text>
       </View>
     </View>

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { Platform } from 'react-native';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
+import { webWalletAdapter } from '@/services/WebWalletAdapter';
 import { WalletContextType, WalletState } from '@/types/wallet';
 import Toast from 'react-native-toast-message';
 
@@ -9,6 +11,9 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 interface WalletProviderProps {
   children: ReactNode;
 }
+
+// Check if we're running on web
+const isWeb = Platform.OS === 'web';
 
 export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [state, setState] = useState<WalletState>({
@@ -31,43 +36,70 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     try {
       setState(prev => ({ ...prev, connecting: true, error: null }));
 
-      const result = await transact(async (wallet) => {
-        const authorizationResult = await wallet.authorize({
-          cluster: 'devnet',
-          identity: {
-            name: 'AI Solana Mobile',
-            uri: 'https://ai-solana-mobile.app',
-            icon: 'favicon.ico',
-          },
+      if (isWeb) {
+        // Web connection using Phantom browser extension
+        const response = await webWalletAdapter.connect();
+        const publicKey = webWalletAdapter.publicKey.toBase58();
+        
+        // Get initial balance
+        const balance = await connection.getBalance(webWalletAdapter.publicKey);
+        
+        setState({
+          connected: true,
+          connecting: false,
+          publicKey,
+          balance: balance / 1000000000, // Convert lamports to SOL
+          error: null,
+          accounts: [publicKey], // Web usually has one account active
+          activeAccountIndex: 0,
         });
 
-        return {
-          publicKey: new PublicKey(authorizationResult.accounts[0].address),
-          authToken: authorizationResult.auth_token,
-          allAccounts: authorizationResult.accounts.map(acc => acc.address),
-        };
-      });
+        Toast.show({
+          type: 'success',
+          text1: 'Wallet Connected',
+          text2: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-8)}`,
+        });
 
-      const publicKey = result.publicKey.toBase58();
-      
-      // Get initial balance
-      const balance = await connection.getBalance(result.publicKey);
-      
-      setState({
-        connected: true,
-        connecting: false,
-        publicKey,
-        balance: balance / 1000000000, // Convert lamports to SOL
-        error: null,
-        accounts: result.allAccounts,
-        activeAccountIndex: 0,
-      });
+      } else {
+        // Mobile connection using Mobile Wallet Adapter
+        const result = await transact(async (wallet) => {
+          const authorizationResult = await wallet.authorize({
+            cluster: 'devnet',
+            identity: {
+              name: 'AI Solana Mobile',
+              uri: 'https://ai-solana-mobile.app',
+              icon: 'favicon.ico',
+            },
+          });
 
-      Toast.show({
-        type: 'success',
-        text1: 'Wallet Connected',
-        text2: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-8)}`,
-      });
+          return {
+            publicKey: new PublicKey(authorizationResult.accounts[0].address),
+            authToken: authorizationResult.auth_token,
+            allAccounts: authorizationResult.accounts.map(acc => acc.address),
+          };
+        });
+
+        const publicKey = result.publicKey.toBase58();
+        
+        // Get initial balance
+        const balance = await connection.getBalance(result.publicKey);
+        
+        setState({
+          connected: true,
+          connecting: false,
+          publicKey,
+          balance: balance / 1000000000, // Convert lamports to SOL
+          error: null,
+          accounts: result.allAccounts,
+          activeAccountIndex: 0,
+        });
+
+        Toast.show({
+          type: 'success',
+          text1: 'Wallet Connected',
+          text2: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-8)}`,
+        });
+      }
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to connect wallet';
@@ -87,9 +119,13 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
   const disconnect = useCallback(async () => {
     try {
-      await transact(async (wallet) => {
-        await wallet.deauthorize({ auth_token: 'current_session' });
-      });
+      if (isWeb) {
+        await webWalletAdapter.disconnect();
+      } else {
+        await transact(async (wallet) => {
+          await wallet.deauthorize({ auth_token: '' });
+        });
+      }
 
       setState({
         connected: false,
@@ -141,19 +177,26 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
 
     try {
-      const result = await transact(async (wallet) => {
-        const signedTransactions = await wallet.signTransactions({
-          transactions: [transaction],
+      if (isWeb) {
+        // Web transaction using Phantom browser extension
+        const signature = await webWalletAdapter.signAndSendTransaction(transaction);
+        return signature;
+      } else {
+        // Mobile transaction using Mobile Wallet Adapter
+        const result = await transact(async (wallet) => {
+          const signedTransactions = await wallet.signTransactions({
+            transactions: [transaction],
+          });
+
+          return signedTransactions[0];
         });
 
-        return signedTransactions[0];
-      });
+        // Use the retry mechanism from SolanaService
+        const signature = await connection.sendRawTransaction(result.serialize());
+        await connection.confirmTransaction(signature, 'confirmed');
 
-      // Use the retry mechanism from SolanaService
-      const signature = await connection.sendRawTransaction(result.serialize());
-      await connection.confirmTransaction(signature, 'confirmed');
-
-      return signature;
+        return signature;
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       throw new Error(errorMessage);
