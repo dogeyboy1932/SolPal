@@ -95,7 +95,7 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
   connect(config: LiveConfig): Promise<boolean> {
     this.config = config;
 
-    // console.log("config: ", JSON.stringify(config, null, 2));
+    console.log("config: ", JSON.stringify(config, null, 2));
 
     const ws = new WebSocket(this.url);
 
@@ -173,6 +173,8 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
     const response: LiveIncomingMessage = (await blobToJSON(
       blob,
     )) as LiveIncomingMessage;
+
+    console.log("receive", response);
 
     
     if (isToolCallMessage(response)) {

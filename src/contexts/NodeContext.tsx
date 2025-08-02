@@ -15,6 +15,7 @@ import {
   NodeContext as NodeContextType,
   NodeType
 } from '../types/nodes';
+import { initializeNodeManagementFunctions } from '../mcpServers/combinedServer';
 
 interface NodeContextValue {
   // Node management
@@ -75,6 +76,25 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
       saveNodes();
     }
   }, [nodes, isLoading]);
+
+  // Initialize nodeManagement MCP functions whenever nodes change
+  useEffect(() => {
+    if (!isLoading) {
+      // Initialize the nodeManagement MCP server with current state
+      initializeNodeManagementFunctions(
+        createPersonNode,
+        createEventNode,
+        createCommunityNode,
+        updatePersonNode,
+        updateEventNode,
+        updateCommunityNode,
+        () => nodes,
+        getNodeById,
+        searchNodes
+      );
+      console.log('🔗 NodeManagement MCP functions initialized with', nodes.length, 'nodes');
+    }
+  }, [nodes, activeNodes, isLoading]);
 
   const loadNodes = async () => {
     try {

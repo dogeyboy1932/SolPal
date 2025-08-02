@@ -1,7 +1,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-import type { Node } from 'reactflow';
+// React Flow types - commented out for React Native compatibility
+// import type { Node } from 'reactflow';
+type Node = any; // Placeholder for React Native
 import {type ZONE_SERVERS_CONFIG, type ZoneData, getZoneData } from '../config/zone_config';
 
 // Global variables to store React Flow state setters

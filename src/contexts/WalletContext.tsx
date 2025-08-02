@@ -5,7 +5,7 @@ import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { webWalletAdapter } from '@/services/WebWalletAdapter';
 import { WalletContextType, WalletState } from '@/types/wallet';
 import Toast from 'react-native-toast-message';
-import { setSolanaContext } from '@/mcpServers/solana';
+import { setSolanaContext } from '@/mcpServers/combinedServer';
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
@@ -32,12 +32,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     process.env.EXPO_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com',
     'confirmed'
   );
-
-  // Update Solana MCP server context when wallet state changes
-  useEffect(() => {
-    const publicKey = state.publicKey ? new PublicKey(state.publicKey) : null;
-    setSolanaContext(connection, publicKey);
-  }, [state.publicKey, connection]);
 
   const connect = useCallback(async () => {
     try {
@@ -244,6 +238,12 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       });
     }
   }, [state.connected, state.accounts, connection]);
+
+  // Update Solana MCP server context when wallet state or functions change
+  useEffect(() => {
+    const publicKey = state.publicKey ? new PublicKey(state.publicKey) : null;
+    setSolanaContext(connection, publicKey, signAndSendTransaction);
+  }, [state.publicKey, connection, signAndSendTransaction]);
 
   const value: WalletContextType = {
     ...state,

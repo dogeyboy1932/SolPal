@@ -3,21 +3,13 @@ import { TabServerTransport } from "@mcp-b/transports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 // Static imports for React Native compatibility
-import * as githubServer from "./github";
-import * as mathServer from "./math";
-import * as weatherServer from "./weather";
-import * as zoneManagementServer from "./zoneManagement";
-import * as solanaServer from "./solana";
+import * as combinedServer from "./combinedServer";
 
 let currentServer: McpServer | null = null;
 
 // Server module map for static loading
 const SERVER_MODULES = {
-  github: githubServer,
-  math: mathServer,
-  weather: weatherServer,
-  zoneManagement: zoneManagementServer,
-  solana: solanaServer,
+  combined: combinedServer,
 } as const;
 
 export async function setupMCPServer(serverType: string): Promise<McpServer> {

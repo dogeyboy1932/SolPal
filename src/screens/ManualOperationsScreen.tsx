@@ -19,14 +19,15 @@ import { WalletOperations } from '../components/WalletOperations';
 import { TransactionBuilder } from '../components/TransactionBuilder';
 import { AdvancedTransactionFeatures } from '@/components/AdvancedTransactionFeatures';
 import { BackupManualControls } from '@/components/BackupManualControls';
-import { AIConnectionStatus } from '@/components/AIConnectionStatus';
-import { MCPServerManagement } from '@/components/MCPServerManagement';
+import { AIConnectionStatus } from '../components/AIConnectionStatus';
+import { MCPServerManagement } from '../components/MCPServerManagement';
+import AITransactionChat from '../components/AITransactionChat';
 import { AIConnectionManager } from '../components/AIConnectionManager';
 
 export const ManualOperationsScreen: React.FC = () => {
   const { connected, connecting, publicKey } = useWallet();
   const [refreshing, setRefreshing] = React.useState(false);
-  const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp'>('balance');
+  const [activeSection, setActiveSection] = React.useState<'ai_chat' | 'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp'>('ai_chat');
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -48,6 +49,9 @@ export const ManualOperationsScreen: React.FC = () => {
     }
 
     switch (activeSection) {
+      case 'ai_chat':
+        return <AITransactionChat />;
+      
       case 'balance':
         return (
           <View style={styles.sectionContent}>
@@ -164,6 +168,21 @@ export const ManualOperationsScreen: React.FC = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.sectionNavContent}
       >
+        <TouchableOpacity
+          style={[
+            styles.sectionButton,
+            activeSection === 'ai_chat' && styles.sectionButtonActive
+          ]}
+          onPress={() => setActiveSection('ai_chat')}
+        >
+          <Text style={[
+            styles.sectionButtonText,
+            activeSection === 'ai_chat' && styles.sectionButtonTextActive
+          ]}>
+            🤖 AI Chat
+          </Text>
+        </TouchableOpacity>
+        
         <TouchableOpacity
           style={[
             styles.sectionButton,
