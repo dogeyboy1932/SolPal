@@ -103,6 +103,7 @@ export const TransferSOL: React.FC = () => {
       }, 2000);
 
     } catch (error) {
+      console.log('Transfer failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Transfer failed';
       
       Toast.show({

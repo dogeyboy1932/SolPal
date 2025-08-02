@@ -205,6 +205,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         return signature;
       }
     } catch (error) {
+      console.log('Transaction failed1:', error);
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       throw new Error(errorMessage);
     }

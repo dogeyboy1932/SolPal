@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,12 +17,16 @@ import { TransferSPLToken } from '../components/TransferSPLToken';
 import { TransactionTemplates } from '../components/TransactionTemplates';
 import { WalletOperations } from '../components/WalletOperations';
 import { TransactionBuilder } from '../components/TransactionBuilder';
+import { AdvancedTransactionFeatures } from '@/components/AdvancedTransactionFeatures';
+import { BackupManualControls } from '@/components/BackupManualControls';
+import { AIConnectionStatus } from '@/components/AIConnectionStatus';
+import { MCPServerManagement } from '@/components/MCPServerManagement';
 import { AIConnectionManager } from '../components/AIConnectionManager';
 
 export const ManualOperationsScreen: React.FC = () => {
   const { connected, connecting, publicKey } = useWallet();
   const [refreshing, setRefreshing] = React.useState(false);
-  const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'ai'>('balance');
+  const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp'>('balance');
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -92,10 +96,32 @@ export const ManualOperationsScreen: React.FC = () => {
           </View>
         );
       
-      case 'ai':
+      case 'advanced':
         return (
           <View style={styles.sectionContent}>
+            <AdvancedTransactionFeatures />
+          </View>
+        );
+      
+      case 'backup':
+        return (
+          <View style={styles.sectionContent}>
+            <BackupManualControls />
+          </View>
+        );
+      
+      case 'ai_status':
+        return (
+          <View style={styles.sectionContent}>
+            <AIConnectionStatus />
             <AIConnectionManager />
+          </View>
+        );
+      
+      case 'mcp':
+        return (
+          <View style={styles.sectionContent}>
+            <MCPServerManagement />
           </View>
         );
       
@@ -231,15 +257,60 @@ export const ManualOperationsScreen: React.FC = () => {
         <TouchableOpacity
           style={[
             styles.sectionButton,
-            activeSection === 'ai' && styles.sectionButtonActive
+            activeSection === 'advanced' && styles.sectionButtonActive
           ]}
-          onPress={() => setActiveSection('ai')}
+          onPress={() => setActiveSection('advanced')}
         >
           <Text style={[
             styles.sectionButtonText,
-            activeSection === 'ai' && styles.sectionButtonTextActive
+            activeSection === 'advanced' && styles.sectionButtonTextActive
           ]}>
-            🤖 AI
+            ⚡ Advanced
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.sectionButton,
+            activeSection === 'backup' && styles.sectionButtonActive
+          ]}
+          onPress={() => setActiveSection('backup')}
+        >
+          <Text style={[
+            styles.sectionButtonText,
+            activeSection === 'backup' && styles.sectionButtonTextActive
+          ]}>
+            🛠️ Backup
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.sectionButton,
+            activeSection === 'ai_status' && styles.sectionButtonActive
+          ]}
+          onPress={() => setActiveSection('ai_status')}
+        >
+          <Text style={[
+            styles.sectionButtonText,
+            activeSection === 'ai_status' && styles.sectionButtonTextActive
+          ]}>
+            🤖 AI Status
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.sectionButton,
+            activeSection === 'mcp' && styles.sectionButtonActive
+          ]}
+          onPress={() => setActiveSection('mcp')}
+        >
+          <Text style={[
+            styles.sectionButtonText,
+            activeSection === 'mcp' && styles.sectionButtonTextActive
+          ]}>
+            🔗 MCP
           </Text>
         </TouchableOpacity>
       </ScrollView>
