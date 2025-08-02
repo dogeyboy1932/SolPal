@@ -8,7 +8,14 @@ config.resolver.alias = {
   crypto: 'crypto-browserify',
   stream: 'stream-browserify',
   buffer: 'buffer',
+  'react-native': 'react-native-web',
 };
+
+// Add platforms for better cross-platform support
+config.resolver.platforms = ['web', 'ios', 'android', 'native'];
+
+// Add web extensions
+config.resolver.sourceExts.push('web.js', 'web.ts', 'web.tsx');
 
 // Add Buffer to global
 config.transformer.getTransformOptions = async () => ({

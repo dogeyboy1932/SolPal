@@ -31,5 +31,11 @@ export const MCP_SERVERS: Record<string, MCP_SERVERS_CONFIG> = {
       position: { x: 400, y: 500 },
       url: 'mcp://github-mcp',
        serverPath: './github.ts',
+    },
+    'solana': {
+      label: 'Solana Wallet MCP',
+      position: { x: 400, y: 650 },
+      url: 'mcp://solana-mcp',
+      serverPath: './solana.ts',
     }
   } as const;

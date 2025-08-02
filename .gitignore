@@ -50,3 +50,5 @@ logs
 
 # Coverage directory
 coverage/
+
+/mcpb-latent

@@ -2,7 +2,23 @@ import { MCP_SERVERS } from "../config/mcp_config";
 import { TabServerTransport } from "@mcp-b/transports";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
+// Static imports for React Native compatibility
+import * as githubServer from "./github";
+import * as mathServer from "./math";
+import * as weatherServer from "./weather";
+import * as zoneManagementServer from "./zoneManagement";
+import * as solanaServer from "./solana";
+
 let currentServer: McpServer | null = null;
+
+// Server module map for static loading
+const SERVER_MODULES = {
+  github: githubServer,
+  math: mathServer,
+  weather: weatherServer,
+  zoneManagement: zoneManagementServer,
+  solana: solanaServer,
+} as const;
 
 export async function setupMCPServer(serverType: string): Promise<McpServer> {
   console.log(`👤 Setting up ${serverType} MCP Server...`);
@@ -18,11 +34,14 @@ export async function setupMCPServer(serverType: string): Promise<McpServer> {
     throw new Error(`Unknown server type: ${serverType}`);
   }
 
-  const { label: serverName, serverPath } = serverConfig;
+  const { label: serverName } = serverConfig;
   
   try {
-    // Use dynamic import with the serverPath directly
-    const module = await import(serverPath);
+    // Get the module from the static import map
+    const module = SERVER_MODULES[serverType as keyof typeof SERVER_MODULES];
+    if (!module) {
+      throw new Error(`Server module not found: ${serverType}`);
+    }
 
     console.log(module);
 

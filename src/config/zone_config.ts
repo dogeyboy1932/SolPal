@@ -3,14 +3,16 @@ export type ZONE_SERVERS_CONFIG = {
     position: { x: number; y: number };
   };
   
-  export const ZONE_SERVERS : Record<string, ZONE_SERVERS_CONFIG> = {
-    'testZone': {
-      label: 'Test Zone',
-      position: { x: 600, y: 50 },
-    }
+export const ZONE_SERVERS : Record<string, ZONE_SERVERS_CONFIG> = {
+  'testZone': {
+    label: 'Test Zone',
+    position: { x: 600, y: 50 },
+  },
+  'solanaZone': {
+    label: 'Solana Wallet Zone',
+    position: { x: 600, y: 200 },
   }
-
-/// MOCK ZONE DATA
+}/// MOCK ZONE DATA
 export interface ZoneData {
   label: string;
   connected: boolean;

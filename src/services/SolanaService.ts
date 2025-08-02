@@ -126,6 +126,24 @@ export class SolanaService {
     }
   }
 
+  async getAccountInfo(publicKey: PublicKey) {
+    try {
+      const accountInfo = await this.connection.getAccountInfo(publicKey);
+      const balance = await this.connection.getBalance(publicKey);
+      
+      return {
+        balance,
+        owner: accountInfo?.owner,
+        executable: accountInfo?.executable || false,
+        rentEpoch: accountInfo?.rentEpoch || 0,
+        data: accountInfo?.data || Buffer.alloc(0)
+      };
+    } catch (error) {
+      console.error('Failed to get account info:', error);
+      throw new Error('Failed to fetch account information');
+    }
+  }
+
   async sendTransactionWithRetry(
     transaction: Transaction,
     maxRetries: number = 3,
@@ -227,6 +245,14 @@ export class SolanaService {
       console.error('Failed to request airdrop:', error);
       throw new Error('Airdrop request failed');
     }
+  }
+
+  async getLatestBlockhash() {
+    return await this.connection.getLatestBlockhash();
+  }
+
+  getConnection(): Connection {
+    return this.connection;
   }
 }
 

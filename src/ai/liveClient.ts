@@ -218,6 +218,7 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
       }
       if (isTurnComplete(serverContent)) {
         // this.log("server.send", "turnComplete");
+        console.log("turn complete", fullResponse);
         this.emit("turncomplete", fullResponse);
         fullResponse = "";
         
