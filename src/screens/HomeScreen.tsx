@@ -9,12 +9,33 @@ import { Ionicons } from '@expo/vector-icons';
 import AITransactionChat from '@/features/ai/AITransactionChat';
 import { ManualOperationsScreen } from './ManualOperationsScreen';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
+import { NativeWindTest } from '../components/NativeWindTest';
 
 export const HomeScreen: React.FC = () => {
-  const [showManualMode, setShowManualMode] = useState(true);
+  const [showManualMode, setShowManualMode] = useState(false);
+  // const [showNativeWindTest, setShowNativeWindTest] = useState(true); // Add test toggle
+
+  // // Show NativeWind test first to verify styling
+  // if (showNativeWindTest) {
+  //   return (
+  //     <SafeAreaView className="flex-1">
+  //       <View className="flex-row justify-between items-center p-4 bg-gray-100">
+  //         <Text className="text-lg font-semibold">NativeWind Test Mode</Text>
+  //         <TouchableOpacity 
+  //           className="bg-blue-500 px-3 py-2 rounded"
+  //           onPress={() => setShowNativeWindTest(false)}
+  //         >
+  //           <Text className="text-white text-sm">Back to App</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //       <NativeWindTest />
+  //     </SafeAreaView>
+  //   );
+  // }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      
       {!showManualMode ? (
         <View className="flex-1">
           {/* Header with Manual Mode Toggle */}

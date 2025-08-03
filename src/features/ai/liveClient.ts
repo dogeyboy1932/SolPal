@@ -100,10 +100,35 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
     const ws = new WebSocket(this.url);
 
     ws.addEventListener("message", async (evt: MessageEvent) => {
+      console.log("📨 WebSocket message received");
+      console.log("📨 Platform:", typeof navigator !== 'undefined' ? 'web' : 'mobile');
+      console.log("📨 Data type:", typeof evt.data);
+      console.log("📨 Data constructor:", evt.data?.constructor?.name);
+      console.log("📨 Data size:", evt.data?.size || evt.data?.byteLength);
+      
       if (evt.data instanceof Blob) {
+        console.log("📦 Processing Blob message (web)");
         this.receive(evt.data);
+      } else if (evt.data instanceof ArrayBuffer) {
+        console.log("📦 Processing ArrayBuffer message (mobile)");
+        
+        if (evt.data.byteLength === 0) {
+          console.log("✅ Empty ArrayBuffer - setup complete");
+          this.emit("setupcomplete");
+          return;
+        }
+        
+        // Process ArrayBuffer directly without converting to Blob
+        await this.receiveArrayBuffer(evt.data);
       } else {
-        console.log("non blob message", evt);
+        console.log("📄 Non-blob/ArrayBuffer message:", evt.data);
+        
+        // Handle empty responses as setup complete
+        if (!evt.data || (typeof evt.data === 'object' && Object.keys(evt.data).length === 0)) {
+          console.log("✅ Empty response - setup complete");
+          this.emit("setupcomplete");
+          return;
+        }
       }
     });
     return new Promise((resolve, reject) => {
@@ -175,6 +200,32 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
     )) as LiveIncomingMessage;
 
     console.log("receive", response);
+    
+    this.processMessage(response);
+  }
+
+  protected async receiveArrayBuffer(arrayBuffer: ArrayBuffer) {
+    console.log("🔍 Processing ArrayBuffer:", arrayBuffer.byteLength, "bytes");
+
+    try {
+      // Convert ArrayBuffer to string and parse JSON
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const textDecoder = new TextDecoder('utf-8');
+      const jsonString = textDecoder.decode(uint8Array);
+      
+      console.log("🔄 Decoded ArrayBuffer:", jsonString.substring(0, 200) + "...");
+      
+      const response: LiveIncomingMessage = JSON.parse(jsonString) as LiveIncomingMessage;
+      console.log("📥 ArrayBuffer message type:", Object.keys(response)[0]);
+
+      this.processMessage(response);
+    } catch (error) {
+      console.error("❌ Error processing ArrayBuffer:", error);
+      this.emit("close", `ArrayBuffer processing error: ${error}`);
+    }
+  }
+
+  private processMessage(response: LiveIncomingMessage) {
 
     
     if (isToolCallMessage(response)) {

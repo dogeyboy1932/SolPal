@@ -16,6 +16,7 @@ import { useWallet } from '../../contexts/WalletContext';
 import { useNodes } from '../../contexts/NodeContext';
 import { useGemini } from './GeminiContext';
 import { WalletConnectButton } from '../wallet/WalletConnectButton';
+import { VoiceControls } from '../voice/VoiceControls';
 
 interface ChatMessage {
   id: string;
@@ -26,11 +27,24 @@ interface ChatMessage {
 
 export default function AITransactionChat() {
   const { connected, publicKey } = useWallet();
-  const { sendMessage, messages, liveConnected, tools, setApiKey, liveConnect, liveDisconnect } = useGemini();
+  const { 
+    sendMessage, 
+    messages, 
+    liveConnected, 
+    tools, 
+    setApiKey, 
+    liveConnect, 
+    liveDisconnect,
+    voiceModeEnabled,
+    toggleVoiceMode,
+    isListening,
+    startListening,
+    stopListening
+  } = useGemini();
   
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [apiKeyInput, setApiKeyInput] = useState('AIzaSyDsGhQALbwf6jDAHKpZLu1bhVus5CQ-ERQ');
   const [isApiKeySet, setIsApiKeySet] = useState(false);
   const [toolExecutionStatus, setToolExecutionStatus] = useState<string>('');
   const [lastError, setLastError] = useState<string>('');
@@ -593,6 +607,7 @@ export default function AITransactionChat() {
               height: 40,
               justifyContent: 'center',
               alignItems: 'center',
+              marginRight: 8,
             }}
             onPress={handleSendMessage}
             disabled={!inputText.trim()}
@@ -603,6 +618,15 @@ export default function AITransactionChat() {
               color={inputText.trim() ? '#FFFFFF' : '#8E8E93'} 
             />
           </TouchableOpacity>
+
+          {/* Voice Controls */}
+          <VoiceControls
+            isListening={isListening}
+            voiceEnabled={voiceModeEnabled}
+            onToggleVoice={toggleVoiceMode}
+            onStartListening={startListening}
+            onStopListening={stopListening}
+          />
         </View>
       </View>
     </KeyboardAvoidingView>

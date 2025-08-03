@@ -1,6 +1,11 @@
 import './polyfill';
-import './global.css';
 import React from 'react';
+import { Platform } from 'react-native';
+
+// Import CSS only for web
+if (Platform.OS === 'web') {
+  require('./global.css');
+}
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import Toast from 'react-native-toast-message';

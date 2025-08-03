@@ -915,358 +915,358 @@ export function createMcpServer(): McpServer {
     }
   );
 
-  // =================
-  // SMART TRANSACTION ANALYSIS TOOLS
-  // =================
+  // // =================
+  // // SMART TRANSACTION ANALYSIS TOOLS
+  // // =================
 
-  // Generate smart transaction suggestions
-  server.tool(
-    'generate_smart_suggestions',
-    {
-      context: z.string().optional().describe('Additional context about what the user wants to do'),
-      walletBalance: z.number().optional().describe('Current wallet balance in SOL'),
-      recentActivity: z.string().optional().describe('Recent transaction activity or patterns')
-    },
-    async ({ context, walletBalance, recentActivity }) => {
-      console.log('🧠 Smart Suggestions: Generating transaction recommendations');
+  // // Generate smart transaction suggestions
+  // server.tool(
+  //   'generate_smart_suggestions',
+  //   {
+  //     context: z.string().optional().describe('Additional context about what the user wants to do'),
+  //     walletBalance: z.number().optional().describe('Current wallet balance in SOL'),
+  //     recentActivity: z.string().optional().describe('Recent transaction activity or patterns')
+  //   },
+  //   async ({ context, walletBalance, recentActivity }) => {
+  //     console.log('🧠 Smart Suggestions: Generating transaction recommendations');
       
-      try {
-        const nodes = getLLMAccessibleNodes();
-        const walletNodes = getNodesWithWallets();
+  //     try {
+  //       const nodes = getLLMAccessibleNodes();
+  //       const walletNodes = getNodesWithWallets();
         
-        const suggestions = [];
+  //       const suggestions = [];
         
-        // Context-based suggestions
-        if (context?.toLowerCase().includes('send') || context?.toLowerCase().includes('transfer')) {
-          if (walletNodes.length > 0) {
-            suggestions.push({
-              type: 'quick_transfer',
-              title: '💸 Quick Transfer to Contacts',
-              description: `Send SOL to ${walletNodes.length} contacts with saved wallet addresses`,
-              action: 'Use get_nodes_with_wallets() to see available recipients',
-              priority: 'high'
-            });
-          }
-        }
+  //       // Context-based suggestions
+  //       if (context?.toLowerCase().includes('send') || context?.toLowerCase().includes('transfer')) {
+  //         if (walletNodes.length > 0) {
+  //           suggestions.push({
+  //             type: 'quick_transfer',
+  //             title: '💸 Quick Transfer to Contacts',
+  //             description: `Send SOL to ${walletNodes.length} contacts with saved wallet addresses`,
+  //             action: 'Use get_nodes_with_wallets() to see available recipients',
+  //             priority: 'high'
+  //           });
+  //         }
+  //       }
 
-        // Balance-based suggestions
-        if (walletBalance !== undefined) {
-          if (walletBalance > 1) {
-            suggestions.push({
-              type: 'diversify',
-              title: '📊 Portfolio Diversification',
-              description: 'Consider diversifying your SOL holdings across different wallets or DeFi protocols',
-              action: 'Create additional wallet addresses for better security',
-              priority: 'medium'
-            });
-          } else if (walletBalance < 0.1) {
-            suggestions.push({
-              type: 'low_balance',
-              title: '⚠️ Low Balance Alert',
-              description: 'Your SOL balance is running low. Consider adding funds for transaction fees',
-              action: 'Fund your wallet or reduce transaction frequency',
-              priority: 'high'
-            });
-          }
-        }
+  //       // Balance-based suggestions
+  //       if (walletBalance !== undefined) {
+  //         if (walletBalance > 1) {
+  //           suggestions.push({
+  //             type: 'diversify',
+  //             title: '📊 Portfolio Diversification',
+  //             description: 'Consider diversifying your SOL holdings across different wallets or DeFi protocols',
+  //             action: 'Create additional wallet addresses for better security',
+  //             priority: 'medium'
+  //           });
+  //         } else if (walletBalance < 0.1) {
+  //           suggestions.push({
+  //             type: 'low_balance',
+  //             title: '⚠️ Low Balance Alert',
+  //             description: 'Your SOL balance is running low. Consider adding funds for transaction fees',
+  //             action: 'Fund your wallet or reduce transaction frequency',
+  //             priority: 'high'
+  //           });
+  //         }
+  //       }
 
-        // Network-based suggestions
-        suggestions.push({
-          type: 'gas_optimization',
-          title: '⚡ Transaction Fee Optimization',
-          description: 'Batch multiple operations together to save on transaction fees',
-          action: 'Group related transactions when possible',
-          priority: 'low'
-        });
+  //       // Network-based suggestions
+  //       suggestions.push({
+  //         type: 'gas_optimization',
+  //         title: '⚡ Transaction Fee Optimization',
+  //         description: 'Batch multiple operations together to save on transaction fees',
+  //         action: 'Group related transactions when possible',
+  //         priority: 'low'
+  //       });
 
-        // Community-based suggestions
-        const communities = nodes.filter(n => n.type === 'community');
-        if (communities.length > 0) {
-          suggestions.push({
-            type: 'community_engagement',
-            title: '🏢 Community Treasury Interaction',
-            description: `Explore governance or treasury features with your ${communities.length} saved communities`,
-            action: 'Check community governance tokens or treasury proposals',
-            priority: 'medium'
-          });
-        }
+  //       // Community-based suggestions
+  //       const communities = nodes.filter(n => n.type === 'community');
+  //       if (communities.length > 0) {
+  //         suggestions.push({
+  //           type: 'community_engagement',
+  //           title: '🏢 Community Treasury Interaction',
+  //           description: `Explore governance or treasury features with your ${communities.length} saved communities`,
+  //           action: 'Check community governance tokens or treasury proposals',
+  //           priority: 'medium'
+  //         });
+  //       }
 
-        // Event-based suggestions
-        const upcomingEvents = nodes.filter(n => 
-          n.type === 'event' && 
-          (n as EventNode).date > new Date()
-        );
-        if (upcomingEvents.length > 0) {
-          suggestions.push({
-            type: 'event_payments',
-            title: '🎫 Upcoming Event Payments',
-            description: `Prepare payments for ${upcomingEvents.length} upcoming events`,
-            action: 'Review event requirements and prepare necessary SOL amounts',
-            priority: 'medium'
-          });
-        }
+  //       // Event-based suggestions
+  //       const upcomingEvents = nodes.filter(n => 
+  //         n.type === 'event' && 
+  //         (n as EventNode).date > new Date()
+  //       );
+  //       if (upcomingEvents.length > 0) {
+  //         suggestions.push({
+  //           type: 'event_payments',
+  //           title: '🎫 Upcoming Event Payments',
+  //           description: `Prepare payments for ${upcomingEvents.length} upcoming events`,
+  //           action: 'Review event requirements and prepare necessary SOL amounts',
+  //           priority: 'medium'
+  //         });
+  //       }
 
-        if (suggestions.length === 0) {
-          suggestions.push({
-            type: 'explore',
-            title: '🌟 Explore Solana Features',
-            description: 'Add contacts with wallet addresses to enable smart transaction suggestions',
-            action: 'Use create_person_node() to add contacts with wallet addresses',
-            priority: 'low'
-          });
-        }
+  //       if (suggestions.length === 0) {
+  //         suggestions.push({
+  //           type: 'explore',
+  //           title: '🌟 Explore Solana Features',
+  //           description: 'Add contacts with wallet addresses to enable smart transaction suggestions',
+  //           action: 'Use create_person_node() to add contacts with wallet addresses',
+  //           priority: 'low'
+  //         });
+  //       }
 
-        const suggestionText = suggestions.map(s => 
-          `🔹 **${s.title}** (${s.priority} priority)\n   ${s.description}\n   💡 ${s.action}`
-        ).join('\n\n');
+  //       const suggestionText = suggestions.map(s => 
+  //         `🔹 **${s.title}** (${s.priority} priority)\n   ${s.description}\n   💡 ${s.action}`
+  //       ).join('\n\n');
 
-        return {
-          content: [{
-            type: 'text',
-            text: `🧠 **Smart Transaction Suggestions**\n\n${suggestionText}\n\n📊 Generated based on your wallet balance, contacts, and activity patterns.`
-          }]
-        };
+  //       return {
+  //         content: [{
+  //           type: 'text',
+  //           text: `🧠 **Smart Transaction Suggestions**\n\n${suggestionText}\n\n📊 Generated based on your wallet balance, contacts, and activity patterns.`
+  //         }]
+  //       };
 
-      } catch (error) {
-        console.error('Error generating smart suggestions:', error);
-        return {
-          content: [{
-            type: 'text',
-            text: `❌ Error generating suggestions: ${error instanceof Error ? error.message : 'Unknown error'}`
-          }]
-        };
-      }
-    }
-  );
+  //     } catch (error) {
+  //       console.error('Error generating smart suggestions:', error);
+  //       return {
+  //         content: [{
+  //           type: 'text',
+  //           text: `❌ Error generating suggestions: ${error instanceof Error ? error.message : 'Unknown error'}`
+  //         }]
+  //       };
+  //     }
+  //   }
+  // );
 
-  // Analyze transaction patterns and insights
-  server.tool(
-    'analyze_transaction_insights',
-    {
-      transactionHistory: z.array(z.any()).optional().describe('Recent transaction data for analysis'),
-      timeframe: z.enum(['week', 'month', 'quarter']).default('month').describe('Analysis timeframe')
-    },
-    async ({ transactionHistory, timeframe = 'month' }) => {
-      console.log(`📊 Transaction Analysis: Analyzing patterns for ${timeframe}`);
+  // // Analyze transaction patterns and insights
+  // server.tool(
+  //   'analyze_transaction_insights',
+  //   {
+  //     transactionHistory: z.array(z.any()).optional().describe('Recent transaction data for analysis'),
+  //     timeframe: z.enum(['week', 'month', 'quarter']).default('month').describe('Analysis timeframe')
+  //   },
+  //   async ({ transactionHistory, timeframe = 'month' }) => {
+  //     console.log(`📊 Transaction Analysis: Analyzing patterns for ${timeframe}`);
       
-      try {
-        const nodes = getLLMAccessibleNodes();
-        const currentBalance = walletPublicKey && solanaConnection ? 
-          await solanaConnection.getBalance(walletPublicKey) / LAMPORTS_PER_SOL : 0;
+  //     try {
+  //       const nodes = getLLMAccessibleNodes();
+  //       const currentBalance = walletPublicKey && solanaConnection ? 
+  //         await solanaConnection.getBalance(walletPublicKey) / LAMPORTS_PER_SOL : 0;
 
-        const insights = [];
+  //       const insights = [];
 
-        // Network activity insights
-        if (solanaConnection && walletPublicKey) {
-          try {
-            const signatures = await solanaConnection.getSignaturesForAddress(walletPublicKey, { limit: 20 });
-            const recentTxCount = signatures.length;
+  //       // Network activity insights
+  //       if (solanaConnection && walletPublicKey) {
+  //         try {
+  //           const signatures = await solanaConnection.getSignaturesForAddress(walletPublicKey, { limit: 20 });
+  //           const recentTxCount = signatures.length;
             
-            insights.push({
-              category: 'Activity Pattern',
-              insight: `You have ${recentTxCount} recent transactions`,
-              recommendation: recentTxCount > 10 ? 
-                'High activity detected - consider batching operations to reduce fees' :
-                'Moderate activity level - good transaction hygiene'
-            });
+  //           insights.push({
+  //             category: 'Activity Pattern',
+  //             insight: `You have ${recentTxCount} recent transactions`,
+  //             recommendation: recentTxCount > 10 ? 
+  //               'High activity detected - consider batching operations to reduce fees' :
+  //               'Moderate activity level - good transaction hygiene'
+  //           });
 
-            // Calculate average time between transactions
-            if (signatures.length >= 2) {
-              const times = signatures.slice(0, 10).map(s => s.blockTime).filter(Boolean);
-              if (times.length >= 2) {
-                const avgInterval = (Math.max(...times as number[]) - Math.min(...times as number[])) / (times.length - 1);
-                const intervalDays = avgInterval / (24 * 60 * 60);
+  //           // Calculate average time between transactions
+  //           if (signatures.length >= 2) {
+  //             const times = signatures.slice(0, 10).map(s => s.blockTime).filter(Boolean);
+  //             if (times.length >= 2) {
+  //               const avgInterval = (Math.max(...times as number[]) - Math.min(...times as number[])) / (times.length - 1);
+  //               const intervalDays = avgInterval / (24 * 60 * 60);
                 
-                insights.push({
-                  category: 'Transaction Frequency',
-                  insight: `Average ${intervalDays.toFixed(1)} days between transactions`,
-                  recommendation: intervalDays < 1 ? 
-                    'Very frequent transactions - consider fee optimization strategies' :
-                    'Healthy transaction spacing'
-                });
-              }
-            }
-          } catch (error) {
-            console.log('Could not fetch transaction history for analysis');
-          }
-        }
+  //               insights.push({
+  //                 category: 'Transaction Frequency',
+  //                 insight: `Average ${intervalDays.toFixed(1)} days between transactions`,
+  //                 recommendation: intervalDays < 1 ? 
+  //                   'Very frequent transactions - consider fee optimization strategies' :
+  //                   'Healthy transaction spacing'
+  //               });
+  //             }
+  //           }
+  //         } catch (error) {
+  //           console.log('Could not fetch transaction history for analysis');
+  //         }
+  //       }
 
-        // Contact network insights
-        const walletContacts = getNodesWithWallets();
-        insights.push({
-          category: 'Network Analysis',
-          insight: `You have ${walletContacts.length} contacts with wallet addresses`,
-          recommendation: walletContacts.length < 3 ? 
-            'Consider adding more contacts to enable peer-to-peer transactions' :
-            'Good contact network for easy transfers'
-        });
+  //       // Contact network insights
+  //       const walletContacts = getNodesWithWallets();
+  //       insights.push({
+  //         category: 'Network Analysis',
+  //         insight: `You have ${walletContacts.length} contacts with wallet addresses`,
+  //         recommendation: walletContacts.length < 3 ? 
+  //           'Consider adding more contacts to enable peer-to-peer transactions' :
+  //           'Good contact network for easy transfers'
+  //       });
 
-        // Community engagement insights
-        const communities = nodes.filter(n => n.type === 'community');
-        if (communities.length > 0) {
-          insights.push({
-            category: 'Community Engagement',
-            insight: `Connected to ${communities.length} communities`,
-            recommendation: 'Explore governance participation and community treasury features'
-          });
-        }
+  //       // Community engagement insights
+  //       const communities = nodes.filter(n => n.type === 'community');
+  //       if (communities.length > 0) {
+  //         insights.push({
+  //           category: 'Community Engagement',
+  //           insight: `Connected to ${communities.length} communities`,
+  //           recommendation: 'Explore governance participation and community treasury features'
+  //         });
+  //       }
 
-        // Security insights
-        insights.push({
-          category: 'Security Analysis',
-          insight: 'Using devnet environment',
-          recommendation: 'Perfect for testing! Remember to use mainnet for real transactions'
-        });
+  //       // Security insights
+  //       insights.push({
+  //         category: 'Security Analysis',
+  //         insight: 'Using devnet environment',
+  //         recommendation: 'Perfect for testing! Remember to use mainnet for real transactions'
+  //       });
 
-        // Balance management insights
-        if (currentBalance > 0) {
-          insights.push({
-            category: 'Balance Management',
-            insight: `Current balance: ${currentBalance.toFixed(4)} SOL`,
-            recommendation: currentBalance < 0.1 ? 
-              'Low balance detected - consider funding your wallet' :
-              currentBalance > 10 ?
-              'High balance - consider security best practices for large amounts' :
-              'Good balance level for regular transactions'
-          });
-        }
+  //       // Balance management insights
+  //       if (currentBalance > 0) {
+  //         insights.push({
+  //           category: 'Balance Management',
+  //           insight: `Current balance: ${currentBalance.toFixed(4)} SOL`,
+  //           recommendation: currentBalance < 0.1 ? 
+  //             'Low balance detected - consider funding your wallet' :
+  //             currentBalance > 10 ?
+  //             'High balance - consider security best practices for large amounts' :
+  //             'Good balance level for regular transactions'
+  //         });
+  //       }
 
-        const insightText = insights.map(i =>
-          `📊 **${i.category}**\n   📈 ${i.insight}\n   💡 ${i.recommendation}`
-        ).join('\n\n');
+  //       const insightText = insights.map(i =>
+  //         `📊 **${i.category}**\n   📈 ${i.insight}\n   💡 ${i.recommendation}`
+  //       ).join('\n\n');
 
-        return {
-          content: [{
-            type: 'text',
-            text: `📊 **Transaction Insights Analysis** (${timeframe})\n\n${insightText}\n\n🔍 Analysis based on your transaction history, contacts, and current wallet state.`
-          }]
-        };
+  //       return {
+  //         content: [{
+  //           type: 'text',
+  //           text: `📊 **Transaction Insights Analysis** (${timeframe})\n\n${insightText}\n\n🔍 Analysis based on your transaction history, contacts, and current wallet state.`
+  //         }]
+  //       };
 
-      } catch (error) {
-        console.error('Error analyzing transaction insights:', error);
-        return {
-          content: [{
-            type: 'text',
-            text: `❌ Error analyzing insights: ${error instanceof Error ? error.message : 'Unknown error'}`
-          }]
-        };
-      }
-    }
-  );
+  //     } catch (error) {
+  //       console.error('Error analyzing transaction insights:', error);
+  //       return {
+  //         content: [{
+  //           type: 'text',
+  //           text: `❌ Error analyzing insights: ${error instanceof Error ? error.message : 'Unknown error'}`
+  //         }]
+  //       };
+  //     }
+  //   }
+  // );
 
-  // Smart transaction safety check
-  server.tool(
-    'smart_safety_check',
-    {
-      transactionType: z.enum(['transfer', 'swap', 'stake', 'unstake', 'governance']).describe('Type of transaction to check'),
-      recipient: z.string().optional().describe('Recipient address or identifier'),
-      amount: z.number().optional().describe('Transaction amount in SOL'),
-      urgency: z.enum(['low', 'medium', 'high']).default('medium').describe('Transaction urgency level')
-    },
-    async ({ transactionType, recipient, amount, urgency = 'medium' }) => {
-      console.log(`🛡️ Safety Check: Analyzing ${transactionType} transaction`);
+  // // Smart transaction safety check
+  // server.tool(
+  //   'smart_safety_check',
+  //   {
+  //     transactionType: z.enum(['transfer', 'swap', 'stake', 'unstake', 'governance']).describe('Type of transaction to check'),
+  //     recipient: z.string().optional().describe('Recipient address or identifier'),
+  //     amount: z.number().optional().describe('Transaction amount in SOL'),
+  //     urgency: z.enum(['low', 'medium', 'high']).default('medium').describe('Transaction urgency level')
+  //   },
+  //   async ({ transactionType, recipient, amount, urgency = 'medium' }) => {
+  //     console.log(`🛡️ Safety Check: Analyzing ${transactionType} transaction`);
       
-      try {
-        const safetyChecks = [];
-        const warnings = [];
-        const recommendations = [];
+  //     try {
+  //       const safetyChecks = [];
+  //       const warnings = [];
+  //       const recommendations = [];
 
-        // Amount validation
-        if (amount !== undefined) {
-          const currentBalance = walletPublicKey && solanaConnection ? 
-            await solanaConnection.getBalance(walletPublicKey) / LAMPORTS_PER_SOL : 0;
+  //       // Amount validation
+  //       if (amount !== undefined) {
+  //         const currentBalance = walletPublicKey && solanaConnection ? 
+  //           await solanaConnection.getBalance(walletPublicKey) / LAMPORTS_PER_SOL : 0;
 
-          if (amount > currentBalance * 0.9) {
-            warnings.push('⚠️ High amount: Using >90% of wallet balance');
-            recommendations.push('Consider keeping some SOL for future transaction fees');
-          }
+  //         if (amount > currentBalance * 0.9) {
+  //           warnings.push('⚠️ High amount: Using >90% of wallet balance');
+  //           recommendations.push('Consider keeping some SOL for future transaction fees');
+  //         }
 
-          if (amount > 10) {
-            warnings.push('⚠️ Large transfer: Amount exceeds 10 SOL');
-            recommendations.push('Verify recipient address multiple times for large amounts');
-          }
+  //         if (amount > 10) {
+  //           warnings.push('⚠️ Large transfer: Amount exceeds 10 SOL');
+  //           recommendations.push('Verify recipient address multiple times for large amounts');
+  //         }
 
-          safetyChecks.push(`✅ Amount: ${amount} SOL (${((amount / currentBalance) * 100).toFixed(1)}% of balance)`);
-        }
+  //         safetyChecks.push(`✅ Amount: ${amount} SOL (${((amount / currentBalance) * 100).toFixed(1)}% of balance)`);
+  //       }
 
-        // Recipient validation
-        if (recipient) {
-          try {
-            // Check if recipient is a known contact
-            const knownContact = getNodeByWalletAddress(recipient) || getNodeByName(recipient);
-            if (knownContact) {
-              safetyChecks.push(`✅ Recipient: Known contact "${knownContact.name}"`);
-            } else {
-              // Try to validate as Solana address
-              new PublicKey(recipient);
-              warnings.push('⚠️ Unknown recipient: Not in your contacts');
-              recommendations.push('Double-check the address or add recipient to contacts first');
-            }
-          } catch {
-            warnings.push('❌ Invalid recipient: Not a valid Solana address');
-            recommendations.push('Verify the recipient address format');
-          }
-        }
+  //       // Recipient validation
+  //       if (recipient) {
+  //         try {
+  //           // Check if recipient is a known contact
+  //           const knownContact = getNodeByWalletAddress(recipient) || getNodeByName(recipient);
+  //           if (knownContact) {
+  //             safetyChecks.push(`✅ Recipient: Known contact "${knownContact.name}"`);
+  //           } else {
+  //             // Try to validate as Solana address
+  //             new PublicKey(recipient);
+  //             warnings.push('⚠️ Unknown recipient: Not in your contacts');
+  //             recommendations.push('Double-check the address or add recipient to contacts first');
+  //           }
+  //         } catch {
+  //           warnings.push('❌ Invalid recipient: Not a valid Solana address');
+  //           recommendations.push('Verify the recipient address format');
+  //         }
+  //       }
 
-        // Transaction type specific checks
-        switch (transactionType) {
-          case 'transfer':
-            safetyChecks.push('✅ Type: Simple SOL transfer (lowest risk)');
-            if (urgency === 'high') {
-              recommendations.push('For urgent transfers, verify recipient availability');
-            }
-            break;
+  //       // Transaction type specific checks
+  //       switch (transactionType) {
+  //         case 'transfer':
+  //           safetyChecks.push('✅ Type: Simple SOL transfer (lowest risk)');
+  //           if (urgency === 'high') {
+  //             recommendations.push('For urgent transfers, verify recipient availability');
+  //           }
+  //           break;
             
-          case 'swap':
-            warnings.push('⚠️ Type: Token swap (medium risk - price volatility)');
-            recommendations.push('Check current market prices and slippage tolerance');
-            break;
+  //         case 'swap':
+  //           warnings.push('⚠️ Type: Token swap (medium risk - price volatility)');
+  //           recommendations.push('Check current market prices and slippage tolerance');
+  //           break;
             
-          case 'stake':
-            safetyChecks.push('✅ Type: Staking (locked funds, research validator)');
-            recommendations.push('Verify validator reputation and commission rates');
-            break;
+  //         case 'stake':
+  //           safetyChecks.push('✅ Type: Staking (locked funds, research validator)');
+  //           recommendations.push('Verify validator reputation and commission rates');
+  //           break;
             
-          case 'governance':
-            safetyChecks.push('✅ Type: Governance vote (no fund risk)');
-            recommendations.push('Review proposal details thoroughly before voting');
-            break;
-        }
+  //         case 'governance':
+  //           safetyChecks.push('✅ Type: Governance vote (no fund risk)');
+  //           recommendations.push('Review proposal details thoroughly before voting');
+  //           break;
+  //       }
 
-        // Network status check
-        safetyChecks.push('✅ Network: Devnet (safe for testing)');
+  //       // Network status check
+  //       safetyChecks.push('✅ Network: Devnet (safe for testing)');
 
-        // Urgency assessment
-        if (urgency === 'high') {
-          warnings.push('⚠️ High urgency: Take extra care with verification');
-          recommendations.push('Consider double-checking all details despite time pressure');
-        }
+  //       // Urgency assessment
+  //       if (urgency === 'high') {
+  //         warnings.push('⚠️ High urgency: Take extra care with verification');
+  //         recommendations.push('Consider double-checking all details despite time pressure');
+  //       }
 
-        const riskLevel = warnings.length === 0 ? 'LOW' : 
-                         warnings.length <= 2 ? 'MEDIUM' : 'HIGH';
+  //       const riskLevel = warnings.length === 0 ? 'LOW' : 
+  //                        warnings.length <= 2 ? 'MEDIUM' : 'HIGH';
 
-        const checkText = safetyChecks.join('\n');
-        const warningText = warnings.length > 0 ? '\n\n⚠️ **WARNINGS:**\n' + warnings.join('\n') : '';
-        const recText = recommendations.length > 0 ? '\n\n💡 **RECOMMENDATIONS:**\n' + recommendations.join('\n') : '';
+  //       const checkText = safetyChecks.join('\n');
+  //       const warningText = warnings.length > 0 ? '\n\n⚠️ **WARNINGS:**\n' + warnings.join('\n') : '';
+  //       const recText = recommendations.length > 0 ? '\n\n💡 **RECOMMENDATIONS:**\n' + recommendations.join('\n') : '';
 
-        return {
-          content: [{
-            type: 'text',
-            text: `🛡️ **Smart Safety Check** - Risk Level: **${riskLevel}**\n\n${checkText}${warningText}${recText}\n\n${riskLevel === 'LOW' ? '✅ Safe to proceed' : riskLevel === 'MEDIUM' ? '⚠️ Proceed with caution' : '🚨 High risk - review carefully'}`
-          }]
-        };
+  //       return {
+  //         content: [{
+  //           type: 'text',
+  //           text: `🛡️ **Smart Safety Check** - Risk Level: **${riskLevel}**\n\n${checkText}${warningText}${recText}\n\n${riskLevel === 'LOW' ? '✅ Safe to proceed' : riskLevel === 'MEDIUM' ? '⚠️ Proceed with caution' : '🚨 High risk - review carefully'}`
+  //         }]
+  //       };
 
-      } catch (error) {
-        console.error('Error performing safety check:', error);
-        return {
-          content: [{
-            type: 'text',
-            text: `❌ Error performing safety check: ${error instanceof Error ? error.message : 'Unknown error'}`
-          }]
-        };
-      }
-    }
-  );
+  //     } catch (error) {
+  //       console.error('Error performing safety check:', error);
+  //       return {
+  //         content: [{
+  //           type: 'text',
+  //           text: `❌ Error performing safety check: ${error instanceof Error ? error.message : 'Unknown error'}`
+  //         }]
+  //       };
+  //     }
+  //   }
+  // );
 
   console.log('🚀 Combined Solana + Node Management MCP Server created with tools:', [
     'list_available_tools',
