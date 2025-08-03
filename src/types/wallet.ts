@@ -6,10 +6,12 @@ export interface WalletState {
   error: string | null;
   accounts: string[];
   activeAccountIndex: number;
+  connectionType: 'mwa' | 'web' | 'privatekey' | null;
 }
 
 export interface WalletContextType extends WalletState {
   connect: () => Promise<void>;
+  connectWithPrivateKey: (privateKeyBase58: string) => Promise<void>;
   disconnect: () => Promise<void>;
   refreshBalance: () => Promise<void>;
   signAndSendTransaction: (transaction: any) => Promise<string>;

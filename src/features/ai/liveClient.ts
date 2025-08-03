@@ -100,20 +100,20 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
     const ws = new WebSocket(this.url);
 
     ws.addEventListener("message", async (evt: MessageEvent) => {
-      console.log("📨 WebSocket message received");
-      console.log("📨 Platform:", typeof navigator !== 'undefined' ? 'web' : 'mobile');
-      console.log("📨 Data type:", typeof evt.data);
-      console.log("📨 Data constructor:", evt.data?.constructor?.name);
-      console.log("📨 Data size:", evt.data?.size || evt.data?.byteLength);
+      // console.log("📨 WebSocket message received");
+      // console.log("📨 Platform:", typeof navigator !== 'undefined' ? 'web' : 'mobile');
+      // console.log("📨 Data type:", typeof evt.data);
+      // console.log("📨 Data constructor:", evt.data?.constructor?.name);
+      // console.log("📨 Data size:", evt.data?.size || evt.data?.byteLength);
       
       if (evt.data instanceof Blob) {
-        console.log("📦 Processing Blob message (web)");
+        // console.log("📦 Processing Blob message (web)");
         this.receive(evt.data);
       } else if (evt.data instanceof ArrayBuffer) {
-        console.log("📦 Processing ArrayBuffer message (mobile)");
+        // console.log("📦 Processing ArrayBuffer message (mobile)");
         
         if (evt.data.byteLength === 0) {
-          console.log("✅ Empty ArrayBuffer - setup complete");
+          // console.log("✅ Empty ArrayBuffer - setup complete");
           this.emit("setupcomplete");
           return;
         }
@@ -121,11 +121,11 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
         // Process ArrayBuffer directly without converting to Blob
         await this.receiveArrayBuffer(evt.data);
       } else {
-        console.log("📄 Non-blob/ArrayBuffer message:", evt.data);
+        // console.log("📄 Non-blob/ArrayBuffer message:", evt.data);
         
         // Handle empty responses as setup complete
         if (!evt.data || (typeof evt.data === 'object' && Object.keys(evt.data).length === 0)) {
-          console.log("✅ Empty response - setup complete");
+          // console.log("✅ Empty response - setup complete");
           this.emit("setupcomplete");
           return;
         }
@@ -199,13 +199,13 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
       blob,
     )) as LiveIncomingMessage;
 
-    console.log("receive", response);
+    // console.log("receive", response);
     
     this.processMessage(response);
   }
 
   protected async receiveArrayBuffer(arrayBuffer: ArrayBuffer) {
-    console.log("🔍 Processing ArrayBuffer:", arrayBuffer.byteLength, "bytes");
+    // console.log("🔍 Processing ArrayBuffer:", arrayBuffer.byteLength, "bytes");
 
     try {
       // Convert ArrayBuffer to string and parse JSON
@@ -213,14 +213,14 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
       const textDecoder = new TextDecoder('utf-8');
       const jsonString = textDecoder.decode(uint8Array);
       
-      console.log("🔄 Decoded ArrayBuffer:", jsonString.substring(0, 200) + "...");
+      // console.log("🔄 Decoded ArrayBuffer:", jsonString.substring(0, 200) + "...");
       
       const response: LiveIncomingMessage = JSON.parse(jsonString) as LiveIncomingMessage;
-      console.log("📥 ArrayBuffer message type:", Object.keys(response)[0]);
+      // console.log("📥 ArrayBuffer message type:", Object.keys(response)[0]);
 
       this.processMessage(response);
     } catch (error) {
-      console.error("❌ Error processing ArrayBuffer:", error);
+      // console.error("❌ Error processing ArrayBuffer:", error);
       this.emit("close", `ArrayBuffer processing error: ${error}`);
     }
   }
@@ -296,7 +296,7 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
         base64s.forEach((b64) => {
           if (b64) {
             const data = base64ToArrayBuffer(b64);
-            console.log("data", data);
+            // console.log("data", data);
             this.emit("audio", data);
             // this.log(`server.audio`, `buffer (${data.byteLength})`);
           }

@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import 'react-native-get-random-values';
+import { Connection, PublicKey, Transaction, Keypair } from '@solana/web3.js';
 import { Platform } from 'react-native';
 import { transact } from '@solana-mobile/mobile-wallet-adapter-protocol-web3js';
 import { webWalletAdapter } from '@/services/WebWalletAdapter';
 import { WalletContextType, WalletState } from '@/types/wallet';
 import Toast from 'react-native-toast-message';
 import { setSolanaContext } from '@/mcpServers/combinedServer';
+import bs58 from 'bs58';
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
@@ -25,7 +27,11 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     error: null,
     accounts: [],
     activeAccountIndex: 0,
+    connectionType: null,
   });
+
+  // Store keypair for private key mode
+  const [privateKeyWallet, setPrivateKeyWallet] = useState<Keypair | null>(null);
 
   // Solana connection
   const connection = new Connection(
@@ -53,6 +59,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           error: null,
           accounts: [publicKey], // Web usually has one account active
           activeAccountIndex: 0,
+          connectionType: 'web',
         });
 
         Toast.show({
@@ -93,6 +100,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           error: null,
           accounts: result.allAccounts,
           activeAccountIndex: 0,
+          connectionType: 'mwa',
         });
 
         Toast.show({
@@ -118,15 +126,101 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   }, [connection]);
 
+  const connectWithPrivateKey = useCallback(async (privateKeyBase58: string) => {
+    try {
+      setState(prev => ({ ...prev, connecting: true, error: null }));
+      console.log('Connecting with private key:', privateKeyBase58.slice(0, 10) + '...');
+
+      let keypair: Keypair;
+      
+      // Try to decode as base58 first (standard Solana format)
+      try {
+        const privateKeyBytes = bs58.decode(privateKeyBase58);
+        if (privateKeyBytes.length === 64) {
+          keypair = Keypair.fromSecretKey(privateKeyBytes);
+        } else {
+          throw new Error('Invalid key length for base58');
+        }
+      } catch {
+        // Fallback: try base64 format
+        try {
+          const privateKeyBytes = Buffer.from(privateKeyBase58, 'base64');
+          if (privateKeyBytes.length === 64) {
+            keypair = Keypair.fromSecretKey(privateKeyBytes);
+          } else {
+            throw new Error('Invalid key length for base64');
+          }
+        } catch {
+          throw new Error('Invalid private key format. Expected base58 or base64 encoded key.');
+        }
+      }
+      
+      // Store keypair for transaction signing
+      setPrivateKeyWallet(keypair);
+
+      console.log('Connection endpoint:', connection.rpcEndpoint);
+      console.log('Keypair publicKey:', keypair.publicKey.toString());
+
+      // Test with a known public key first
+      const testPubkey = new PublicKey('11111111111111111111111111111112');
+      const testBalance = await connection.getBalance(testPubkey);
+      
+      const publicKey = keypair.publicKey.toBase58();
+
+      console.log('🔑 Public key connected:', publicKey);
+      // console.log('🔗 Connection object:', connection);
+
+      // Get initial balance
+      const balance = await connection.getBalance(keypair.publicKey);
+      
+      setState({
+        connected: true,
+        connecting: false,
+        publicKey,
+        balance: balance / 1000000000, // Convert lamports to SOL
+        error: null,
+        accounts: [publicKey],
+        activeAccountIndex: 0,
+        connectionType: 'privatekey',
+      });
+
+      Toast.show({
+        type: 'success',
+        text1: 'Private Key Connected',
+        text2: `Connected to ${publicKey.slice(0, 8)}...${publicKey.slice(-8)}`,
+      });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to connect with private key';
+      setState(prev => ({
+        ...prev,
+        connecting: false,
+        error: errorMessage,
+      }));
+
+      console.error('Private key connection error:', errorMessage);
+
+      Toast.show({
+        type: 'error',
+        text1: 'Private Key Connection Failed',
+        text2: errorMessage,
+      });
+    }
+  }, [connection]);
+
   const disconnect = useCallback(async () => {
     try {
-      if (isWeb) {
+      if (isWeb && state.connectionType === 'web') {
         await webWalletAdapter.disconnect();
-      } else {
+      } else if (state.connectionType === 'mwa') {
         await transact(async (wallet) => {
           await wallet.deauthorize({ auth_token: '' });
         });
       }
+      // For private key mode, just clear the state
+      
+      // Clear private key wallet
+      setPrivateKeyWallet(null);
 
       setState({
         connected: false,
@@ -136,6 +230,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         error: null,
         accounts: [],
         activeAccountIndex: 0,
+        connectionType: null,
       });
 
       Toast.show({
@@ -178,9 +273,23 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
 
     try {
-      if (isWeb) {
+      if (state.connectionType === 'web') {
         // Web transaction using Phantom browser extension
         const signature = await webWalletAdapter.signAndSendTransaction(transaction);
+        return signature;
+      } else if (state.connectionType === 'privatekey') {
+        // Private key transaction signing
+        if (!privateKeyWallet) {
+          throw new Error('Private key wallet not available');
+        }
+
+        // Sign the transaction with the private key
+        transaction.sign(privateKeyWallet);
+
+        // Send the transaction
+        const signature = await connection.sendRawTransaction(transaction.serialize());
+        await connection.confirmTransaction(signature, 'confirmed');
+
         return signature;
       } else {
         // Mobile transaction using Mobile Wallet Adapter
@@ -199,11 +308,11 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         return signature;
       }
     } catch (error) {
-      console.log('Transaction failed1:', error);
+      console.log('Transaction failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'Transaction failed';
       throw new Error(errorMessage);
     }
-  }, [state.connected, connection]);
+  }, [state.connected, state.connectionType, privateKeyWallet, connection]);
 
   const switchAccount = useCallback(async (accountIndex: number) => {
     if (!state.connected || !state.accounts[accountIndex]) {
@@ -248,6 +357,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const value: WalletContextType = {
     ...state,
     connect,
+    connectWithPrivateKey,
     disconnect,
     refreshBalance,
     signAndSendTransaction,

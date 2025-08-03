@@ -47,15 +47,27 @@ const MOBILE_SERVER_TOOLS: MCPTool[] = [
     }
   },
   {
+    name: "request_sol_airdrop",
+    description: "Request SOL airdrop for testing (devnet only)",
+    parameters: { 
+      type: "object", 
+      properties: {
+        amount: { type: "number", description: "Amount of SOL to request (0.1-2.0)" }
+      }, 
+      required: [] 
+    }
+  },
+  {
     name: "create_sol_transfer",
     description: "Create and send a SOL transfer transaction",
     parameters: { 
       type: "object", 
       properties: {
-        to: { type: "string", description: "Recipient wallet address" },
-        amount: { type: "number", description: "Amount in SOL to transfer" }
+        recipient: { type: "string", description: "Recipient wallet address" },
+        amount: { type: "number", description: "Amount in SOL to transfer" },
+        execute: { type: "boolean", description: "Set to true to execute the transaction, false for preview only" }
       }, 
-      required: ["to", "amount"] 
+      required: ["recipient", "amount"] 
     }
   },
   {
@@ -70,8 +82,9 @@ const MOBILE_SERVER_TOOLS: MCPTool[] = [
       type: "object", 
       properties: {
         name: { type: "string", description: "Person's name" },
-        bio: { type: "string", description: "Person's bio" },
-        wallet_address: { type: "string", description: "Person's wallet address" }
+        walletAddress: { type: "string", description: "Person's wallet address" },
+        notes: { type: "string", description: "Additional notes about the person" },
+        tags: { type: "array", items: { type: "string" }, description: "Tags to categorize the person" }
       }, 
       required: ["name"] 
     }
@@ -104,9 +117,9 @@ const MOBILE_SERVER_TOOLS: MCPTool[] = [
     parameters: { 
       type: "object", 
       properties: {
-        wallet_address: { type: "string", description: "Wallet address to search for" }
+        address: { type: "string", description: "Wallet address to search for" }
       }, 
-      required: ["wallet_address"] 
+      required: ["address"] 
     }
   },
   {
@@ -115,9 +128,9 @@ const MOBILE_SERVER_TOOLS: MCPTool[] = [
     parameters: { 
       type: "object", 
       properties: {
-        node_id: { type: "string", description: "Node ID to get details for" }
+        id: { type: "string", description: "Node ID to get details for" }
       }, 
-      required: ["node_id"] 
+      required: ["id"] 
     }
   },
   {
@@ -168,78 +181,20 @@ export class MobileMCPClient {
     try {
       console.log(`🔧 Calling mobile MCP tool: ${name}`, args);
       
-      // Route to the actual implementation functions
-      // These would be the actual implementations from combinedServer
-      // For now, returning mock data to fix the immediate error
-      
-      let result: any;
-      
-      switch (name) {
-        case "list_available_tools":
-          result = { 
-            tools: this.tools.map(t => t.name),
-            message: "All available tools listed successfully",
-            timestamp: new Date().toISOString()
-          };
-          break;
-        case "get_wallet_balance":
-          result = { 
-            balance: 0, 
-            currency: "SOL", 
-            message: "Wallet not connected - showing demo balance",
-            connected: false
-          };
-          break;
-        case "get_wallet_address":
-          result = { 
-            address: "Not connected", 
-            message: "No wallet currently connected",
-            connected: false
-          };
-          break;
-        case "get_transaction_history":
-          result = { 
-            transactions: [],
-            message: "No transactions found - wallet not connected",
-            count: 0
-          };
-          break;
-        case "list_accessible_nodes":
-          result = { 
-            nodes: [],
-            message: "No nodes currently configured",
-            count: 0
-          };
-          break;
-        case "get_all_nodes":
-          result = { 
-            nodes: [],
-            message: "No nodes found in the system",
-            total: 0
-          };
-          break;
-        case "validate_wallet_address":
-          const address = args.address || "";
-          const isValid = address.length === 44 && /^[A-Za-z0-9]+$/.test(address);
-          result = {
-            address: address,
-            valid: isValid,
-            message: isValid ? "Valid Solana wallet address" : "Invalid wallet address format"
-          };
-          break;
-        default:
-          result = { 
-            message: `Tool ${name} is available but not yet implemented for mobile`,
-            args,
-            status: "mock_response"
-          };
-      }
+      // Route to the actual implementation functions from combinedServer
+      const result = await combinedServer.executeServerTool(name, args);
       
       console.log(`✅ Mobile MCP tool result for ${name}:`, result);
       return result;
     } catch (error) {
       console.error(`❌ Mobile MCP tool error for ${name}:`, error);
-      throw error;
+      
+      // Return a structured error response
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: `Failed to execute tool: ${name}`
+      };
     }
   }
 

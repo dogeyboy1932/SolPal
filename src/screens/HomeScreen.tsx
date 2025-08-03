@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AITransactionChat from '@/features/ai/AITransactionChat';
 import { ManualOperationsScreen } from './ManualOperationsScreen';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
+import { PrivateKeyInput } from '@/features/wallet/PrivateKeyInput';
 import { NativeWindTest } from '../components/NativeWindTest';
 
 export const HomeScreen: React.FC = () => {
@@ -55,6 +56,9 @@ export const HomeScreen: React.FC = () => {
               <Text className="text-blue-500 text-sm font-medium ml-1.5">Manual Mode</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Private Key Input Option */}
+          <PrivateKeyInput />
 
           {/* AI Chat Interface - Primary UI */}
           <View className="flex-1">

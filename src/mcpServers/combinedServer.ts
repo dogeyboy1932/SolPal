@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { Connection, PublicKey, LAMPORTS_PER_SOL, Transaction, SystemProgram } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { solanaService } from '../services/SolanaService';
 import type { 
   Node, 
   PersonNode, 
@@ -195,56 +196,58 @@ export function createMcpServer(): McpServer {
   // SYSTEM TOOLS
   // =================
 
-//   // List available tools
-//   server.tool(
-//     'list_available_tools',
-//     {},
-//     async () => {
-//       console.log('🔧 System: Listing available tools');
+  // List available tools
+  server.tool(
+    'list_available_tools',
+    {},
+    async () => {
+      console.log('🔧 System: Listing available tools');
       
-//       const toolDescriptions = [
-//         '🏦 **SOLANA WALLET TOOLS:**',
-//         '• get_wallet_balance - Check your SOL balance and wallet info',
-//         '• get_wallet_address - Get your current wallet address',
-//         '• get_transaction_history - View recent transactions (limit 1-50)',
-//         '• validate_wallet_address - Check if address is valid Solana format',
-//         '• create_sol_transfer - Preview/execute SOL transfers (execute=true to send)',
-//         '',
-//         '👥 **CONTACT MANAGEMENT TOOLS:**',
-//         '• list_accessible_nodes - List all nodes you have access to (with IDs and details)',
-//         '• create_person_node - Add new contacts with wallet addresses',
-//         '• create_event_node - Create events and meetups',
-//         '• create_community_node - Create communities and groups',
-//         '• edit_person_node - Update contact details',
-//         '• edit_event_node - Update event details',
-//         '• edit_community_node - Update community details',
-//         '• get_all_nodes - List all your contacts/communities/events',
-//         '• search_nodes - Find contacts by name/wallet/notes',
-//         '• get_nodes_with_wallets - Show contacts with wallet addresses',
-//         '• get_node_by_wallet - Find contact by wallet address',
-//         '• get_node_details - Get complete detailed information about a node',
-//         '',
-//         '🔧 **SYSTEM TOOLS:**',
-//         '• list_available_tools - Show this tool list and usage examples',
-//         '',
-//         '💡 **USAGE EXAMPLES:**',
-//         '• "Show my balance" → get_wallet_balance()',
-//         '• "Send 0.5 SOL to Alice" → search_nodes("Alice") + create_sol_transfer()',
-//         '• "Who can I send money to?" → get_nodes_with_wallets()',
-//         '• "Add contact John with wallet ABC..." → create_person_node()',
-//         '• "Create event for hackathon" → create_event_node()',
-//         '• "Update John\'s wallet address" → edit_person_node()',
-//         '• "Show my recent transactions" → get_transaction_history()',
-//       ];
+      const toolDescriptions = [
+        '🏦 **SOLANA WALLET TOOLS:**',
+        '• get_wallet_balance - Check your SOL balance and wallet info',
+        '• get_wallet_address - Get your current wallet address',
+        '• get_transaction_history - View recent transactions (limit 1-50)',
+        '• validate_wallet_address - Check if address is valid Solana format',
+        '• create_sol_transfer - Preview/execute SOL transfers (execute=true to send)',
+        '• request_sol_airdrop - Request SOL airdrop on devnet (amount 0.1-2.0)',
+        '',
+        '👥 **CONTACT MANAGEMENT TOOLS:**',
+        '• list_accessible_nodes - List all nodes you have access to (with IDs and details)',
+        '• create_person_node - Add new contacts with wallet addresses',
+        '• create_event_node - Create events and meetups',
+        '• create_community_node - Create communities and groups',
+        '• edit_person_node - Update contact details',
+        '• edit_event_node - Update event details',
+        '• edit_community_node - Update community details',
+        '• get_all_nodes - List all your contacts/communities/events',
+        '• search_nodes - Find contacts by name/wallet/notes',
+        '• get_nodes_with_wallets - Show contacts with wallet addresses',
+        '• get_node_by_wallet - Find contact by wallet address',
+        '• get_node_details - Get complete detailed information about a node',
+        '',
+        '🔧 **SYSTEM TOOLS:**',
+        '• list_available_tools - Show this tool list and usage examples',
+        '',
+        '💡 **USAGE EXAMPLES:**',
+        '• "Show my balance" → get_wallet_balance()',
+        '• "Send 0.5 SOL to Alice" → search_nodes("Alice") + create_sol_transfer()',
+        '• "Who can I send money to?" → get_nodes_with_wallets()',
+        '• "Add contact John with wallet ABC..." → create_person_node()',
+        '• "Create event for hackathon" → create_event_node()',
+        '• "Update John\'s wallet address" → edit_person_node()',
+        '• "Show my recent transactions" → get_transaction_history()',
+        '• "Get me some devnet SOL" → request_sol_airdrop()',
+      ];
 
-//       return {
-//         content: [{
-//           type: 'text',
-//           text: `🔧 Available Tools & Capabilities:\n\n${toolDescriptions.join('\n')}`
-//         }]
-//       };
-//     }
-//   );
+      return {
+        content: [{
+          type: 'text',
+          text: `🔧 Available Tools & Capabilities:\n\n${toolDescriptions.join('\n')}`
+        }]
+      };
+    }
+  );
 
   // =================
   // SOLANA TOOLS
@@ -256,24 +259,36 @@ export function createMcpServer(): McpServer {
     {},
     async () => {
       console.log('💰 Solana: Getting wallet balance');
+      console.log("🏠 Current wallet public key:", walletPublicKey ? walletPublicKey.toString() : 'Not connected');
       
-      if (!solanaConnection || !walletPublicKey) {
+      if (!walletPublicKey) {
         return {
           content: [{
             type: 'text',
-            text: '❌ Wallet not connected. Please connect your wallet first.'
+            text: JSON.stringify({
+              connected: false,
+              balance: -1,
+              currency: 'SOL',
+              message: 'Wallet not connected - showing example balance'
+            })
           }]
         };
       }
 
       try {
-        const balance = await solanaConnection.getBalance(walletPublicKey);
-        const solBalance = balance / LAMPORTS_PER_SOL;
+        const balance = await solanaService.getBalance(walletPublicKey);
 
         return {
           content: [{
             type: 'text',
-            text: `💰 Wallet Balance:\\nAddress: ${walletPublicKey.toString()}\\nBalance: ${solBalance.toFixed(6)} SOL\\nNetwork: ${solanaConnection.rpcEndpoint}`
+            text: JSON.stringify({
+              connected: true,
+              address: walletPublicKey.toString(),
+              balance: balance,
+              currency: 'SOL',
+              network: solanaService.getConnection().rpcEndpoint,
+              message: `Wallet balance retrieved successfully`
+            })
           }]
         };
       } catch (error) {
@@ -281,7 +296,11 @@ export function createMcpServer(): McpServer {
         return {
           content: [{
             type: 'text',
-            text: `❌ Error getting wallet balance: ${error instanceof Error ? error.message : 'Unknown error'}`
+            text: JSON.stringify({
+              connected: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              message: 'Failed to get wallet balance'
+            })
           }]
         };
       }
@@ -299,7 +318,11 @@ export function createMcpServer(): McpServer {
         return {
           content: [{
             type: 'text',
-            text: '❌ Wallet not connected. Please connect your wallet first.'
+            text: JSON.stringify({
+              connected: false,
+              address: null,
+              message: 'Wallet not connected'
+            })
           }]
         };
       }
@@ -307,7 +330,11 @@ export function createMcpServer(): McpServer {
       return {
         content: [{
           type: 'text',
-          text: `🏠 Wallet Address: ${walletPublicKey.toString()}`
+          text: JSON.stringify({
+            connected: true,
+            address: walletPublicKey.toString(),
+            message: 'Wallet address retrieved successfully'
+          })
         }]
       };
     }
@@ -322,65 +349,55 @@ export function createMcpServer(): McpServer {
     async ({ limit = 10 }) => {
       console.log(`📜 Solana: Getting transaction history (limit: ${limit})`);
       
-      if (!solanaConnection || !walletPublicKey) {
+      if (!walletPublicKey) {
         return {
           content: [{
             type: 'text',
-            text: '❌ Wallet not connected. Please connect your wallet first.'
+            text: JSON.stringify({
+              success: false,
+              transactions: [],
+              message: 'Wallet not connected'
+            })
           }]
         };
       }
 
       try {
-        const signatures = await solanaConnection.getSignaturesForAddress(walletPublicKey, { limit });
+        const transactions = await solanaService.getTransactionHistory(walletPublicKey, limit);
         
-        if (signatures.length === 0) {
+        if (transactions.length === 0) {
           return {
             content: [{
               type: 'text',
-              text: '📜 No transaction history found for this wallet.'
+              text: JSON.stringify({
+                success: true,
+                transactions: [],
+                count: 0,
+                message: 'No transaction history found for this wallet'
+              })
             }]
           };
         }
 
-        const transactionDetails = await Promise.all(
-          signatures.map(async (sig) => {
-            try {
-              const tx = await solanaConnection!.getTransaction(sig.signature, {
-                commitment: 'confirmed',
-                maxSupportedTransactionVersion: 0
-              });
-              
-              return {
-                signature: sig.signature,
-                blockTime: sig.blockTime,
-                status: sig.err ? 'Failed' : 'Success',
-                confirmationStatus: sig.confirmationStatus,
-                slot: sig.slot,
-                fee: tx?.meta?.fee ? tx.meta.fee / LAMPORTS_PER_SOL : 'Unknown'
-              };
-            } catch (error) {
-              return {
-                signature: sig.signature,
-                blockTime: sig.blockTime,
-                status: 'Error fetching details',
-                confirmationStatus: sig.confirmationStatus,
-                slot: sig.slot,
-                fee: 'Unknown'
-              };
-            }
-          })
-        );
-
-        const formattedTransactions = transactionDetails.map(tx => {
-          const date = tx.blockTime ? new Date(tx.blockTime * 1000).toLocaleString() : 'Unknown';
-          return `• ${tx.signature.substring(0, 12)}... | ${tx.status} | ${date} | Fee: ${tx.fee} SOL`;
-        }).join('\\n');
+        const formattedTransactions = transactions.map(tx => ({
+          signature: tx.signature,
+          timestamp: tx.timestamp,
+          slot: tx.slot,
+          confirmationStatus: tx.confirmationStatus,
+          error: tx.err,
+          explorerUrl: `https://solscan.io/tx/${tx.signature}?cluster=devnet`
+        }));
 
         return {
           content: [{
             type: 'text',
-            text: `📜 Recent Transactions (${transactionDetails.length}):\\n${formattedTransactions}`
+            text: JSON.stringify({
+              success: true,
+              transactions: formattedTransactions,
+              count: transactions.length,
+              walletAddress: walletPublicKey.toString(),
+              message: `Retrieved ${transactions.length} transactions`
+            })
           }]
         };
       } catch (error) {
@@ -388,7 +405,11 @@ export function createMcpServer(): McpServer {
         return {
           content: [{
             type: 'text',
-            text: `❌ Error getting transaction history: ${error instanceof Error ? error.message : 'Unknown error'}`
+            text: JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              message: 'Failed to get transaction history'
+            })
           }]
         };
       }
@@ -425,6 +446,61 @@ export function createMcpServer(): McpServer {
     }
   );
 
+  // Request SOL airdrop (devnet only)
+  server.tool(
+    'request_sol_airdrop',
+    {
+      amount: z.number().min(0.1).max(2.0).default(1.0).describe('Amount of SOL to request (0.1-2.0, devnet only)')
+    },
+    async ({ amount = 1.0 }) => {
+      console.log(`🪂 Solana: Requesting ${amount} SOL airdrop`);
+      
+      if (!walletPublicKey) {
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              error: 'Wallet not connected',
+              message: 'Please connect your wallet first'
+            })
+          }]
+        };
+      }
+
+      try {
+        const lamports = Math.round(amount * LAMPORTS_PER_SOL);
+        const signature = await solanaService.requestAirdrop(walletPublicKey, lamports);
+        
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              amount: amount,
+              signature: signature,
+              walletAddress: walletPublicKey.toString(),
+              explorerUrl: `https://solscan.io/tx/${signature}?cluster=devnet`,
+              message: `Successfully requested ${amount} SOL airdrop`
+            })
+          }]
+        };
+      } catch (error) {
+        console.error('Error requesting airdrop:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              message: 'Failed to request airdrop. Note: Airdrops only work on devnet.'
+            })
+          }]
+        };
+      }
+    }
+  );
+
   // Create SOL transfer (executes actual transaction)
   server.tool(
     'create_sol_transfer',
@@ -436,61 +512,64 @@ export function createMcpServer(): McpServer {
     async ({ recipient, amount, execute = false }) => {
       console.log(`💸 Solana: ${execute ? 'Executing' : 'Previewing'} SOL transfer - ${amount} SOL to ${recipient}`);
       
-      if (!solanaConnection || !walletPublicKey) {
+      if (!walletPublicKey) {
         return {
           content: [{
             type: 'text',
-            text: '❌ Wallet not connected. Please connect your wallet first.'
+            text: JSON.stringify({
+              success: false,
+              error: 'Wallet not connected',
+              message: 'Please connect your wallet first'
+            })
           }]
         };
       }
 
       try {
         const recipientPubKey = new PublicKey(recipient);
-        const lamports = amount * LAMPORTS_PER_SOL;
         
-        // Check sender balance
-        const balance = await solanaConnection.getBalance(walletPublicKey);
-        if (balance < lamports) {
+        // Check sender balance using SolanaService
+        const balance = await solanaService.getBalance(walletPublicKey);
+        if (balance < amount) {
           return {
             content: [{
               type: 'text',
-              text: `❌ Insufficient balance. Current: ${(balance / LAMPORTS_PER_SOL).toFixed(6)} SOL, Required: ${amount} SOL`
+              text: JSON.stringify({
+                success: false,
+                error: 'Insufficient balance',
+                currentBalance: balance,
+                requiredAmount: amount,
+                message: `Insufficient balance. Current: ${balance.toFixed(6)} SOL, Required: ${amount} SOL`
+              })
             }]
           };
         }
 
-        // Get recent blockhash for fee estimation
-        const { blockhash } = await solanaConnection.getLatestBlockhash();
-        
-        // Create transaction
-        const transaction = new Transaction({
-          recentBlockhash: blockhash,
-          feePayer: walletPublicKey
-        }).add(
-          SystemProgram.transfer({
-            fromPubkey: walletPublicKey,
-            toPubkey: recipientPubKey,
-            lamports
-          })
+        // Create transaction using SolanaService
+        const transaction = await solanaService.createTransferTransaction(
+          walletPublicKey,
+          recipientPubKey,
+          amount
         );
 
-        // Estimate fee
-        const feeCalculator = await solanaConnection.getFeeForMessage(transaction.compileMessage());
-        const estimatedFee = feeCalculator.value ? feeCalculator.value / LAMPORTS_PER_SOL : 0.000005;
+        // Estimate fee using SolanaService
+        const estimatedFee = await solanaService.estimateTransactionFee(transaction);
 
         // If execute is false, return preview
         if (!execute) {
           return {
             content: [{
               type: 'text',
-              text: `💸 SOL Transfer Preview:\\n` +
-                    `From: ${walletPublicKey.toString()}\\n` +
-                    `To: ${recipient}\\n` +
-                    `Amount: ${amount} SOL\\n` +
-                    `Estimated Fee: ${estimatedFee.toFixed(9)} SOL\\n` +
-                    `Total Cost: ${(amount + estimatedFee).toFixed(9)} SOL\\n\\n` +
-                    `ℹ️ To execute this transfer, call this tool again with execute=true`
+              text: JSON.stringify({
+                success: true,
+                preview: true,
+                from: walletPublicKey.toString(),
+                to: recipient,
+                amount: amount,
+                estimatedFee: estimatedFee,
+                totalCost: amount + estimatedFee,
+                message: 'Transfer preview generated. Set execute=true to send transaction'
+              })
             }]
           };
         }
@@ -500,7 +579,11 @@ export function createMcpServer(): McpServer {
           return {
             content: [{
               type: 'text',
-              text: '❌ Transaction signing not available. Please ensure wallet is properly connected.'
+              text: JSON.stringify({
+                success: false,
+                error: 'Transaction signing not available',
+                message: 'Please ensure wallet is properly connected'
+              })
             }]
           };
         }
@@ -511,12 +594,16 @@ export function createMcpServer(): McpServer {
         return {
           content: [{
             type: 'text',
-            text: `✅ SOL Transfer Successful!\\n` +
-                  `From: ${walletPublicKey.toString()}\\n` +
-                  `To: ${recipient}\\n` +
-                  `Amount: ${amount} SOL\\n` +
-                  `Transaction Signature: ${signature}\\n` +
-                  `🔗 View on Solscan: https://solscan.io/tx/${signature}?cluster=devnet`
+            text: JSON.stringify({
+              success: true,
+              executed: true,
+              from: walletPublicKey.toString(),
+              to: recipient,
+              amount: amount,
+              signature: signature,
+              explorerUrl: `https://solscan.io/tx/${signature}?cluster=devnet`,
+              message: 'SOL transfer completed successfully'
+            })
           }]
         };
 
@@ -525,7 +612,11 @@ export function createMcpServer(): McpServer {
         return {
           content: [{
             type: 'text',
-            text: `❌ Error ${execute ? 'executing' : 'previewing'} transfer: ${error instanceof Error ? error.message : 'Unknown error'}`
+            text: JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              message: `Failed to ${execute ? 'execute' : 'preview'} transfer`
+            })
           }]
         };
       }
@@ -615,57 +706,71 @@ export function createMcpServer(): McpServer {
     }
   );
 
-//   // Create person node
-//   server.tool(
-//     'create_person_node',
-//     {
-//       name: z.string().describe('Full name of the person'),
-//       walletAddress: z.string().optional().describe('Solana wallet address (base58 encoded)'),
-//       notes: z.string().optional().describe('Additional notes about the person'),
-//       tags: z.array(z.string()).optional().describe('Tags to categorize the person'),
-//     },
-//     async ({ name, walletAddress, notes, tags }) => {
-//       console.log(`👤 Node Management: Creating person node ${name}`);
+  // Create person node
+  server.tool(
+    'create_person_node',
+    {
+      name: z.string().describe('Full name of the person'),
+      walletAddress: z.string().optional().describe('Solana wallet address (base58 encoded)'),
+      notes: z.string().optional().describe('Additional notes about the person'),
+      tags: z.array(z.string()).optional().describe('Tags to categorize the person'),
+    },
+    async ({ name, walletAddress, notes, tags }) => {
+      console.log(`👤 Node Management: Creating person node ${name}`);
       
-//       try {
-//         if (!globalCreatePersonNode) {
-//           return {
-//             content: [{
-//               type: 'text',
-//               text: '❌ Node management not initialized. Please ensure the app is properly loaded.'
-//             }]
-//           };
-//         }
+      try {
+        if (!globalCreatePersonNode) {
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: false,
+                error: 'Node management not initialized',
+                message: 'Please ensure the app is properly loaded.'
+              })
+            }]
+          };
+        }
 
-//         const personData = {
-//           name,
-//           walletAddress: walletAddress || '',
-//           notes: notes || '',
-//           tags: tags || []
-//         };
+        const personData = {
+          name,
+          walletAddress: walletAddress || '',
+          notes: notes || '',
+          tags: tags || []
+        };
 
-//         const newPerson = await globalCreatePersonNode(personData);
+        const newPerson = await globalCreatePersonNode(personData);
 
-//         return {
-//           content: [{
-//             type: 'text',
-//             text: `✅ Created person node: ${newPerson.name}\\n` +
-//                   `ID: ${newPerson.id}\\n` +
-//                   `Wallet: ${newPerson.walletAddress || 'None'}\\n` +
-//                   `Tags: ${newPerson.tags?.join(', ') || 'None'}`
-//           }]
-//         };
-//       } catch (error) {
-//         console.error('Error creating person node:', error);
-//         return {
-//           content: [{
-//             type: 'text',
-//             text: `❌ Error creating person node: ${error instanceof Error ? error.message : 'Unknown error'}`
-//           }]
-//         };
-//       }
-//     }
-//   );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              person: {
+                id: newPerson.id,
+                name: newPerson.name,
+                walletAddress: newPerson.walletAddress,
+                tags: newPerson.tags
+              },
+              message: `Created person node: ${newPerson.name}`
+            })
+          }]
+        };
+      } catch (error) {
+        console.error('Error creating person node:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              message: 'Failed to create person node'
+            })
+          }]
+        };
+      }
+    }
+  );
 
   // Get all nodes
   server.tool(
@@ -753,92 +858,126 @@ export function createMcpServer(): McpServer {
     }
   );
 
-//   // Get nodes with wallets (for transactions)
-//   server.tool(
-//     'get_nodes_with_wallets',
-//     {},
-//     async () => {
-//       console.log('💳 Node Management: Getting nodes with wallet addresses');
+  // Get nodes with wallets (for transactions)
+  server.tool(
+    'get_nodes_with_wallets',
+    {},
+    async () => {
+      console.log('💳 Node Management: Getting nodes with wallet addresses');
       
-      
-//       try {
-//         const walletNodes = getNodesWithWallets();
+      try {
+        const walletNodes = getNodesWithWallets();
         
-//         if (walletNodes.length === 0) {
-//           return {
-//             content: [{
-//               type: 'text',
-//               text: '💳 No contacts with wallet addresses found.'
-//             }]
-//           };
-//         }
+        if (walletNodes.length === 0) {
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: true,
+                contacts: [],
+                count: 0,
+                message: 'No contacts with wallet addresses found.'
+              })
+            }]
+          };
+        }
 
-//         const walletList = walletNodes.map(node => {
-//           const person = node as PersonNode;
-//           return `• 👤 ${person.name} | 💳 ${person.walletAddress}`;
-//         }).join('\\n');
+        const contacts = walletNodes.map(node => {
+          const person = node as PersonNode;
+          return {
+            id: person.id,
+            name: person.name,
+            walletAddress: person.walletAddress,
+            notes: person.notes,
+            tags: person.tags
+          };
+        });
 
-//         return {
-//           content: [{
-//             type: 'text',
-//             text: `💳 Contacts with Wallets (${walletNodes.length}):\\n${walletList}`
-//           }]
-//         };
-//       } catch (error) {
-//         console.error('Error getting wallet nodes:', error);
-//         return {
-//           content: [{
-//             type: 'text',
-//             text: `❌ Error getting wallet nodes: ${error instanceof Error ? error.message : 'Unknown error'}`
-//           }]
-//         };
-//       }
-//     }
-//   );
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              contacts: contacts,
+              count: contacts.length,
+              message: `Found ${contacts.length} contacts with wallet addresses`
+            })
+          }]
+        };
+      } catch (error) {
+        console.error('Error getting wallet nodes:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              message: 'Failed to get contacts with wallets'
+            })
+          }]
+        };
+      }
+    }
+  );
 
-//   // Get node by wallet address
-//   server.tool(
-//     'get_node_by_wallet',
-//     {
-//       address: z.string().describe('Wallet address to find the associated contact')
-//     },
-//     async ({ address }) => {
-//       console.log(`🔍 Node Management: Finding node by wallet address ${address}`);
+  // Get node by wallet address
+  server.tool(
+    'get_node_by_wallet',
+    {
+      address: z.string().describe('Wallet address to find the associated contact')
+    },
+    async ({ address }) => {
+      console.log(`🔍 Node Management: Finding node by wallet address ${address}`);
       
-//       try {
-//         const node = getNodeByWalletAddress(address);
+      try {
+        const node = getNodeByWalletAddress(address);
         
-//         if (!node) {
-//           return {
-//             content: [{
-//               type: 'text',
-//               text: `🔍 No contact found with wallet address: ${address}`
-//             }]
-//           };
-//         }
+        if (!node) {
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({
+                success: false,
+                contact: null,
+                walletAddress: address,
+                message: `No contact found with wallet address: ${address}`
+              })
+            }]
+          };
+        }
 
-//         const person = node as PersonNode;
-//         return {
-//           content: [{
-//             type: 'text',
-//             text: `🔍 Found Contact:\\n` +
-//                   `👤 Name: ${person.name}\\n` +
-//                   `💳 Wallet: ${person.walletAddress}\\n` +
-//                   `📝 Notes: ${person.notes || 'None'}\\n` +
-//                   `🏷️ Tags: ${person.tags?.join(', ') || 'None'}`
-//           }]
-//         };
-//       } catch (error) {
-//         console.error('Error finding node by wallet:', error);
-//         return {
-//           content: [{
-//             type: 'text',
-//             text: `❌ Error finding contact: ${error instanceof Error ? error.message : 'Unknown error'}`
-//           }]
-//         };
-//       }
-//     }
-//   );
+        const person = node as PersonNode;
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              contact: {
+                id: person.id,
+                name: person.name,
+                walletAddress: person.walletAddress,
+                notes: person.notes,
+                tags: person.tags
+              },
+              message: `Found contact: ${person.name}`
+            })
+          }]
+        };
+      } catch (error) {
+        console.error('Error finding node by wallet:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              message: 'Failed to find contact by wallet address'
+            })
+          }]
+        };
+      }
+    }
+  );
 
   // Get detailed node information by ID
   server.tool(
@@ -1274,6 +1413,7 @@ export function createMcpServer(): McpServer {
     'get_wallet_address', 
     'get_transaction_history',
     'validate_wallet_address',
+    'request_sol_airdrop',
     'create_sol_transfer',
     'list_accessible_nodes',
     'create_person_node',
@@ -1347,6 +1487,23 @@ export function getServerTools() {
           }
         },
         required: ['address']
+      }
+    },
+    {
+      name: 'request_sol_airdrop',
+      description: 'Request SOL airdrop for testing (devnet only)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          amount: {
+            type: 'number',
+            description: 'Amount of SOL to request (0.1-2.0)',
+            minimum: 0.1,
+            maximum: 2.0,
+            default: 1.0
+          }
+        },
+        required: []
       }
     },
     {
@@ -1749,18 +1906,620 @@ export function getServerTools() {
   ];
 }
 
-// export async function executeServerTool(name: string, args: any) {
-//   switch (name) {
-//     case 'list_available_tools':
-//       const toolDescriptions = [
-//         '🏦 **SOLANA WALLET TOOLS:**',
-//         '• get_wallet_balance - Check your SOL balance and wallet info',
-//         '• get_wallet_address - Get your current wallet address',
-//         '• get_transaction_history - View recent transactions (limit 1-50)',
-//         '• validate_wallet_address - Check if address is valid Solana format',
-//         '• create_sol_transfer - Preview/execute SOL transfers (execute=true to send)',
-//         '',
-//         '👥 **CONTACT MANAGEMENT TOOLS:**',
+// Direct tool execution for mobile MCP client
+export async function executeServerTool(name: string, args: any): Promise<any> {
+  try {
+    console.log(`🔧 Executing server tool: ${name}`, args);
+    
+    switch (name) {
+      case 'list_available_tools':
+        const toolDescriptions = [
+          '🏦 **SOLANA WALLET TOOLS:**',
+          '• get_wallet_balance - Check your SOL balance and wallet info',
+          '• get_wallet_address - Get your current wallet address',
+          '• get_transaction_history - View recent transactions (limit 1-50)',
+          '• validate_wallet_address - Check if address is valid Solana format',
+          '• create_sol_transfer - Preview/execute SOL transfers (execute=true to send)',
+          '• request_sol_airdrop - Request SOL airdrop on devnet (amount 0.1-2.0)',
+          '',
+          '👥 **CONTACT MANAGEMENT TOOLS:**',
+          '• list_accessible_nodes - List all nodes you have access to (with IDs and details)',
+          '• create_person_node - Add new contacts with wallet addresses',
+          '• get_all_nodes - List all your contacts/communities/events',
+          '• search_nodes - Find contacts by name/wallet/notes',
+          '• get_nodes_with_wallets - Show contacts with wallet addresses',
+          '• get_node_by_wallet - Find contact by wallet address',
+          '• get_node_details - Get complete detailed information about a node',
+          '',
+          '🔧 **SYSTEM TOOLS:**',
+          '• list_available_tools - Show this tool list and usage examples',
+          '',
+          '💡 **USAGE EXAMPLES:**',
+          '• "Show my balance" → get_wallet_balance()',
+          '• "Send 0.5 SOL to Alice" → search_nodes("Alice") + create_sol_transfer()',
+          '• "Who can I send money to?" → get_nodes_with_wallets()',
+          '• "Add contact John with wallet ABC..." → create_person_node()',
+          '• "Show my recent transactions" → get_transaction_history()',
+          '• "Get me some devnet SOL" → request_sol_airdrop()',
+        ];
+
+        return {
+          success: true,
+          tools: toolDescriptions,
+          count: toolDescriptions.length,
+          message: 'Available tools listed successfully'
+        };
+
+      case 'get_wallet_balance':
+        if (!solanaConnection || !walletPublicKey) {
+          return {
+            success: false,
+            connected: false,
+            balance: 0,
+            currency: 'SOL',
+            message: 'Wallet not connected'
+          };
+        }
+
+        try {
+          const balance = await solanaService.getBalance(walletPublicKey);
+          return {
+            success: true,
+            connected: true,
+            address: walletPublicKey.toString(),
+            balance: balance,
+            currency: 'SOL',
+            network: solanaService.getConnection().rpcEndpoint,
+            message: 'Wallet balance retrieved successfully'
+          };
+        } catch (error) {
+          return {
+            success: false,
+            connected: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to get wallet balance'
+          };
+        }
+
+      case 'get_wallet_address':
+        if (!walletPublicKey) {
+          return {
+            success: false,
+            connected: false,
+            address: null,
+            message: 'Wallet not connected'
+          };
+        }
+
+        return {
+          success: true,
+          connected: true,
+          address: walletPublicKey.toString(),
+          message: 'Wallet address retrieved successfully'
+        };
+
+      case 'get_transaction_history':
+        const limit = args.limit || 10;
+        
+        if (!walletPublicKey) {
+          return {
+            success: false,
+            transactions: [],
+            count: 0,
+            message: 'Wallet not connected'
+          };
+        }
+
+        try {
+          const transactions = await solanaService.getTransactionHistory(walletPublicKey, limit);
+          
+          const formattedTransactions = transactions.map(tx => ({
+            signature: tx.signature,
+            timestamp: tx.timestamp,
+            slot: tx.slot,
+            confirmationStatus: tx.confirmationStatus,
+            error: tx.err,
+            explorerUrl: `https://solscan.io/tx/${tx.signature}?cluster=devnet`
+          }));
+
+          return {
+            success: true,
+            transactions: formattedTransactions,
+            count: transactions.length,
+            walletAddress: walletPublicKey.toString(),
+            message: `Retrieved ${transactions.length} transactions`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            transactions: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to get transaction history'
+          };
+        }
+
+      case 'validate_wallet_address':
+        const address = args.address;
+        if (!address) {
+          return {
+            success: false,
+            valid: false,
+            address: '',
+            message: 'No address provided'
+          };
+        }
+
+        try {
+          const publicKey = new PublicKey(address);
+          const isValid = PublicKey.isOnCurve(publicKey);
+          
+          return {
+            success: true,
+            valid: isValid,
+            address: address,
+            message: isValid ? 'Valid Solana address' : 'Invalid address format'
+          };
+        } catch (error) {
+          return {
+            success: false,
+            valid: false,
+            address: address,
+            message: 'Invalid address format'
+          };
+        }
+
+      case 'request_sol_airdrop':
+        const amount = args.amount || 1.0;
+        
+        if (!walletPublicKey) {
+          return {
+            success: false,
+            error: 'Wallet not connected',
+            message: 'Please connect your wallet first'
+          };
+        }
+
+        try {
+          const lamports = Math.round(amount * LAMPORTS_PER_SOL);
+          const signature = await solanaService.requestAirdrop(walletPublicKey, lamports);
+          
+          return {
+            success: true,
+            amount: amount,
+            signature: signature,
+            walletAddress: walletPublicKey.toString(),
+            explorerUrl: `https://solscan.io/tx/${signature}?cluster=devnet`,
+            message: `Successfully requested ${amount} SOL airdrop`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to request airdrop. Note: Airdrops only work on devnet.'
+          };
+        }
+
+      case 'create_sol_transfer':
+        const recipient = args.recipient || args.to;
+        const transferAmount = args.amount;
+        const execute = args.execute || false;
+        
+        if (!walletPublicKey) {
+          return {
+            success: false,
+            error: 'Wallet not connected',
+            message: 'Please connect your wallet first'
+          };
+        }
+
+        if (!recipient || transferAmount === undefined) {
+          return {
+            success: false,
+            error: 'Missing required parameters',
+            message: 'Please provide recipient and amount'
+          };
+        }
+
+        try {
+          const recipientPubKey = new PublicKey(recipient);
+          
+          // Check sender balance using SolanaService
+          const balance = await solanaService.getBalance(walletPublicKey);
+          if (balance < transferAmount) {
+            return {
+              success: false,
+              error: 'Insufficient balance',
+              currentBalance: balance,
+              requiredAmount: transferAmount,
+              message: `Insufficient balance. Current: ${balance.toFixed(6)} SOL, Required: ${transferAmount} SOL`
+            };
+          }
+
+          // Create transaction using SolanaService
+          const transaction = await solanaService.createTransferTransaction(
+            walletPublicKey,
+            recipientPubKey,
+            transferAmount
+          );
+
+          // Estimate fee using SolanaService
+          const estimatedFee = await solanaService.estimateTransactionFee(transaction);
+
+          // If execute is false, return preview
+          if (!execute) {
+            return {
+              success: true,
+              preview: true,
+              from: walletPublicKey.toString(),
+              to: recipient,
+              amount: transferAmount,
+              estimatedFee: estimatedFee,
+              totalCost: transferAmount + estimatedFee,
+              message: 'Transfer preview generated. Set execute=true to send transaction'
+            };
+          }
+
+          // Execute the transaction
+          if (!signAndSendTransaction) {
+            return {
+              success: false,
+              error: 'Transaction signing not available',
+              message: 'Please ensure wallet is properly connected'
+            };
+          }
+
+          console.log('🚀 Executing SOL transfer transaction...');
+          const signature = await signAndSendTransaction(transaction);
+          
+          return {
+            success: true,
+            executed: true,
+            from: walletPublicKey.toString(),
+            to: recipient,
+            amount: transferAmount,
+            signature: signature,
+            explorerUrl: `https://solscan.io/tx/${signature}?cluster=devnet`,
+            message: 'SOL transfer completed successfully'
+          };
+
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: `Failed to ${execute ? 'execute' : 'preview'} transfer`
+          };
+        }
+
+      case 'list_accessible_nodes':
+        try {
+          const accessibleNodes = getLLMAccessibleNodes();
+          const typeFilter = args.type;
+          
+          let filteredNodes = accessibleNodes;
+          if (typeFilter) {
+            filteredNodes = accessibleNodes.filter(node => node.type === typeFilter);
+          }
+
+          if (filteredNodes.length === 0) {
+            return {
+              success: true,
+              nodes: [],
+              count: 0,
+              message: typeFilter 
+                ? `No ${typeFilter} nodes accessible to you.`
+                : 'No nodes accessible to you.'
+            };
+          }
+
+          const nodeList = filteredNodes.map(node => ({
+            id: node.id,
+            name: node.name,
+            type: node.type,
+            description: node.description,
+            createdAt: node.createdAt.toISOString(),
+            ...(node.type === 'person' && {
+              walletAddress: (node as PersonNode).walletAddress,
+              relationship: (node as PersonNode).relationship,
+              email: (node as PersonNode).email,
+              phone: (node as PersonNode).phone,
+              notes: (node as PersonNode).notes,
+              tags: (node as PersonNode).tags
+            }),
+            ...(node.type === 'event' && {
+              date: (node as EventNode).date.toISOString(),
+              location: (node as EventNode).location,
+              eventType: (node as EventNode).eventType,
+              attendees: (node as EventNode).attendees?.length || 0
+            }),
+            ...(node.type === 'community' && {
+              communityType: (node as CommunityNode).communityType,
+              isPublic: (node as CommunityNode).isPublic,
+              memberCount: (node as CommunityNode).memberCount
+            })
+          }));
+
+          return {
+            success: true,
+            nodes: nodeList,
+            count: filteredNodes.length,
+            message: `Found ${filteredNodes.length} accessible nodes`
+          };
+
+        } catch (error) {
+          return {
+            success: false,
+            nodes: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to list accessible nodes'
+          };
+        }
+
+      case 'create_person_node':
+        try {
+          if (!globalCreatePersonNode) {
+            return {
+              success: false,
+              error: 'Node management not initialized',
+              message: 'Please ensure the app is properly loaded.'
+            };
+          }
+
+          const personData = {
+            name: args.name,
+            walletAddress: args.walletAddress || args.wallet_address || '',
+            notes: args.notes || args.bio || '',
+            tags: args.tags || []
+          };
+
+          const newPerson = await globalCreatePersonNode(personData);
+
+          return {
+            success: true,
+            person: {
+              id: newPerson.id,
+              name: newPerson.name,
+              walletAddress: newPerson.walletAddress,
+              tags: newPerson.tags
+            },
+            message: `Created person node: ${newPerson.name}`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to create person node'
+          };
+        }
+
+      case 'get_all_nodes':
+        try {
+          const nodes = getAllNodes();
+          
+          if (nodes.length === 0) {
+            return {
+              success: true,
+              nodes: [],
+              total: 0,
+              message: 'No nodes found in the system'
+            };
+          }
+
+          const nodeList = nodes.map(n => ({
+            id: n.id,
+            name: n.name,
+            type: n.type,
+            description: n.description,
+            createdAt: n.createdAt.toISOString()
+          }));
+
+          return {
+            success: true,
+            nodes: nodeList,
+            total: nodes.length,
+            message: `Found ${nodes.length} nodes`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            nodes: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to get all nodes'
+          };
+        }
+
+      case 'search_nodes':
+        try {
+          const filteredNodes = searchNodes(args.query || '');
+          
+          const nodeList = filteredNodes.map(n => ({
+            id: n.id,
+            name: n.name,
+            type: n.type,
+            description: n.description
+          }));
+
+          return {
+            success: true,
+            nodes: nodeList,
+            count: filteredNodes.length,
+            query: args.query,
+            message: `Found ${filteredNodes.length} matching nodes`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            nodes: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to search nodes'
+          };
+        }
+
+      case 'get_nodes_with_wallets':
+        try {
+          const walletNodes = getNodesWithWallets();
+          
+          if (walletNodes.length === 0) {
+            return {
+              success: true,
+              contacts: [],
+              count: 0,
+              message: 'No contacts with wallet addresses found.'
+            };
+          }
+
+          const contacts = walletNodes.map(node => {
+            const person = node as PersonNode;
+            return {
+              id: person.id,
+              name: person.name,
+              walletAddress: person.walletAddress,
+              notes: person.notes,
+              tags: person.tags
+            };
+          });
+
+          return {
+            success: true,
+            contacts: contacts,
+            count: contacts.length,
+            message: `Found ${contacts.length} contacts with wallet addresses`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            contacts: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to get contacts with wallets'
+          };
+        }
+
+      case 'get_node_by_wallet':
+        try {
+          const walletAddress = args.address || args.wallet_address;
+          const node = getNodeByWalletAddress(walletAddress);
+          
+          if (!node) {
+            return {
+              success: false,
+              contact: null,
+              walletAddress: walletAddress,
+              message: `No contact found with wallet address: ${walletAddress}`
+            };
+          }
+
+          const person = node as PersonNode;
+          return {
+            success: true,
+            contact: {
+              id: person.id,
+              name: person.name,
+              walletAddress: person.walletAddress,
+              notes: person.notes,
+              tags: person.tags
+            },
+            message: `Found contact: ${person.name}`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            contact: null,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to find contact by wallet address'
+          };
+        }
+
+      case 'get_node_details':
+        try {
+          const nodeId = args.id || args.node_id;
+          const node = getNodeById(nodeId);
+          
+          if (!node) {
+            return {
+              success: false,
+              node: null,
+              nodeId: nodeId,
+              message: `Node with ID "${nodeId}" not found.`
+            };
+          }
+
+          let nodeDetails: any = {
+            id: node.id,
+            name: node.name,
+            type: node.type,
+            description: node.description,
+            createdAt: node.createdAt.toISOString()
+          };
+
+          if (node.type === 'person') {
+            const person = node as PersonNode;
+            nodeDetails = {
+              ...nodeDetails,
+              walletAddress: person.walletAddress,
+              email: person.email,
+              phone: person.phone,
+              relationship: person.relationship,
+              notes: person.notes,
+              tags: person.tags
+            };
+          } else if (node.type === 'event') {
+            const event = node as EventNode;
+            nodeDetails = {
+              ...nodeDetails,
+              date: event.date.toISOString(),
+              endDate: event.endDate?.toISOString(),
+              location: event.location,
+              eventType: event.eventType,
+              organizer: event.organizer,
+              requirements: event.requirements,
+              attendees: event.attendees?.length || 0,
+              tags: event.tags
+            };
+          } else if (node.type === 'community') {
+            const community = node as CommunityNode;
+            nodeDetails = {
+              ...nodeDetails,
+              communityType: community.communityType,
+              isPublic: community.isPublic,
+              members: community.members?.length || 0,
+              website: community.website,
+              discord: community.discord,
+              twitter: community.twitter,
+              governanceToken: community.governanceToken,
+              tags: community.tags
+            };
+          }
+
+          return {
+            success: true,
+            node: nodeDetails,
+            message: `Retrieved details for ${node.name}`
+          };
+        } catch (error) {
+          return {
+            success: false,
+            node: null,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            message: 'Failed to get node details'
+          };
+        }
+
+      default:
+        return {
+          success: false,
+          error: `Unknown tool: ${name}`,
+          message: `Tool "${name}" is not implemented`,
+          availableTools: getServerTools().map(t => t.name)
+        };
+    }
+  } catch (error) {
+    console.error(`❌ Error executing server tool ${name}:`, error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      message: `Failed to execute tool: ${name}`
+    };
+  }
+}
 //         '• create_person_node - Add new contacts with wallet addresses',
 //         '• create_event_node - Create events and meetups',
 //         '• create_community_node - Create communities and groups',
