@@ -13,11 +13,11 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNodes } from '../contexts/NodeContext';
-import { PersonNodeForm } from './nodes/PersonNodeForm';
-import { EventNodeForm } from './nodes/EventNodeForm';
-import { CommunityNodeForm } from './nodes/CommunityNodeForm';
-import type { Node, NodeType, PersonNode, EventNode, CommunityNode } from '../types/nodes';
+import { useNodes } from '../../contexts/NodeContext';
+import { PersonNodeForm } from './components/PersonNodeForm';
+import { EventNodeForm } from './components/EventNodeForm';
+import { CommunityNodeForm } from './components/CommunityNodeForm';
+import type { Node, NodeType, PersonNode, EventNode, CommunityNode } from '../../types/nodes';
 
 type TabType = 'all' | 'contacts' | 'events' | 'communities';
 type ViewMode = 'list' | 'create' | 'edit';

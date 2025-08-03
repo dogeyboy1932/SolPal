@@ -8,7 +8,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WalletProvider } from './src/contexts/WalletContext';
 import { GeminiProvider } from './src/features/ai/GeminiContext';
 import { NodeProvider } from './src/contexts/NodeContext';
-import { AIConnectionProvider } from './src/contexts/AIConnectionContext';
 import { HomeScreen } from './src/screens/HomeScreen';
 
 export default function App() {
@@ -17,13 +16,11 @@ export default function App() {
       <WalletProvider>
         <NodeProvider>
           <GeminiProvider>
-            <AIConnectionProvider>
-              <View className="flex-1 bg-white">
-                <HomeScreen />
-                <StatusBar style="auto" />
-                <Toast />
-              </View>
-            </AIConnectionProvider>
+            <View className="flex-1 bg-white">
+              <HomeScreen />
+              <StatusBar style="auto" />
+              <Toast />
+            </View>
           </GeminiProvider>
         </NodeProvider>
       </WalletProvider>

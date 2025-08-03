@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   Switch,
@@ -10,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useGemini } from '../ai/GeminiContext';
+import { useGemini } from './GeminiContext';
 
 interface MCPServer {
   id: string;
@@ -299,31 +298,31 @@ export const MCPServerManagement: React.FC = () => {
   const totalTools = servers.reduce((sum, server) => sum + server.toolCount, 0);
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Text style={styles.title}>MCP Server Management</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView className="flex-1 bg-gray-50 p-4" showsVerticalScrollIndicator={false}>
+      <Text className="text-2xl font-bold text-gray-900 mb-2">MCP Server Management</Text>
+      <Text className="text-base text-gray-600 mb-6">
         Manage Model Context Protocol server connections
       </Text>
 
-      <View style={styles.overview}>
-        <View style={styles.overviewStats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{connectedCount}/{totalCount}</Text>
-            <Text style={styles.statLabel}>Connected</Text>
+      <View className="bg-white rounded-xl p-4 mb-6 shadow-sm">
+        <View className="flex-row justify-around mb-4">
+          <View className="items-center">
+            <Text className="text-2xl font-bold text-blue-600">{connectedCount}/{totalCount}</Text>
+            <Text className="text-sm text-gray-600">Connected</Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{totalTools}</Text>
-            <Text style={styles.statLabel}>Total Tools</Text>
+          <View className="items-center">
+            <Text className="text-2xl font-bold text-green-600">{totalTools}</Text>
+            <Text className="text-sm text-gray-600">Total Tools</Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{servers.filter(s => s.status === 'error').length}</Text>
-            <Text style={styles.statLabel}>Errors</Text>
+          <View className="items-center">
+            <Text className="text-2xl font-bold text-red-600">{servers.filter(s => s.status === 'error').length}</Text>
+            <Text className="text-sm text-gray-600">Errors</Text>
           </View>
         </View>
 
-        <View style={styles.overviewControls}>
-          <View style={styles.autoReconnectRow}>
-            <Text style={styles.autoReconnectLabel}>Auto-reconnect</Text>
+        <View className="flex-row justify-between items-center">
+          <View className="flex-row items-center">
+            <Text className="text-base text-gray-700 mr-3">Auto-reconnect</Text>
             <Switch
               value={autoReconnect}
               onValueChange={setAutoReconnect}
@@ -331,129 +330,136 @@ export const MCPServerManagement: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            style={[styles.connectAllButton, loading === 'all' && styles.disabledButton]}
+            className={`px-4 py-2 rounded-lg ${
+              loading === 'all' || connectedCount === totalCount
+                ? 'bg-gray-300'
+                : 'bg-blue-500'
+            }`}
             onPress={connectAllServers}
             disabled={loading === 'all' || connectedCount === totalCount}
           >
             {loading === 'all' ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.connectAllButtonText}>Connect All</Text>
+              <Text className="text-white text-sm font-semibold">Connect All</Text>
             )}
           </TouchableOpacity>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Server List</Text>
+      <Text className="text-lg font-semibold text-gray-900 mb-4">Server List</Text>
 
       {servers.map((server) => {
         const isExpanded = expandedServer === server.id;
         const isLoading = loading === server.id;
 
         return (
-          <View key={server.id} style={styles.serverCard}>
+          <View key={server.id} className="bg-white rounded-xl mb-4 shadow-sm">
             <TouchableOpacity
-              style={styles.serverHeader}
+              className="p-4"
               onPress={() => setExpandedServer(isExpanded ? null : server.id)}
             >
-              <View style={styles.serverInfo}>
-                <View style={styles.serverTitleRow}>
-                  <Text style={styles.categoryIcon}>{getCategoryIcon(server.category)}</Text>
-                  <Text style={styles.serverName}>{server.name}</Text>
-                  <View style={[styles.statusIndicator, { backgroundColor: getStatusColor(server.status) }]} />
+              <View className="flex-1">
+                <View className="flex-row items-center mb-2">
+                  <Text className="text-lg mr-2">{getCategoryIcon(server.category)}</Text>
+                  <Text className="flex-1 text-lg font-semibold text-gray-900">{server.name}</Text>
+                  <View 
+                    className="w-3 h-3 rounded-full ml-2" 
+                    style={{ backgroundColor: getStatusColor(server.status) }} 
+                  />
                 </View>
-                <Text style={styles.serverDescription}>{server.description}</Text>
-                <Text style={styles.serverUrl}>{server.url}</Text>
+                <Text className="text-sm text-gray-600 mb-1">{server.description}</Text>
+                <Text className="text-xs text-gray-500 font-mono">{server.url}</Text>
               </View>
-              <Text style={styles.expandIcon}>{isExpanded ? '⌄' : '>'}</Text>
+              <Text className="text-gray-400 text-lg ml-4">{isExpanded ? '⌄' : '>'}</Text>
             </TouchableOpacity>
 
             {isExpanded && (
-              <View style={styles.serverDetails}>
-                <View style={styles.statusRow}>
-                  <Text style={styles.detailLabel}>Status:</Text>
-                  <Text style={[styles.statusText, { color: getStatusColor(server.status) }]}>
+              <View className="px-4 pb-4 border-t border-gray-100">
+                <View className="flex-row justify-between py-2">
+                  <Text className="text-sm font-medium text-gray-700">Status:</Text>
+                  <Text className="text-sm font-medium" style={{ color: getStatusColor(server.status) }}>
                     {getStatusIcon(server.status)} {server.status.toUpperCase()}
                   </Text>
                 </View>
 
-                <View style={styles.statusRow}>
-                  <Text style={styles.detailLabel}>Tools Available:</Text>
-                  <Text style={styles.detailValue}>{server.toolCount} tools</Text>
+                <View className="flex-row justify-between py-2">
+                  <Text className="text-sm font-medium text-gray-700">Tools Available:</Text>
+                  <Text className="text-sm text-gray-900">{server.toolCount} tools</Text>
                 </View>
 
-                <View style={styles.statusRow}>
-                  <Text style={styles.detailLabel}>Last Connected:</Text>
-                  <Text style={styles.detailValue}>{formatLastConnected(server.lastConnected)}</Text>
+                <View className="flex-row justify-between py-2">
+                  <Text className="text-sm font-medium text-gray-700">Last Connected:</Text>
+                  <Text className="text-sm text-gray-900">{formatLastConnected(server.lastConnected)}</Text>
                 </View>
 
                 {server.errorMessage && (
-                  <View style={styles.errorContainer}>
-                    <Text style={styles.errorLabel}>Error:</Text>
-                    <Text style={styles.errorMessage}>{server.errorMessage}</Text>
+                  <View className="bg-red-50 p-3 rounded-lg mt-2">
+                    <Text className="text-sm font-medium text-red-800">Error:</Text>
+                    <Text className="text-sm text-red-600">{server.errorMessage}</Text>
                   </View>
                 )}
 
-                <View style={styles.capabilitiesContainer}>
-                  <Text style={styles.capabilitiesLabel}>Available Tools ({server.capabilities.length}):</Text>
-                  <View style={styles.capabilitiesList}>
+                <View className="mt-4">
+                  <Text className="text-sm font-medium text-gray-700 mb-2">Available Tools ({server.capabilities.length}):</Text>
+                  <View className="flex-row flex-wrap">
                     {server.capabilities.map((capability, index) => (
-                      <View key={index} style={styles.capabilityTag}>
-                        <Text style={styles.capabilityText}>{capability}</Text>
+                      <View key={index} className="bg-blue-100 px-2 py-1 rounded-md mr-2 mb-2">
+                        <Text className="text-xs text-blue-800">{capability}</Text>
                       </View>
                     ))}
                   </View>
                 </View>
 
-                <View style={styles.serverActions}>
+                <View className="flex-row flex-wrap gap-2 mt-4">
                   {server.status === 'disconnected' && (
                     <TouchableOpacity
-                      style={[styles.actionButton, styles.connectButton]}
+                      className="flex-1 min-w-20 bg-green-500 py-2 px-4 rounded-lg items-center"
                       onPress={() => connectServer(server.id)}
                       disabled={isLoading}
                     >
                       {isLoading ? (
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
-                        <Text style={styles.actionButtonText}>Connect</Text>
+                        <Text className="text-white text-sm font-medium">Connect</Text>
                       )}
                     </TouchableOpacity>
                   )}
 
                   {server.status === 'connected' && (
                     <TouchableOpacity
-                      style={[styles.actionButton, styles.disconnectButton]}
+                      className="flex-1 min-w-20 bg-red-500 py-2 px-4 rounded-lg items-center"
                       onPress={() => disconnectServer(server.id)}
                       disabled={isLoading}
                     >
                       {isLoading ? (
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
-                        <Text style={styles.actionButtonText}>Disconnect</Text>
+                        <Text className="text-white text-sm font-medium">Disconnect</Text>
                       )}
                     </TouchableOpacity>
                   )}
 
                   {(server.status === 'error' || server.status === 'connected') && (
                     <TouchableOpacity
-                      style={[styles.actionButton, styles.restartButton]}
+                      className="flex-1 min-w-20 bg-yellow-500 py-2 px-4 rounded-lg items-center"
                       onPress={() => restartServer(server.id)}
                       disabled={isLoading}
                     >
                       {isLoading ? (
                         <ActivityIndicator size="small" color="#fff" />
                       ) : (
-                        <Text style={styles.actionButtonText}>Restart</Text>
+                        <Text className="text-white text-sm font-medium">Restart</Text>
                       )}
                     </TouchableOpacity>
                   )}
 
                   <TouchableOpacity
-                    style={[styles.actionButton, styles.testButton]}
+                    className="flex-1 min-w-20 bg-blue-500 py-2 px-4 rounded-lg items-center"
                     onPress={() => testServer(server.id)}
                     disabled={isLoading}
                   >
-                    <Text style={styles.actionButtonText}>Test Connection</Text>
+                    <Text className="text-white text-sm font-medium">Test Connection</Text>
                   </TouchableOpacity>
                 </View>
               </View>

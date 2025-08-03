@@ -8,8 +8,8 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNodes } from '../contexts/NodeContext';
-import type { Node } from '../types/nodes';
+import { useNodes } from '../../contexts/NodeContext';
+import type { Node } from '../../types/nodes';
 
 export const NodeAccessControl: React.FC = () => {
   const { 

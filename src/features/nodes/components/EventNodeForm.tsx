@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { EventNode, CreateEventNodeData, UpdateEventNodeData } from '../../types/nodes';
-import { useNodes } from '../../contexts/NodeContext';
+import { EventNode, CreateEventNodeData, UpdateEventNodeData } from '../../../types/nodes';
+import { useNodes } from '../../../contexts/NodeContext';
 
 interface EventNodeFormProps {
   node?: EventNode;

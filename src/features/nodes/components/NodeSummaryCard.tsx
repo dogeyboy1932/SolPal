@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Node, PersonNode, EventNode, CommunityNode } from '../../types/nodes';
+import { Node, PersonNode, EventNode, CommunityNode } from '../../../types/nodes';
 
 interface NodeSummaryCardProps {
   node: Node;

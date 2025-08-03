@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { PersonNode, CreatePersonNodeData, UpdatePersonNodeData } from '../../types/nodes';
-import { useNodes } from '../../contexts/NodeContext';
+import { PersonNode, CreatePersonNodeData, UpdatePersonNodeData } from '../../../types/nodes';
+import { useNodes } from '../../../contexts/NodeContext';
 
 interface PersonNodeFormProps {
   node?: PersonNode;

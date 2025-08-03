@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
-import { CommunityNode, CreateCommunityNodeData, UpdateCommunityNodeData } from '../../types/nodes';
-import { useNodes } from '../../contexts/NodeContext';
+import { CommunityNode, CreateCommunityNodeData, UpdateCommunityNodeData } from '../../../types/nodes';
+import { useNodes } from '../../../contexts/NodeContext';
 
 interface CommunityNodeFormProps {
   node?: CommunityNode;

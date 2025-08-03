@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Switch } from 'react-native';
 import { MCP_SERVERS } from '@/config/mcp_config';
-import { useAIConnection } from '@/contexts/AIConnectionContext';
+import { useAIConnection } from './GeminiContext';
 
 interface AIConnectionManagerProps {
   onConnectionChange?: (connected: boolean) => void;

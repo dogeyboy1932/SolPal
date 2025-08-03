@@ -6,6 +6,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import { setupMCPServer } from '../../mcpServers/_shared';
 import type { ToolCall, LiveFunctionResponse, MCPTool } from '../../types/live-types';
+import type { Node } from '../../types/nodes';
 import { MultimodalLiveClient } from './liveClient';
 
 import { CONST_CONFIG } from '../../config/ai_config';
@@ -30,9 +31,18 @@ interface GeminiContextType {
 
   sendMessage: (message: string) => void;
   setApiKey: (apiKey: string) => void;
+  updateNodeContext: (activeNodes: Node[]) => void;
 
   liveClient: MultimodalLiveClient;
   messages: Array<{id: string, role: 'user' | 'assistant', content: string, timestamp: Date}>;
+
+  // Additional properties for compatibility with AIConnectionContext
+  isConnected: boolean;
+  activeMCPServers: Record<string, boolean>;
+  mcpServerInstances: Record<string, McpServer>;
+  connect: () => void;
+  disconnect: () => void;
+  toggleMCPServer: (serverType: string, enabled?: boolean) => Promise<void>;
 }
 
 const GeminiContext = createContext<GeminiContextType | undefined>(undefined);
@@ -44,6 +54,10 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
   const [liveConnected, setLiveConnected] = useState(false);
   const [tools, setTools] = useState<MCPTool[]>([]);
   const [messages, setMessages] = useState<Array<{id: string, role: 'user' | 'assistant', content: string, timestamp: Date}>>([]);
+  
+  // Additional state for AIConnectionContext compatibility
+  const [activeMCPServers, setActiveMCPServers] = useState<Record<string, boolean>>({});
+  const [mcpServerInstances, setMcpServerInstances] = useState<Record<string, McpServer>>({});
 
   // Create live client with API key
   const liveClient = useMemo(
@@ -285,6 +299,95 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [liveConnected, liveClient]);
 
+  // Update node context for AI
+  const updateNodeContext = useCallback((activeNodes: Node[]) => {
+    if (!liveConnected || activeNodes.length === 0) return;
+    
+    // Create a context message about active nodes
+    const contextInfo = activeNodes.map(node => {
+      let nodeInfo = `${node.type}: ${node.name}`;
+      if (node.description) nodeInfo += ` - ${node.description}`;
+      
+      // Add type-specific information
+      if (node.type === 'person' && 'walletAddress' in node && node.walletAddress) {
+        nodeInfo += ` (Wallet: ${node.walletAddress})`;
+      }
+      if (node.type === 'event' && 'date' in node && node.date) {
+        nodeInfo += ` (Date: ${new Date(node.date).toLocaleDateString()})`;
+      }
+      if (node.type === 'community' && 'communityType' in node && node.communityType) {
+        nodeInfo += ` (Type: ${node.communityType})`;
+      }
+      
+      return nodeInfo;
+    }).join(', ');
+
+    // Send context update as a system-level instruction
+    const contextMessage = `[SYSTEM CONTEXT UPDATE] Current active nodes for context: ${contextInfo}. Use this information to provide relevant assistance.`;
+    
+    // Send context message (won't be displayed in chat)
+    try {
+      liveClient.send([{ text: contextMessage }]);
+      console.log('🔄 Updated AI context with active nodes:', activeNodes.map(n => n.name));
+    } catch (error) {
+      console.warn('⚠️ Failed to update node context:', error);
+    }
+  }, [liveConnected, liveClient]);
+
+  // Compatibility functions for AIConnectionContext
+  const connect = useCallback(async () => {
+    const success = await liveConnect();
+    if (success) {
+      console.log('🤖 AI Assistant connected via Gemini Live');
+    }
+  }, [liveConnect]);
+
+  const toggleMCPServer = useCallback(async (serverType: string, enabled?: boolean) => {
+    const isEnabled = enabled !== undefined ? enabled : !activeMCPServers[serverType];
+    
+    try {
+      if (isEnabled && !mcpServerInstances[serverType]) {
+        // Start MCP server
+        console.log(`🚀 Starting ${serverType} MCP server...`);
+        const server = await setupMCPServer(serverType);
+        setMcpServerInstances(prev => ({
+          ...prev,
+          [serverType]: server
+        }));
+      } else if (!isEnabled && mcpServerInstances[serverType]) {
+        // Stop MCP server
+        console.log(`⏹️ Stopping ${serverType} MCP server...`);
+        await mcpServerInstances[serverType].close();
+        setMcpServerInstances(prev => {
+          const newInstances = { ...prev };
+          delete newInstances[serverType];
+          return newInstances;
+        });
+      }
+
+      setActiveMCPServers(prev => ({
+        ...prev,
+        [serverType]: isEnabled
+      }));
+
+    } catch (error) {
+      console.error(`❌ Failed to toggle ${serverType} MCP server:`, error);
+    }
+  }, [activeMCPServers, mcpServerInstances]);
+
+  const disconnect = useCallback(async () => {
+    // Disconnect all MCP servers first
+    for (const [serverType, isActive] of Object.entries(activeMCPServers)) {
+      if (isActive) {
+        await toggleMCPServer(serverType, false);
+      }
+    }
+    
+    // Then disconnect Gemini Live
+    await liveDisconnect();
+    console.log('🤖 AI Assistant disconnected');
+  }, [activeMCPServers, liveDisconnect, toggleMCPServer]);
+
   return (
     <GeminiContext.Provider value={{
       mcpConnect,
@@ -299,9 +402,18 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
       setTools,
 
       sendMessage,
-      setApiKey,    
+      setApiKey,
+      updateNodeContext,
       liveClient,
       messages,
+
+      // Additional properties for compatibility
+      isConnected: liveConnected,
+      activeMCPServers,
+      mcpServerInstances,
+      connect,
+      disconnect,
+      toggleMCPServer,
     }}>
       {children}
     </GeminiContext.Provider>
@@ -314,4 +426,20 @@ export const useGemini = () => {
     throw new Error('useGemini must be used within a GeminiProvider');
   }
   return context;
+};
+
+// Compatibility hook for components using useAIConnection
+export const useAIConnection = () => {
+  const context = useContext(GeminiContext);
+  if (context === undefined) {
+    throw new Error('useAIConnection must be used within a GeminiProvider');
+  }
+  return {
+    isConnected: context.isConnected,
+    activeMCPServers: context.activeMCPServers,
+    mcpServerInstances: context.mcpServerInstances,
+    connect: context.connect,
+    disconnect: context.disconnect,
+    toggleMCPServer: context.toggleMCPServer,
+  };
 };

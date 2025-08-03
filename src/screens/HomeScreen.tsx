@@ -8,6 +8,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AITransactionChat from '@/features/ai/AITransactionChat';
 import { ManualOperationsScreen } from './ManualOperationsScreen';
+import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
 
 export const HomeScreen: React.FC = () => {
   const [showManualMode, setShowManualMode] = useState(true);
@@ -22,6 +23,8 @@ export const HomeScreen: React.FC = () => {
               <Text className="text-2xl font-bold text-gray-900 mb-0.5">AI Solana Mobile</Text>
               <Text className="text-sm text-gray-500">Your AI-powered Solana wallet</Text>
             </View>
+
+            <WalletConnectButton />
             
             <TouchableOpacity 
               className="flex-row items-center bg-gray-100 px-3 py-2 rounded-full" 

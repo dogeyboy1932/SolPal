@@ -12,9 +12,10 @@ import {
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useWallet } from '../contexts/WalletContext';
-import { useNodes } from '../contexts/NodeContext';
-import { useGemini } from '../ai/GeminiContext';
+import { useWallet } from '../../contexts/WalletContext';
+import { useNodes } from '../../contexts/NodeContext';
+import { useGemini } from './GeminiContext';
+import { WalletConnectButton } from '../wallet/WalletConnectButton';
 
 interface ChatMessage {
   id: string;
