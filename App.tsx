@@ -1,7 +1,8 @@
 import './polyfill';
+import './global.css';
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WalletProvider } from './src/contexts/WalletContext';
@@ -17,7 +18,7 @@ export default function App() {
         <NodeProvider>
           <GeminiProvider>
             <AIConnectionProvider>
-              <View style={styles.container}>
+              <View className="flex-1 bg-white">
                 <HomeScreen />
                 <StatusBar style="auto" />
                 <Toast />
@@ -29,10 +30,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-});

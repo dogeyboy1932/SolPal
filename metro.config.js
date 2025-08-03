@@ -8,7 +8,6 @@ config.resolver.alias = {
   crypto: 'crypto-browserify',
   stream: 'stream-browserify',
   buffer: 'buffer',
-  'react-native': 'react-native-web',
 };
 
 // Add platforms for better cross-platform support

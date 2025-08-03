@@ -7,6 +7,7 @@ import {
   RefreshControl,
   Alert,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
@@ -69,9 +70,9 @@ export const ManualOperationsScreen: React.FC = () => {
   const renderSectionContent = () => {
     if (!connected || !publicKey) {
       return (
-        <View className="flex-1 justify-center items-center px-10 py-10">
-          <Text className="text-xl font-bold text-gray-800 mb-2 text-center">Wallet Not Connected</Text>
-          <Text className="text-base text-gray-600 text-center mb-8 leading-6">
+        <View style={styles.notConnectedContainer}>
+          <Text style={styles.notConnectedTitle}>Wallet Not Connected</Text>
+          <Text style={styles.notConnectedText}>
             Connect your wallet to access manual Solana operations
           </Text>
           <WalletConnectButton />
@@ -82,19 +83,19 @@ export const ManualOperationsScreen: React.FC = () => {
     switch (activeSection) {
       case 'balance':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <WalletBalance />
           </View>
         );
       
       case 'send':
         return (
-          <View className="p-5">
-            <View className="gap-5">
-              <Text className="text-lg font-semibold text-gray-800 mb-4 mt-5">Send SOL</Text>
+          <View style={styles.sectionContainer}>
+            <View style={styles.sendContainer}>
+              <Text style={styles.sectionTitle}>Send SOL</Text>
               <TransferSOL />
               
-              <Text className="text-lg font-semibold text-gray-800 mb-4 mt-5">Send SPL Token</Text>
+              <Text style={styles.sectionTitle}>Send SPL Token</Text>
               <TransferSPLToken />
             </View>
           </View>
@@ -102,49 +103,49 @@ export const ManualOperationsScreen: React.FC = () => {
       
       case 'history':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <TransactionHistory />
           </View>
         );
       
       case 'templates':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <TransactionTemplates />
           </View>
         );
       
       case 'operations':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <WalletOperations />
           </View>
         );
       
       case 'builder':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <TransactionBuilder />
           </View>
         );
       
       case 'advanced':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <AdvancedTransactionFeatures />
           </View>
         );
       
       case 'backup':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <BackupManualControls />
           </View>
         );
       
       case 'ai_status':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <AIConnectionStatus />
             <AIConnectionManager />
           </View>
@@ -152,7 +153,7 @@ export const ManualOperationsScreen: React.FC = () => {
       
       case 'mcp':
         return (
-          <View className="p-5">
+          <View style={styles.sectionContainer}>
             <MCPServerManagement />
           </View>
         );
@@ -169,19 +170,19 @@ export const ManualOperationsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView style={styles.container}>
       {/* Status Bar */}
-      <View className="flex-row justify-between items-center px-5 py-1 bg-white border-b border-gray-200">
-        <View className="flex-row items-center">
+      <View style={styles.statusBar}>
+        <View style={styles.statusSection}>
           <View 
-            className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`}
+            style={[styles.statusDot, { backgroundColor: connected ? '#10B981' : '#EF4444' }]}
           />
-          <Text className="text-sm text-gray-800 font-medium">
+          <Text style={styles.statusText}>
             {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
           </Text>
           {connected && (
             <TouchableOpacity
-              className="bg-red-500 px-2 py-1 rounded ml-2"
+              style={styles.disconnectButton}
               onPress={() => {
                 console.log('Wallet disconnect button pressed');
                 try {
@@ -219,21 +220,21 @@ export const ManualOperationsScreen: React.FC = () => {
                 }
               }}
             >
-              <Text className="text-white text-xs font-medium">Disconnect</Text>
+              <Text style={styles.disconnectButtonText}>Disconnect</Text>
             </TouchableOpacity>
           )}
         </View>
         
-        <View className="flex-row items-center">
+        <View style={styles.statusSection}>
           <View 
-            className={`w-2 h-2 rounded-full mr-2 ${liveConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            style={[styles.statusDot, { backgroundColor: liveConnected ? '#10B981' : '#EF4444' }]}
           />
-          <Text className="text-sm text-gray-800 font-medium">
+          <Text style={styles.statusText}>
             AI {liveConnected ? 'Connected' : 'Disconnected'}
           </Text>
           {liveConnected && (
             <TouchableOpacity
-              className="bg-red-500 px-2 py-1 rounded ml-2"
+              style={styles.disconnectButton}
               onPress={() => {
                 console.log('AI disconnect button pressed');
                 try {
@@ -271,189 +272,137 @@ export const ManualOperationsScreen: React.FC = () => {
                 }
               }}
             >
-              <Text className="text-white text-xs font-medium">Disconnect</Text>
+              <Text style={styles.disconnectButtonText}>Disconnect</Text>
             </TouchableOpacity>
           )}
         </View>
         
         {connected && publicKey && (
-          <Text className="text-xs text-gray-600 font-mono">
+          <Text style={styles.publicKeyText}>
             {`${publicKey.toString().slice(0, 8)}...${publicKey.toString().slice(-8)}`}
           </Text>
         )}
       </View>
 
       {/* Section Navigation */}
-      <View className="bg-white border-b border-gray-200 h-8">
-        
-        <ScrollView 
-          horizontal 
-          className="bg-white border-b border-gray-200"
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 8 }}
+      <ScrollView 
+        horizontal 
+        style={styles.navigationContainer}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 8 }}
+      >
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'balance' && styles.activeNavTab]}
+          onPress={() => setActiveSection('balance')}
         >
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'balance' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('balance')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'balance' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              💰 Balance
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'send' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('send')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'send' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              📤 Send
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'history' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('history')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'history' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              📋 History
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'templates' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('templates')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'templates' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              📄 Templates
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'operations' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('operations')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'operations' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔧 Operations
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'builder' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('builder')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'builder' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔨 Builder
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'advanced' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('advanced')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'advanced' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              ⚡ Advanced
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'backup' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('backup')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'backup' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🛠️ Backup
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'ai_status' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('ai_status')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'ai_status' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🤖 AI Status
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'nodes' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('nodes')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'nodes' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              👥 Nodes
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'node_access' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('node_access')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'node_access' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔐 Access
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'mcp' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('mcp')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'mcp' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔗 MCP
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-
+          <Text style={[styles.navTabText, activeSection === 'balance' && styles.activeNavTabText]}>
+            💰 Balance
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'send' && styles.activeNavTab]}
+          onPress={() => setActiveSection('send')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'send' && styles.activeNavTabText]}>
+            📤 Send
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'history' && styles.activeNavTab]}
+          onPress={() => setActiveSection('history')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'history' && styles.activeNavTabText]}>
+            📋 History
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'templates' && styles.activeNavTab]}
+          onPress={() => setActiveSection('templates')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'templates' && styles.activeNavTabText]}>
+            📄 Templates
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'operations' && styles.activeNavTab]}
+          onPress={() => setActiveSection('operations')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'operations' && styles.activeNavTabText]}>
+            🔧 Operations
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'builder' && styles.activeNavTab]}
+          onPress={() => setActiveSection('builder')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'builder' && styles.activeNavTabText]}>
+            🔨 Builder
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'advanced' && styles.activeNavTab]}
+          onPress={() => setActiveSection('advanced')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'advanced' && styles.activeNavTabText]}>
+            ⚡ Advanced
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'backup' && styles.activeNavTab]}
+          onPress={() => setActiveSection('backup')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'backup' && styles.activeNavTabText]}>
+            🛠️ Backup
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'ai_status' && styles.activeNavTab]}
+          onPress={() => setActiveSection('ai_status')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'ai_status' && styles.activeNavTabText]}>
+            🤖 AI Status
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'nodes' && styles.activeNavTab]}
+          onPress={() => setActiveSection('nodes')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'nodes' && styles.activeNavTabText]}>
+            👥 Nodes
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'node_access' && styles.activeNavTab]}
+          onPress={() => setActiveSection('node_access')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'node_access' && styles.activeNavTabText]}>
+            🔐 Access
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.navTab, activeSection === 'mcp' && styles.activeNavTab]}
+          onPress={() => setActiveSection('mcp')}
+        >
+          <Text style={[styles.navTabText, activeSection === 'mcp' && styles.activeNavTabText]}>
+            🔗 MCP
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
 
       {/* Content */}
       <ScrollView
-        className="flex-1"
+        style={styles.contentContainer}
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -465,3 +414,114 @@ export const ManualOperationsScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
+  },
+  statusBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 4,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  statusSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    color: '#1F2937',
+    fontWeight: '500',
+  },
+  disconnectButton: {
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginLeft: 8,
+  },
+  disconnectButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  publicKeyText: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontFamily: 'monospace',
+  },
+  navigationContainer: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  navTab: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+    minWidth: 100,
+  },
+  activeNavTab: {
+    borderBottomColor: '#3B82F6',
+  },
+  navTabText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  activeNavTabText: {
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  contentContainer: {
+    flex: 1,
+  },
+  notConnectedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingVertical: 80,
+  },
+  notConnectedTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  notConnectedText: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  sectionContainer: {
+    padding: 20,
+  },
+  sendContainer: {
+    gap: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 16,
+    marginTop: 20,
+  },
+});

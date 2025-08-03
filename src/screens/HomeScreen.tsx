@@ -11,7 +11,7 @@ import AITransactionChat from '@/components/AITransactionChat';
 import { ManualOperationsScreen } from './ManualOperationsScreen';
 
 export const HomeScreen: React.FC = () => {
-  const [showManualMode, setShowManualMode] = useState(false);
+  const [showManualMode, setShowManualMode] = useState(true);
 
   return (
     <SafeAreaView style={styles.safeArea}>
