@@ -10,22 +10,22 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useWallet } from '../contexts/WalletContext';
-import { useGemini } from '../ai/GeminiContext';
-import { WalletConnectButton } from '../components/WalletConnectButton';
-import { WalletBalance } from '../components/WalletBalance';
-import { TransactionHistory } from '../components/TransactionHistory';
-import { TransferSOL } from '../components/TransferSOL';
-import { TransferSPLToken } from '../components/TransferSPLToken';
-import { TransactionTemplates } from '../components/TransactionTemplates';
-import { WalletOperations } from '../components/WalletOperations';
-import { TransactionBuilder } from '../components/TransactionBuilder';
-import { AdvancedTransactionFeatures } from '@/components/AdvancedTransactionFeatures';
-import { BackupManualControls } from '@/components/BackupManualControls';
-import { AIConnectionStatus } from '../components/AIConnectionStatus';
-import { MCPServerManagement } from '../components/MCPServerManagement';
-import { AIConnectionManager } from '../components/AIConnectionManager';
-import { ManualNodeManagement } from '../components/ManualNodeManagement';
-import { NodeAccessControl } from '../components/NodeAccessControl';
+import { useGemini } from '../features/ai/GeminiContext';
+import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
+import { WalletBalance } from '@/features/wallet/WalletBalance';
+import { TransactionHistory } from '@/features/transactions/TransactionHistory';
+import { TransferSOL } from '@/features/transactions/TransferSOL';
+import { TransferSPLToken } from '@/features/transactions/TransferSPLToken';
+import { TransactionTemplates } from '@/features/transactions/TransactionTemplates';
+import { WalletOperations } from '@/features/wallet/WalletOperations';
+import { TransactionBuilder } from '@/features/transactions/TransactionBuilder';
+import { AdvancedTransactionFeatures } from '@/features/transactions/AdvancedTransactionFeatures';
+import { BackupManualControls } from '@/features/system/BackupManualControls';
+import { AIConnectionStatus } from '@/features/ai/AIConnectionStatus';
+import { MCPServerManagement } from '@/features/ai/MCPServerManagement';
+import { AIConnectionManager } from '@/features/ai/AIConnectionManager';
+import { ManualNodeManagement } from '@/features/nodes/ManualNodeManagement';
+import { NodeAccessControl } from '@/features/nodes/NodeAccessControl';
 
 export const ManualOperationsScreen: React.FC = () => {
   const { connected, connecting, publicKey, disconnect } = useWallet();

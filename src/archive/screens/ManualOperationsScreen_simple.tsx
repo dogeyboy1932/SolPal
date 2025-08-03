@@ -1,3 +1,8 @@
+/*
+// ARCHIVED - This is a simple/test version of ManualOperationsScreen
+// Moved to archive on: August 2, 2025
+// Reason: Redundant simplified duplicate of working ManualOperationsScreen.tsx
+
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -525,3 +530,4 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+*/

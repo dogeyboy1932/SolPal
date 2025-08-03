@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   Alert,
@@ -207,40 +206,50 @@ export const BackupManualControls: React.FC = () => {
   const renderControlCard = (control: BackupControl) => {
     const isLoading = loading === control.id;
     
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'connected': return 'bg-green-500';
+        case 'available': return 'bg-yellow-500';
+        case 'error': return 'bg-red-500';
+        case 'disabled': return 'bg-gray-500';
+        default: return 'bg-gray-500';
+      }
+    };
+    
     return (
-      <View key={control.id} style={styles.controlCard}>
-        <View style={styles.controlHeader}>
-          <Text style={styles.controlIcon}>{control.icon}</Text>
-          <View style={styles.controlInfo}>
-            <Text style={styles.controlName}>{control.name}</Text>
-            <Text style={styles.controlDescription}>{control.description}</Text>
+      <View key={control.id} className="bg-white rounded-xl p-4 mb-3 border border-gray-200">
+        <View className="flex-row items-center mb-3">
+          <Text className="text-2xl mr-3">{control.icon}</Text>
+          <View className="flex-1">
+            <Text className="text-base font-semibold text-gray-800 mb-0.5">{control.name}</Text>
+            <Text className="text-sm text-gray-600 leading-4">{control.description}</Text>
           </View>
-          <View style={[styles.statusIndicator, styles[`status_${control.status}`]]} />
+          <View className={`w-2.5 h-2.5 rounded-full ${getStatusColor(control.status)}`} />
         </View>
 
-        <View style={styles.controlActions}>
+        <View className="flex-row gap-2 flex-wrap">
           {control.category === 'ai' && (
             <>
               <TouchableOpacity
-                style={[styles.actionButton, styles.primaryButton]}
+                className="bg-blue-500 px-4 py-2 rounded-md min-w-20 items-center"
                 onPress={() => handleAIControl(aiConnected ? 'disconnect' : 'connect')}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text style={styles.primaryButtonText}>
+                  <Text className="text-white text-sm font-medium">
                     {aiConnected ? 'Disconnect' : 'Connect'}
                   </Text>
                 )}
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.actionButton, styles.secondaryButton]}
+                className="bg-gray-100 border border-gray-300 px-4 py-2 rounded-md min-w-20 items-center"
                 onPress={() => handleAIControl('reset')}
                 disabled={isLoading}
               >
-                <Text style={styles.secondaryButtonText}>Reset</Text>
+                <Text className="text-gray-800 text-sm font-medium">Reset</Text>
               </TouchableOpacity>
             </>
           )}
@@ -248,14 +257,14 @@ export const BackupManualControls: React.FC = () => {
           {control.category === 'wallet' && (
             <>
               <TouchableOpacity
-                style={[styles.actionButton, styles.primaryButton]}
+                className="bg-blue-500 px-4 py-2 rounded-md min-w-20 items-center"
                 onPress={() => handleWalletControl(walletConnected ? 'disconnect' : 'connect')}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
-                  <Text style={styles.primaryButtonText}>
+                  <Text className="text-white text-sm font-medium">
                     {walletConnected ? 'Disconnect' : 'Connect'}
                   </Text>
                 )}
@@ -266,33 +275,33 @@ export const BackupManualControls: React.FC = () => {
           {control.category === 'node' && (
             <>
               <TouchableOpacity
-                style={[styles.actionButton, styles.secondaryButton]}
+                className="bg-gray-100 border border-gray-300 px-4 py-2 rounded-md min-w-20 items-center"
                 onPress={() => handleNodeControl('clear_active')}
                 disabled={nodeCount === 0}
               >
-                <Text style={styles.secondaryButtonText}>Clear Active</Text>
+                <Text className="text-gray-800 text-sm font-medium">Clear Active</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.actionButton, styles.warningButton]}
+                className="bg-red-500 px-4 py-2 rounded-md min-w-20 items-center"
                 onPress={() => handleNodeControl('clear_all')}
                 disabled={nodeCount === 0}
               >
-                <Text style={styles.warningButtonText}>Clear All</Text>
+                <Text className="text-white text-sm font-medium">Clear All</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.actionButton, styles.secondaryButton]}
+                className="bg-gray-100 border border-gray-300 px-4 py-2 rounded-md min-w-20 items-center"
                 onPress={() => handleNodeControl('backup_export')}
               >
-                <Text style={styles.secondaryButtonText}>Export</Text>
+                <Text className="text-gray-800 text-sm font-medium">Export</Text>
               </TouchableOpacity>
             </>
           )}
 
           {control.category === 'mcp' && (
             <TouchableOpacity
-              style={[styles.actionButton, styles.secondaryButton]}
+              className="bg-gray-100 border border-gray-300 px-4 py-2 rounded-md min-w-20 items-center"
               onPress={() => {
                 Alert.alert(
                   'MCP Server Control',
@@ -301,7 +310,7 @@ export const BackupManualControls: React.FC = () => {
                 );
               }}
             >
-              <Text style={styles.secondaryButtonText}>Manage</Text>
+              <Text className="text-gray-800 text-sm font-medium">Manage</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -310,21 +319,21 @@ export const BackupManualControls: React.FC = () => {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Text style={styles.title}>Backup & Manual Controls</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
+      <Text className="text-2xl font-bold text-gray-800 mb-2">Backup & Manual Controls</Text>
+      <Text className="text-base text-gray-600 mb-6">
         Manual override controls for all AI-powered features
       </Text>
 
-      <View style={styles.manualModeSection}>
-        <View style={styles.manualModeHeader}>
-          <Text style={styles.manualModeTitle}>Manual Mode Override</Text>
+      <View className="bg-white rounded-xl p-4 mb-5 border border-gray-200">
+        <View className="flex-row justify-between items-center mb-2">
+          <Text className="text-lg font-semibold text-gray-800">Manual Mode Override</Text>
           <Switch
             value={manualMode}
             onValueChange={setManualMode}
           />
         </View>
-        <Text style={styles.manualModeDescription}>
+        <Text className="text-sm text-gray-600 leading-5">
           {manualMode 
             ? 'Manual mode active - AI features disabled' 
             : 'AI mode active - automatic features enabled'
@@ -332,39 +341,39 @@ export const BackupManualControls: React.FC = () => {
         </Text>
       </View>
 
-      <View style={styles.systemStatus}>
-        <Text style={styles.sectionTitle}>System Status</Text>
-        <View style={styles.statusGrid}>
-          <View style={styles.statusItem}>
-            <Text style={styles.statusLabel}>AI</Text>
-            <View style={[styles.statusDot, aiConnected ? styles.statusActive : styles.statusInactive]} />
+      <View className="bg-white rounded-xl p-4 mb-5 border border-gray-200">
+        <Text className="text-lg font-semibold text-gray-800 mb-4">System Status</Text>
+        <View className="flex-row justify-around">
+          <View className="items-center">
+            <Text className="text-xs text-gray-600 mb-1">AI</Text>
+            <View className={`w-3 h-3 rounded-full ${aiConnected ? 'bg-green-500' : 'bg-red-500'}`} />
           </View>
-          <View style={styles.statusItem}>
-            <Text style={styles.statusLabel}>Wallet</Text>
-            <View style={[styles.statusDot, walletConnected ? styles.statusActive : styles.statusInactive]} />
+          <View className="items-center">
+            <Text className="text-xs text-gray-600 mb-1">Wallet</Text>
+            <View className={`w-3 h-3 rounded-full ${walletConnected ? 'bg-green-500' : 'bg-red-500'}`} />
           </View>
-          <View style={styles.statusItem}>
-            <Text style={styles.statusLabel}>Nodes</Text>
-            <View style={[styles.statusDot, nodeCount > 0 ? styles.statusActive : styles.statusInactive]} />
+          <View className="items-center">
+            <Text className="text-xs text-gray-600 mb-1">Nodes</Text>
+            <View className={`w-3 h-3 rounded-full ${nodeCount > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
           </View>
-          <View style={styles.statusItem}>
-            <Text style={styles.statusLabel}>MCP</Text>
-            <View style={[styles.statusDot, mcpServersActive > 0 ? styles.statusActive : styles.statusInactive]} />
+          <View className="items-center">
+            <Text className="text-xs text-gray-600 mb-1">MCP</Text>
+            <View className={`w-3 h-3 rounded-full ${mcpServersActive > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
           </View>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Component Controls</Text>
+      <Text className="text-lg font-semibold text-gray-800 mb-4">Component Controls</Text>
       {backupControls.map(renderControlCard)}
 
-      <View style={styles.emergencySection}>
-        <Text style={styles.emergencyTitle}>🚨 Emergency Controls</Text>
-        <Text style={styles.emergencyDescription}>
+      <View className="bg-yellow-50 rounded-xl p-4 mt-5 border border-yellow-200">
+        <Text className="text-lg font-semibold text-yellow-800 mb-2">🚨 Emergency Controls</Text>
+        <Text className="text-sm text-yellow-800 mb-4 leading-5">
           Use these controls if the app becomes unresponsive
         </Text>
         
         <TouchableOpacity
-          style={styles.emergencyButton}
+          className="bg-red-500 rounded-lg p-3.5 items-center"
           onPress={() => {
             Alert.alert(
               'Full System Reset',
@@ -402,206 +411,10 @@ export const BackupManualControls: React.FC = () => {
           {loading === 'emergency' ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.emergencyButtonText}>Full System Reset</Text>
+            <Text className="text-white text-base font-semibold">Full System Reset</Text>
           )}
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
-  },
-  manualModeSection: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  manualModeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  manualModeTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-  },
-  manualModeDescription: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-  },
-  systemStatus: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-  },
-  statusGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statusItem: {
-    alignItems: 'center',
-  },
-  statusLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  statusActive: {
-    backgroundColor: '#28a745',
-  },
-  statusInactive: {
-    backgroundColor: '#dc3545',
-  },
-  controlCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  controlHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  controlIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  controlInfo: {
-    flex: 1,
-  },
-  controlName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
-  },
-  controlDescription: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 18,
-  },
-  statusIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  status_available: {
-    backgroundColor: '#ffc107',
-  },
-  status_connected: {
-    backgroundColor: '#28a745',
-  },
-  status_error: {
-    backgroundColor: '#dc3545',
-  },
-  status_disabled: {
-    backgroundColor: '#6c757d',
-  },
-  controlActions: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  actionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  primaryButton: {
-    backgroundColor: '#007AFF',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  secondaryButton: {
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  secondaryButtonText: {
-    color: '#333',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  warningButton: {
-    backgroundColor: '#dc3545',
-  },
-  warningButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  emergencySection: {
-    backgroundColor: '#fff3cd',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: '#ffeaa7',
-  },
-  emergencyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#856404',
-    marginBottom: 8,
-  },
-  emergencyDescription: {
-    fontSize: 14,
-    color: '#856404',
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  emergencyButton: {
-    backgroundColor: '#dc3545',
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-  },
-  emergencyButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

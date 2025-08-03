@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { WalletProvider } from './src/contexts/WalletContext';
-import { GeminiProvider } from './src/ai/GeminiContext';
+import { GeminiProvider } from './src/features/ai/GeminiContext';
 import { NodeProvider } from './src/contexts/NodeContext';
 import { AIConnectionProvider } from './src/contexts/AIConnectionContext';
 import { HomeScreen } from './src/screens/HomeScreen';

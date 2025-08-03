@@ -25,8 +25,8 @@ import {
   type ShellCommandResponse,
   type LiveConfig,
   type ShellResponseMessage,
-} from "../lib/live-types";
-import { blobToJSON, base64ToArrayBuffer } from "../lib/utils";
+} from "../../types/live-types";
+import { blobToJSON, base64ToArrayBuffer } from "../../lib/utils";
 
 /**
  * the events that this client will emit

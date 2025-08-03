@@ -2,60 +2,59 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AITransactionChat from '@/components/AITransactionChat';
+import AITransactionChat from '@/features/ai/AITransactionChat';
 import { ManualOperationsScreen } from './ManualOperationsScreen';
 
 export const HomeScreen: React.FC = () => {
   const [showManualMode, setShowManualMode] = useState(true);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView className="flex-1 bg-white">
       {!showManualMode ? (
-        <View style={styles.container}>
+        <View className="flex-1">
           {/* Header with Manual Mode Toggle */}
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <Text style={styles.title}>AI Solana Mobile</Text>
-              <Text style={styles.subtitle}>Your AI-powered Solana wallet</Text>
+          <View className="flex-row justify-between items-center py-4 px-5 border-b border-gray-200 bg-white">
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-gray-900 mb-0.5">AI Solana Mobile</Text>
+              <Text className="text-sm text-gray-500">Your AI-powered Solana wallet</Text>
             </View>
             
             <TouchableOpacity 
-              style={styles.manualModeButton} 
+              className="flex-row items-center bg-gray-100 px-3 py-2 rounded-full" 
               onPress={() => setShowManualMode(true)}
             >
               <Ionicons name="settings-outline" size={20} color="#007AFF" />
-              <Text style={styles.manualModeText}>Manual Mode</Text>
+              <Text className="text-blue-500 text-sm font-medium ml-1.5">Manual Mode</Text>
             </TouchableOpacity>
           </View>
 
           {/* AI Chat Interface - Primary UI */}
-          <View style={styles.chatContainer}>
+          <View className="flex-1">
             <AITransactionChat />
           </View>
         </View>
       ) : (
-        <View style={styles.container}>
+        <View className="flex-1">
           {/* Manual Operations Header */}
-          <View style={styles.manualHeader}>
+          <View className="bg-gray-100 py-4 px-5 border-b border-gray-200">
             <TouchableOpacity 
-              style={styles.backButton} 
+              className="flex-row items-center mb-3" 
               onPress={() => setShowManualMode(false)}
             >
               <Ionicons name="arrow-back" size={24} color="#007AFF" />
-              <Text style={styles.backText}>Back to AI Chat</Text>
+              <Text className="text-blue-500 text-base font-medium ml-2">Back to AI Chat</Text>
             </TouchableOpacity>
             
-            <Text style={styles.manualTitle}>Manual Operations</Text>
-            <Text style={styles.manualSubtitle}>Full control interface</Text>
+            <Text className="text-xl font-semibold text-gray-900 mb-0.5">Manual Operations</Text>
+            <Text className="text-sm text-gray-500">Full control interface</Text>
           </View>
 
           {/* Manual Operations Interface */}
-          <View style={styles.manualContainer}>
+          <View className="flex-1">
             <ManualOperationsScreen />
           </View>
         </View>
@@ -63,84 +62,3 @@ export const HomeScreen: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    backgroundColor: '#FFFFFF',
-  },
-  headerContent: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1C1C1E',
-    marginBottom: 2,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#8E8E93',
-  },
-  manualModeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F2F2F7',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  manualModeText: {
-    color: '#007AFF',
-    fontSize: 14,
-    fontWeight: '500',
-    marginLeft: 6,
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  manualHeader: {
-    backgroundColor: '#F2F2F7',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  backText: {
-    color: '#007AFF',
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 8,
-  },
-  manualTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1C1C1E',
-    marginBottom: 2,
-  },
-  manualSubtitle: {
-    fontSize: 14,
-    color: '#8E8E93',
-  },
-  manualContainer: {
-    flex: 1,
-  },
-});

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
 } from 'react-native';
 import { useWallet } from '@/contexts/WalletContext';
@@ -25,23 +24,22 @@ export const WalletConnectButton: React.FC = () => {
 
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        connected ? styles.connectedButton : styles.disconnectedButton,
-      ]}
+      className={`px-5 py-3 rounded-lg items-center justify-center min-h-12 ${
+        connected ? 'bg-green-500' : 'bg-blue-500'
+      }`}
       onPress={handlePress}
       disabled={connecting}
     >
-      <View style={styles.buttonContent}>
+      <View className="items-center">
         {connecting ? (
           <ActivityIndicator color="white" size="small" />
         ) : (
           <>
-            <Text style={styles.buttonText}>
+            <Text className="text-white text-base font-semibold">
               {connected ? 'Disconnect' : 'Connect Wallet'}
             </Text>
             {connected && publicKey && (
-              <Text style={styles.addressText}>
+              <Text className="text-white/80 text-xs mt-1">
                 {formatPublicKey(publicKey)}
               </Text>
             )}
@@ -51,33 +49,3 @@ export const WalletConnectButton: React.FC = () => {
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  connectedButton: {
-    backgroundColor: '#10b981',
-  },
-  disconnectedButton: {
-    backgroundColor: '#3b82f6',
-  },
-  buttonContent: {
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  addressText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
-    marginTop: 4,
-  },
-});

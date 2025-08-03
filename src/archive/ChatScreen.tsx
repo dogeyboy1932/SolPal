@@ -1,3 +1,8 @@
+/*
+// ARCHIVED - This is a redundant chat screen
+// Moved to archive on: August 2, 2025
+// Reason: Replaced by MainChatScreen.tsx - this is no longer used
+
 import React, { useState } from 'react';
 import {
   View,
@@ -298,3 +303,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+*/

@@ -1,5 +1,5 @@
 import { Node, PersonNode, EventNode, CommunityNode } from '../types/nodes';
-import { type LiveConfig } from "../lib/live-types";
+import { type LiveConfig } from "../types/live-types";
 import { generateContextualResponseTemplates, generateSmartSuggestions, analyzeNodeRelationships } from '../lib/node-ai-prompts';
 
 /**

@@ -4,12 +4,12 @@ import { TabClientTransport } from '@mcp-b/transports';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import { setupMCPServer } from '../mcpServers/_shared';
-import type { ToolCall, LiveFunctionResponse, MCPTool } from '../lib/live-types';
+import { setupMCPServer } from '../../mcpServers/_shared';
+import type { ToolCall, LiveFunctionResponse, MCPTool } from '../../types/live-types';
 import { MultimodalLiveClient } from './liveClient';
 
-import { CONST_CONFIG } from '../config/ai_config';
-import { createLiveConfigWithTools } from '../lib/utils';
+import { CONST_CONFIG } from '../../config/ai_config';
+import { createLiveConfigWithTools } from '../../lib/utils';
 // Audio functionality - commented out for React Native compatibility
 // import { audioContext } from '../lib/utils';
 // import VolMeterWorket from "../lib/audio/worklets/vol-meter";

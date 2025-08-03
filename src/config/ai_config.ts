@@ -1,4 +1,4 @@
-import { type LiveConfig } from "../lib/live-types";
+import { type LiveConfig } from "../types/live-types";
 
 export const LLM_CONFIG: LiveConfig = 
 {

@@ -1,6 +1,6 @@
 import { MCP_SERVERS, type MCP_SERVERS_CONFIG } from '../config/mcp_config';
-import { ZONE_SERVERS, type ZONE_SERVERS_CONFIG } from '../config/zone_config';
-import type { LiveConfig, MCPTool } from './live-types';
+// import { ZONE_SERVERS, type ZONE_SERVERS_CONFIG } from '../config/zone_config';
+import type { LiveConfig, MCPTool } from '../types/live-types';
 
 import { type FunctionDeclaration } from '@google/generative-ai';
 
@@ -90,58 +90,62 @@ export function base64ToArrayBuffer(base64: string) {
   return bytes.buffer;
 }
 
-// Node-related utilities (adapted for mobile without React Flow)
-export interface MobileNode {
-  id: string;
-  type: 'llm' | 'mcpServer' | 'zoneBlock' | 'person' | 'event' | 'community';
-  position: { x: number; y: number };
-  data: {
-    label: string;
-    connected?: boolean;
-    zoneId?: string;
-    url?: string;
-    [key: string]: any;
-  };
-  active?: boolean;
-}
+// // Node-related utilities (adapted for mobile without React Flow)
+// export interface MobileNode {
+//   id: string;
+//   type: 'llm' | 'mcpServer' | 'zoneBlock' | 'person' | 'event' | 'community';
+//   position: { x: number; y: number };
+//   data: {
+//     label: string;
+//     connected?: boolean;
+//     zoneId?: string;
+//     url?: string;
+//     [key: string]: any;
+//   };
+//   active?: boolean;
+// }
 
-export const createMCPServerNode = (id: string, config: MCP_SERVERS_CONFIG): MobileNode => ({
-  id,
-  type: 'mcpServer',
-  position: config.position,
-  data: {
-    label: config.label,
-    url: config.url,
-    connected: false,
-  },
-});
+// export const createMCPServerNode = (id: string, config: MCP_SERVERS_CONFIG): MobileNode => ({
+//   id,
+//   type: 'mcpServer',
+//   position: config.position,
+//   data: {
+//     label: config.label,
+//     url: config.url,
+//     connected: false,
+//   },
+// });
 
 export const isMCPServer = (nodeId: string | null): boolean => {
   if (!nodeId) return false;
   return nodeId in MCP_SERVERS;
 };
 
-export const createZoneNode = (id: string, config: ZONE_SERVERS_CONFIG): MobileNode => ({
-  id,
-  type: 'zoneBlock',
-  position: config.position,
-  data: {
-    zoneId: id,
-    label: config.label,
-    connected: false,
-  },
-});
+// export const createZoneNode = (id: string, config: ZONE_SERVERS_CONFIG): MobileNode => ({
+//   id,
+//   type: 'zoneBlock',
+//   position: config.position,
+//   data: {
+//     zoneId: id,
+//     label: config.label,
+//     connected: false,
+//   },
+// });
 
-export const initialNodes: MobileNode[] = [
-  {
-    id: CONST_CONFIG.LLM_NODE_ID,
-    type: 'llm',
-    position: { x: 100, y: 150 },
-    data: { label: 'Gemini LLM' },
-  },
-  ...Object.entries(MCP_SERVERS).map(([id, config]) => createMCPServerNode(id, config)),
-  ...Object.entries(ZONE_SERVERS).map(([id, config]) => createZoneNode(id, config)),
-];
+// export const initialNodes: MobileNode[] = [
+//   {
+//     id: CONST_CONFIG.LLM_NODE_ID,
+//     type: 'llm',
+//     position: { x: 100, y: 150 },
+//     data: { label: 'Gemini LLM' },
+//   },
+//   ...Object.entries(MCP_SERVERS).map(([id, config]) => createMCPServerNode(id, config)),
+//   // ...Object.entries(ZONE_SERVERS).map(([id, config]) => createZoneNode(id, config)),
+// ];
+
+
+
+
 
 export const getServerName = (serverId: string): string => {
   return isMCPServer(serverId) ? MCP_SERVERS[serverId].label : serverId;

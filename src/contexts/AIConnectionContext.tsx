@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { setupMCPServer } from '@/mcpServers/_shared';
-import { useGemini } from '@/ai/GeminiContext';
+import { useGemini } from '@/features/ai/GeminiContext';
 
 interface AIConnectionContextType {
   isConnected: boolean;
