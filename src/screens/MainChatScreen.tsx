@@ -16,9 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGemini } from '../features/ai/GeminiContext';
 import { useNodes } from '../contexts/NodeContext';
 import { Node, NodeType } from '../types/nodes';
-import { PersonNodeForm } from '../features/nodes/components/PersonNodeForm';
-import { EventNodeForm } from '../features/nodes/components/EventNodeForm';
-import { CommunityNodeForm } from '../features/nodes/components/CommunityNodeForm';
+import { PersonNodeForm } from '../features/nodes/forms/PersonNodeForm';
+import { EventNodeForm } from '../features/nodes/forms/EventNodeForm';
+import { CommunityNodeForm } from '../features/nodes/forms/CommunityNodeForm';
 import { SmartSuggestionsPanel, ConversationSuggestions } from '../features/ai/SmartSuggestions';
 
 interface Message {

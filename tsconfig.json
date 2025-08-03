@@ -38,7 +38,7 @@
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts"
-  ],
+, ".archive/NodeContextPanel.tsx", ".archive/NodeSummaryCard.tsx", ".archive/TestNativeWind.tsx"  ],
   "exclude": [
     "node_modules"
   ]

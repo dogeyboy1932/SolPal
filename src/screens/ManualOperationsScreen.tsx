@@ -26,12 +26,14 @@ import { MCPServerManagement } from '@/features/ai/MCPServerManagement';
 import { AIConnectionManager } from '@/features/ai/AIConnectionManager';
 import { ManualNodeManagement } from '@/features/nodes/ManualNodeManagement';
 import { NodeAccessControl } from '@/features/nodes/NodeAccessControl';
+import { SmartTransactionFeatures } from '@/features/ai/SmartTransactionFeatures';
+import { E2ETestRunner } from '@/features/system/E2ETestRunner';
 
 export const ManualOperationsScreen: React.FC = () => {
   const { connected, connecting, publicKey, disconnect } = useWallet();
   const { liveConnected, liveDisconnect } = useGemini();
   const [refreshing, setRefreshing] = React.useState(false);
-  const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp' | 'nodes' | 'node_access'>('balance');
+  const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp' | 'nodes' | 'node_access' | 'smart_ai' | 'e2e_test'>('balance');
 
   // Cross-platform alert function
   const showAlert = (title: string, message: string, buttons: Array<{text: string, onPress?: () => void, style?: 'default' | 'cancel' | 'destructive'}>) => {
@@ -158,10 +160,28 @@ export const ManualOperationsScreen: React.FC = () => {
         );
       
       case 'nodes':
-        return <ManualNodeManagement />;
+        return (
+          <View className="flex-1">
+            <ManualNodeManagement />
+          </View>
+        );
       
       case 'node_access':
         return <NodeAccessControl />;
+      
+      case 'smart_ai':
+        return (
+          <View className="flex-1">
+            <SmartTransactionFeatures />
+          </View>
+        );
+      
+      case 'e2e_test':
+        return (
+          <View className="flex-1">
+            <E2ETestRunner />
+          </View>
+        );
       
       default:
         return null;
@@ -170,6 +190,8 @@ export const ManualOperationsScreen: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
+
+
       {/* Status Bar */}
       <View className="flex-row justify-between items-center px-5 py-1 bg-white border-b border-gray-200">
         <View className="flex-row items-center">
@@ -282,6 +304,21 @@ export const ManualOperationsScreen: React.FC = () => {
           </Text>
         )}
       </View>
+
+
+      {/* Content */}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {renderSectionContent()}
+      </ScrollView>
+
+
 
       {/* Section Navigation */}
       <View className="bg-white border-b border-gray-200 h-8">
@@ -437,6 +474,19 @@ export const ManualOperationsScreen: React.FC = () => {
           
           <TouchableOpacity
             className={` px-4 items-center border-b-2 min-w-[100px] ${
+              activeSection === 'smart_ai' ? 'border-blue-500' : 'border-transparent'
+            }`}
+            onPress={() => setActiveSection('smart_ai')}
+          >
+            <Text className={`text-sm font-medium ${
+              activeSection === 'smart_ai' ? 'text-blue-500 font-semibold' : 'text-gray-600'
+            }`}>
+              🧠 Smart AI
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            className={` px-4 items-center border-b-2 min-w-[100px] ${
               activeSection === 'mcp' ? 'border-blue-500' : 'border-transparent'
             }`}
             onPress={() => setActiveSection('mcp')}
@@ -447,21 +497,21 @@ export const ManualOperationsScreen: React.FC = () => {
               🔗 MCP
             </Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity
+            className={` px-4 items-center border-b-2 min-w-[100px] ${
+              activeSection === 'e2e_test' ? 'border-blue-500' : 'border-transparent'
+            }`}
+            onPress={() => setActiveSection('e2e_test')}
+          >
+            <Text className={`text-sm font-medium ${
+              activeSection === 'e2e_test' ? 'text-blue-500 font-semibold' : 'text-gray-600'
+            }`}>
+              🧪 E2E Test
+            </Text>
+          </TouchableOpacity>
         </ScrollView>
       </View>
-
-
-      {/* Content */}
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {renderSectionContent()}
-      </ScrollView>
     </SafeAreaView>
   );
 };

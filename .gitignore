@@ -52,3 +52,5 @@ logs
 coverage/
 
 /mcpb-latent
+/.archive
+/.docs

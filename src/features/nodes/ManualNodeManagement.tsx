@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   TextInput,
@@ -14,9 +13,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNodes } from '../../contexts/NodeContext';
-import { PersonNodeForm } from './components/PersonNodeForm';
-import { EventNodeForm } from './components/EventNodeForm';
-import { CommunityNodeForm } from './components/CommunityNodeForm';
+import { PersonNodeForm } from './forms/PersonNodeForm';
+import { EventNodeForm } from './forms/EventNodeForm';
+import { CommunityNodeForm } from './forms/CommunityNodeForm';
 import type { Node, NodeType, PersonNode, EventNode, CommunityNode } from '../../types/nodes';
 
 type TabType = 'all' | 'contacts' | 'events' | 'communities';
@@ -74,57 +73,57 @@ const NodeItem: React.FC<NodeItemProps> = ({ node, onEdit, onDelete, onView }) =
   const details = getNodeDetails(node);
 
   return (
-    <View style={styles.nodeItem}>
-      <View style={styles.nodeHeader}>
-        <View style={styles.nodeInfo}>
-          <View style={styles.nodeIconContainer}>
+    <View className="bg-white rounded-xl mb-3 p-4 shadow-sm">
+      <View className="flex-row justify-between items-start">
+        <View className="flex-1 flex-row gap-3">
+          <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
             <Ionicons 
               name={getNodeIcon(node.type) as any} 
               size={24} 
               color="#007AFF" 
             />
           </View>
-          <View style={styles.nodeTextContainer}>
-            <View style={styles.nodeTitleRow}>
-              <Text style={styles.nodeName} numberOfLines={1}>
+          <View className="flex-1">
+            <View className="flex-row items-center justify-between mb-1">
+              <Text className="text-base font-semibold text-gray-900 flex-1 mr-2" numberOfLines={1}>
                 {node.name}
               </Text>
-              <View style={[styles.nodeBadge, { backgroundColor: details.statusColor }]}>
-                <Text style={styles.nodeBadgeText}>{details.badge}</Text>
+              <View className="rounded-lg px-2 py-0.5" style={{ backgroundColor: details.statusColor }}>
+                <Text className="text-xs font-semibold text-white uppercase">{details.badge}</Text>
               </View>
             </View>
-            <Text style={styles.nodeSubtitle} numberOfLines={2}>
+            <Text className="text-sm text-gray-600 mb-2" numberOfLines={2}>
               {details.subtitle}
             </Text>
             {node.tags && node.tags.length > 0 && (
-              <View style={styles.nodeTagsContainer}>
+              <View className="flex-row flex-wrap gap-1.5 items-center">
                 {node.tags.slice(0, 3).map((tag, index) => (
-                  <View key={index} style={styles.nodeTag}>
-                    <Text style={styles.nodeTagText}>{tag}</Text>
+                  <View key={index} className="bg-gray-100 rounded-md px-2 py-0.5">
+                    <Text className="text-xs text-gray-600">{tag}</Text>
                   </View>
                 ))}
                 {node.tags.length > 3 && (
-                  <Text style={styles.moreTagsText}>+{node.tags.length - 3}</Text>
+                  <Text className="text-xs text-gray-400 italic">+{node.tags.length - 3}</Text>
                 )}
               </View>
             )}
           </View>
         </View>
-        <View style={styles.nodeActions}>
+        <View className="flex-row gap-2">
           <TouchableOpacity
-            style={styles.actionButton}
+            className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
             onPress={() => onView(node)}
           >
             <Ionicons name="eye" size={18} color="#6B7280" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.actionButton}
+            className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
             onPress={() => onEdit(node)}
           >
             <Ionicons name="pencil" size={18} color="#3B82F6" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.actionButton}
+            className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
             onPress={() => onDelete(node)}
           >
             <Ionicons name="trash" size={18} color="#EF4444" />
@@ -302,23 +301,23 @@ export const ManualNodeManagement: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-gray-50">
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Node Management</Text>
-        <View style={styles.headerStats}>
-          <Text style={styles.statsText}>
+      <View className="bg-white p-5 border-b border-gray-200">
+        <Text className="text-2xl font-bold text-gray-900 mb-1">Node Management</Text>
+        <View className="mt-1">
+          <Text className="text-sm text-gray-600">
             {stats.total} nodes • {stats.withWallets} with wallets
           </Text>
         </View>
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
+      <View className="bg-white px-5 pb-4 border-b border-gray-200">
+        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 gap-3">
           <Ionicons name="search" size={20} color="#6B7280" />
           <TextInput
-            style={styles.searchInput}
+            className="flex-1 text-base text-gray-900"
             placeholder="Search nodes..."
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -333,15 +332,14 @@ export const ManualNodeManagement: React.FC = () => {
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
+      <View className="bg-white border-b border-gray-200">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {tabs.map((tab) => (
             <TouchableOpacity
               key={tab.key}
-              style={[
-                styles.tab,
-                activeTab === tab.key && styles.activeTab
-              ]}
+              className={`flex-row items-center px-4 py-3 mx-1 gap-2 ${
+                activeTab === tab.key ? 'border-b-2 border-blue-500' : ''
+              }`}
               onPress={() => setActiveTab(tab.key)}
             >
               <Ionicons 
@@ -349,15 +347,14 @@ export const ManualNodeManagement: React.FC = () => {
                 size={18} 
                 color={activeTab === tab.key ? '#007AFF' : '#6B7280'} 
               />
-              <Text style={[
-                styles.tabText,
-                activeTab === tab.key && styles.activeTabText
-              ]}>
+              <Text className={`text-sm font-medium ${
+                activeTab === tab.key ? 'text-blue-500' : 'text-gray-600'
+              }`}>
                 {tab.label}
               </Text>
               {tab.count > 0 && (
-                <View style={styles.tabBadge}>
-                  <Text style={styles.tabBadgeText}>{tab.count}</Text>
+                <View className="bg-gray-100 rounded-full px-1.5 py-0.5 min-w-5 items-center">
+                  <Text className="text-xs font-semibold text-gray-600">{tab.count}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -367,18 +364,18 @@ export const ManualNodeManagement: React.FC = () => {
 
       {/* Node List */}
       <ScrollView
-        style={styles.nodeList}
+        className="flex-1 p-4"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
         {filteredNodes.length === 0 ? (
-          <View style={styles.emptyState}>
+          <View className="items-center justify-center py-15 px-10">
             <Ionicons name="folder-open" size={64} color="#D1D5DB" />
-            <Text style={styles.emptyStateTitle}>
+            <Text className="text-lg font-semibold text-gray-700 mt-4 mb-2 text-center">
               {searchQuery.trim() ? 'No matches found' : `No ${activeTab === 'all' ? 'nodes' : activeTab} yet`}
             </Text>
-            <Text style={styles.emptyStateText}>
+            <Text className="text-sm text-gray-600 text-center leading-5">
               {searchQuery.trim() 
                 ? 'Try adjusting your search terms'
                 : `Create your first ${activeTab === 'all' ? 'node' : activeTab.slice(0, -1)} to get started`
@@ -399,36 +396,36 @@ export const ManualNodeManagement: React.FC = () => {
       </ScrollView>
 
       {/* Create Button */}
-      <View style={styles.createButtonContainer}>
+      <View className={`flex-row bg-white p-4 gap-3 border-t border-gray-200 ${Platform.OS === 'ios' ? 'pb-8' : ''}`}>
         <TouchableOpacity
-          style={styles.createButton}
+          className="flex-1 flex-row items-center justify-center bg-blue-500 rounded-xl py-3 gap-2"
           onPress={() => {
             setActiveTab('contacts');
             handleCreateNode('person');
           }}
         >
           <Ionicons name="person-add" size={20} color="#FFFFFF" />
-          <Text style={styles.createButtonText}>Contact</Text>
+          <Text className="text-sm font-semibold text-white">Contact</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.createButton}
+          className="flex-1 flex-row items-center justify-center bg-blue-500 rounded-xl py-3 gap-2"
           onPress={() => {
             setActiveTab('events');
             handleCreateNode('event');
           }}
         >
           <Ionicons name="calendar" size={20} color="#FFFFFF" />
-          <Text style={styles.createButtonText}>Event</Text>
+          <Text className="text-sm font-semibold text-white">Event</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.createButton}
+          className="flex-1 flex-row items-center justify-center bg-blue-500 rounded-xl py-3 gap-2"
           onPress={() => {
             setActiveTab('communities');
             handleCreateNode('community');
           }}
         >
           <Ionicons name="people" size={20} color="#FFFFFF" />
-          <Text style={styles.createButtonText}>Community</Text>
+          <Text className="text-sm font-semibold text-white">Community</Text>
         </TouchableOpacity>
       </View>
 
@@ -439,245 +436,10 @@ export const ManualNodeManagement: React.FC = () => {
         presentationStyle="pageSheet"
         onRequestClose={handleFormCancel}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView className="flex-1 bg-gray-50">
           {renderForm()}
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  header: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  headerStats: {
-    marginTop: 4,
-  },
-  statsText: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  searchContainer: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#111827',
-  },
-  tabsContainer: {
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginHorizontal: 4,
-    gap: 8,
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#007AFF',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
-  },
-  activeTabText: {
-    color: '#007AFF',
-  },
-  tabBadge: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    minWidth: 20,
-    alignItems: 'center',
-  },
-  tabBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  nodeList: {
-    flex: 1,
-    padding: 16,
-  },
-  nodeItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    marginBottom: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  nodeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  nodeInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 12,
-  },
-  nodeIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nodeTextContainer: {
-    flex: 1,
-  },
-  nodeTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  nodeName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    flex: 1,
-    marginRight: 8,
-  },
-  nodeBadge: {
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  nodeBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textTransform: 'uppercase',
-  },
-  nodeSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 8,
-  },
-  nodeTagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    alignItems: 'center',
-  },
-  nodeTag: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  nodeTagText: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  moreTagsText: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    fontStyle: 'italic',
-  },
-  nodeActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  actionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  createButtonContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    ...Platform.select({
-      ios: {
-        paddingBottom: 34, // Account for safe area on iOS
-      },
-    }),
-  },
-  createButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    paddingVertical: 12,
-    gap: 8,
-  },
-  createButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 40,
-  },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
-    marginTop: 16,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-});
