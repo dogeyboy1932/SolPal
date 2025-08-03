@@ -23,6 +23,12 @@ interface NodeContextValue {
   activeNodes: Node[];
   selectedNode?: Node;
   
+  // LLM Access Control
+  llmAccessibleNodeIds: Set<string>;
+  setNodeLLMAccessible: (nodeId: string, accessible: boolean) => void;
+  toggleAllNodesLLMAccess: (accessible: boolean) => void;
+  getLLMAccessibleNodes: () => Node[];
+  
   // Node operations
   createPersonNode: (data: CreatePersonNodeData) => Promise<PersonNode>;
   createEventNode: (data: CreateEventNodeData) => Promise<EventNode>;
@@ -57,17 +63,20 @@ interface NodeContextValue {
 const NodeContext = createContext<NodeContextValue | undefined>(undefined);
 
 const STORAGE_KEY = 'solana_nodes_data';
+const LLM_ACCESS_STORAGE_KEY = 'solana_nodes_llm_access';
 
 export const NodeProvider = ({ children }: { children: ReactNode }) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [activeNodes, setActiveNodes] = useState<Node[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | undefined>();
+  const [llmAccessibleNodeIds, setLlmAccessibleNodeIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Load nodes from storage on mount
   useEffect(() => {
     loadNodes();
+    loadLLMAccessSettings();
   }, []);
 
   // Save nodes to storage whenever nodes change
@@ -90,11 +99,12 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
         updateCommunityNode,
         () => nodes,
         getNodeById,
-        searchNodes
+        searchNodes,
+        getLLMAccessibleNodes
       );
-      console.log('🔗 NodeManagement MCP functions initialized with', nodes.length, 'nodes');
+      console.log('🔗 NodeManagement MCP functions initialized with', nodes.length, 'nodes (', llmAccessibleNodeIds.size, 'LLM accessible)');
     }
-  }, [nodes, activeNodes, isLoading]);
+  }, [nodes, activeNodes, llmAccessibleNodeIds, isLoading]);
 
   const loadNodes = async () => {
     try {
@@ -134,6 +144,55 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
       setError('Failed to save nodes to storage');
     }
   };
+
+  // LLM Access Control Functions
+  const loadLLMAccessSettings = async () => {
+    try {
+      const storedAccess = await AsyncStorage.getItem(LLM_ACCESS_STORAGE_KEY);
+      if (storedAccess) {
+        const accessArray = JSON.parse(storedAccess);
+        setLlmAccessibleNodeIds(new Set(accessArray));
+      }
+    } catch (err) {
+      console.error('Error loading LLM access settings:', err);
+    }
+  };
+
+  const saveLLMAccessSettings = async (accessSet: Set<string>) => {
+    try {
+      await AsyncStorage.setItem(LLM_ACCESS_STORAGE_KEY, JSON.stringify(Array.from(accessSet)));
+    } catch (err) {
+      console.error('Error saving LLM access settings:', err);
+    }
+  };
+
+  const setNodeLLMAccessible = useCallback((nodeId: string, accessible: boolean) => {
+    setLlmAccessibleNodeIds(prev => {
+      const newSet = new Set(prev);
+      if (accessible) {
+        newSet.add(nodeId);
+      } else {
+        newSet.delete(nodeId);
+      }
+      saveLLMAccessSettings(newSet);
+      return newSet;
+    });
+  }, []);
+
+  const toggleAllNodesLLMAccess = useCallback((accessible: boolean) => {
+    if (accessible) {
+      const allNodeIds = new Set(nodes.map(node => node.id));
+      setLlmAccessibleNodeIds(allNodeIds);
+      saveLLMAccessSettings(allNodeIds);
+    } else {
+      setLlmAccessibleNodeIds(new Set());
+      saveLLMAccessSettings(new Set());
+    }
+  }, [nodes]);
+
+  const getLLMAccessibleNodes = useCallback(() => {
+    return nodes.filter(node => llmAccessibleNodeIds.has(node.id));
+  }, [nodes, llmAccessibleNodeIds]);
 
   const generateId = () => {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
@@ -261,6 +320,7 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const getNodeById = useCallback((id: string): Node | undefined => {
+    console.log(nodes)
     return nodes.find(node => node.id === id);
   }, [nodes]);
 
@@ -299,6 +359,10 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
     nodes,
     activeNodes,
     selectedNode,
+    llmAccessibleNodeIds,
+    setNodeLLMAccessible,
+    toggleAllNodesLLMAccess,
+    getLLMAccessibleNodes,
     createPersonNode,
     createEventNode,
     createCommunityNode,

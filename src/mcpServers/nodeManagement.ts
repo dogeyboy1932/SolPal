@@ -360,6 +360,165 @@ export function createMcpServer(): McpServer {
     }
   );
 
+  // Edit event node
+  server.tool(
+    'edit_event_node',
+    {
+      id: z.string().describe('ID of the event to update'),
+      name: z.string().optional().describe('New name for the event'),
+      description: z.string().optional().describe('New description for the event'),
+      date: z.string().optional().describe('New date for the event (ISO string)'),
+      endDate: z.string().optional().describe('New end date for the event (ISO string)'),
+      location: z.string().optional().describe('New location for the event'),
+      eventType: z.enum(['conference', 'meetup', 'party', 'business', 'social', 'other']).optional().describe('New type of event'),
+      organizer: z.string().optional().describe('New organizer name or person ID'),
+      tags: z.array(z.string()).optional().describe('New tags for the event'),
+    },
+    async ({ id, name, description, date, endDate, location, eventType, organizer, tags }) => {
+      console.log(`📅 Node Management: Updating event node ${id}`);
+      
+      try {
+        if (!globalUpdateEventNode || !globalGetNodeById) {
+          return {
+            content: [{
+              type: 'text',
+              text: '❌ Node management not initialized. Please ensure the app is properly loaded.'
+            }]
+          };
+        }
+
+        // Check if event exists
+        const existingEvent = globalGetNodeById(id);
+        if (!existingEvent || existingEvent.type !== 'event') {
+          return {
+            content: [{
+              type: 'text',
+              text: `❌ Event with ID "${id}" not found.`
+            }]
+          };
+        }
+
+        const updates: UpdateEventNodeData = {};
+        if (name !== undefined) updates.name = name;
+        if (description !== undefined) updates.description = description;
+        if (date !== undefined) updates.date = new Date(date);
+        if (endDate !== undefined) updates.endDate = new Date(endDate);
+        if (location !== undefined) updates.location = location;
+        if (eventType !== undefined) updates.eventType = eventType;
+        if (organizer !== undefined) updates.organizer = organizer;
+        if (tags !== undefined) updates.tags = tags;
+
+        await globalUpdateEventNode(id, updates);
+
+        // Get updated event to show changes
+        const updatedEvent = globalGetNodeById(id);
+        if (!updatedEvent) {
+          throw new Error('Could not retrieve updated event');
+        }
+
+        const updatesList = [];
+        if (name !== undefined) updatesList.push(`Name: ${name}`);
+        if (description !== undefined) updatesList.push(`Description: ${description}`);
+        if (date !== undefined) updatesList.push(`Date: ${new Date(date).toLocaleDateString()}`);
+        if (endDate !== undefined) updatesList.push(`End Date: ${new Date(endDate).toLocaleDateString()}`);
+        if (location !== undefined) updatesList.push(`Location: ${location}`);
+        if (eventType !== undefined) updatesList.push(`Type: ${eventType}`);
+        if (organizer !== undefined) updatesList.push(`Organizer: ${organizer}`);
+        if (tags !== undefined) updatesList.push(`Tags: ${tags.join(', ')}`);
+
+        return {
+          content: [{
+            type: 'text',
+            text: `✅ Successfully updated event "${updatedEvent.name}"\n📝 Updates: ${updatesList.join(', ')}`
+          }]
+        };
+      } catch (error) {
+        console.error('Error updating event node:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: `❌ Failed to update event: ${error instanceof Error ? error.message : 'Unknown error'}`
+          }]
+        };
+      }
+    }
+  );
+
+  // Edit community node
+  server.tool(
+    'edit_community_node',
+    {
+      id: z.string().describe('ID of the community to update'),
+      name: z.string().optional().describe('New name for the community'),
+      description: z.string().optional().describe('New description for the community'),
+      communityType: z.enum(['dao', 'nft', 'social', 'gaming', 'defi', 'business', 'other']).optional().describe('New type of community'),
+      isPublic: z.boolean().optional().describe('New public/private setting'),
+      tags: z.array(z.string()).optional().describe('New tags for the community'),
+    },
+    async ({ id, name, description, communityType, isPublic, tags }) => {
+      console.log(`🏘️ Node Management: Updating community node ${id}`);
+      
+      try {
+        if (!globalUpdateCommunityNode || !globalGetNodeById) {
+          return {
+            content: [{
+              type: 'text',
+              text: '❌ Node management not initialized. Please ensure the app is properly loaded.'
+            }]
+          };
+        }
+
+        // Check if community exists
+        const existingCommunity = globalGetNodeById(id);
+        if (!existingCommunity || existingCommunity.type !== 'community') {
+          return {
+            content: [{
+              type: 'text',
+              text: `❌ Community with ID "${id}" not found.`
+            }]
+          };
+        }
+
+        const updates: UpdateCommunityNodeData = {};
+        if (name !== undefined) updates.name = name;
+        if (description !== undefined) updates.description = description;
+        if (communityType !== undefined) updates.communityType = communityType;
+        if (isPublic !== undefined) updates.isPublic = isPublic;
+        if (tags !== undefined) updates.tags = tags;
+
+        await globalUpdateCommunityNode(id, updates);
+
+        // Get updated community to show changes
+        const updatedCommunity = globalGetNodeById(id);
+        if (!updatedCommunity) {
+          throw new Error('Could not retrieve updated community');
+        }
+
+        const updatesList = [];
+        if (name !== undefined) updatesList.push(`Name: ${name}`);
+        if (description !== undefined) updatesList.push(`Description: ${description}`);
+        if (communityType !== undefined) updatesList.push(`Type: ${communityType}`);
+        if (isPublic !== undefined) updatesList.push(`Public: ${isPublic ? 'Yes' : 'No'}`);
+        if (tags !== undefined) updatesList.push(`Tags: ${tags.join(', ')}`);
+
+        return {
+          content: [{
+            type: 'text',
+            text: `✅ Successfully updated community "${updatedCommunity.name}"\n📝 Updates: ${updatesList.join(', ')}`
+          }]
+        };
+      } catch (error) {
+        console.error('Error updating community node:', error);
+        return {
+          content: [{
+            type: 'text',
+            text: `❌ Failed to update community: ${error instanceof Error ? error.message : 'Unknown error'}`
+          }]
+        };
+      }
+    }
+  );
+
   // List all nodes
   server.tool(
     'list_nodes',
@@ -388,7 +547,7 @@ export function createMcpServer(): McpServer {
           if (node.type === 'person') {
             const person = node as PersonNode;
             if (person.walletAddress) {
-              details += `\n  💰 ${person.walletAddress.slice(0, 8)}...`;
+              details += `\n  💰 ${person.walletAddress}`;
             }
             if (person.notes) {
               details += `\n  📄 ${person.notes.slice(0, 50)}${person.notes.length > 50 ? '...' : ''}`;

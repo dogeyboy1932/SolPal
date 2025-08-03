@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { useGemini } from '../ai/GeminiContext';
 
 interface MCPServer {
   id: string;
@@ -21,95 +22,73 @@ interface MCPServer {
   capabilities: string[];
   lastConnected?: Date;
   errorMessage?: string;
+  toolCount: number;
 }
 
-const MOCK_MCP_SERVERS: MCPServer[] = [
-  {
-    id: 'solana-mcp',
-    name: 'Solana MCP Server',
-    description: 'Blockchain operations and wallet management',
-    url: 'ws://localhost:3001',
-    status: 'connected',
-    category: 'solana',
-    capabilities: ['wallet_operations', 'transaction_history', 'balance_queries', 'token_transfers'],
-    lastConnected: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
-  },
-  {
-    id: 'weather-mcp',
-    name: 'Weather MCP Server',
-    description: 'Weather data and forecasting',
-    url: 'ws://localhost:3002',
-    status: 'disconnected',
-    category: 'data',
-    capabilities: ['current_weather', 'forecasts', 'location_search'],
-  },
-  {
-    id: 'math-mcp',
-    name: 'Math MCP Server',
-    description: 'Mathematical calculations and operations',
-    url: 'ws://localhost:3003',
-    status: 'connected',
-    category: 'utility',
-    capabilities: ['calculations', 'unit_conversions', 'statistical_analysis'],
-    lastConnected: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
-  },
-  {
-    id: 'github-mcp',
-    name: 'GitHub MCP Server',
-    description: 'GitHub API integration',
-    url: 'ws://localhost:3004',
-    status: 'error',
-    category: 'data',
-    capabilities: ['repository_search', 'user_info', 'issue_tracking'],
-    errorMessage: 'Authentication failed',
-  },
-];
-
 export const MCPServerManagement: React.FC = () => {
-  const [servers, setServers] = useState<MCPServer[]>(MOCK_MCP_SERVERS);
+  const { mcpConnect, mcpDisconnect, liveConnect, liveDisconnect, liveConnected, tools } = useGemini();
+  const [servers, setServers] = useState<MCPServer[]>([]);
   const [loading, setLoading] = useState<string | null>(null);
   const [expandedServer, setExpandedServer] = useState<string | null>(null);
   const [autoReconnect, setAutoReconnect] = useState(true);
 
-  // Simulate periodic status updates
+  // Initialize server status based on actual MCP connection
   useEffect(() => {
-    const interval = setInterval(() => {
-      setServers(prev => prev.map(server => {
-        // Randomly simulate status changes for demo
-        if (Math.random() < 0.1) { // 10% chance of status change
-          const statuses: MCPServer['status'][] = ['connected', 'disconnected', 'error'];
-          const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
-          return {
-            ...server,
-            status: newStatus,
-            lastConnected: newStatus === 'connected' ? new Date() : server.lastConnected,
-            errorMessage: newStatus === 'error' ? 'Connection timeout' : undefined,
-          };
-        }
-        return server;
-      }));
-    }, 15000); // Update every 15 seconds
+    const combinedServer: MCPServer = {
+      id: 'combined',
+      name: 'Combined Solana + Node Management MCP',
+      description: 'Unified server providing blockchain operations and contact management',
+      url: 'mcp://combined-mcp',
+      status: tools.length > 0 ? 'connected' : 'disconnected',
+      category: 'solana',
+      capabilities: tools.map(tool => tool.name),
+      lastConnected: tools.length > 0 ? new Date() : undefined,
+      toolCount: tools.length,
+    };
 
-    return () => clearInterval(interval);
-  }, []);
+    setServers([combinedServer]);
+  }, [tools]);
+
+  // Update server status when tools change
+  useEffect(() => {
+    setServers(prev => prev.map(server => ({
+      ...server,
+      status: tools.length > 0 ? 'connected' : 'disconnected',
+      capabilities: tools.map(tool => tool.name),
+      toolCount: tools.length,
+      lastConnected: tools.length > 0 ? new Date() : server.lastConnected,
+    })));
+  }, [tools]);
 
   const connectServer = async (serverId: string) => {
+    if (serverId !== 'combined') return;
+    
     setLoading(serverId);
     try {
-      // Simulate connection process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Connect to combined MCP server
+      const success = await mcpConnect('combined');
       
-      setServers(prev => prev.map(server =>
-        server.id === serverId
-          ? { ...server, status: 'connected', lastConnected: new Date(), errorMessage: undefined }
-          : server
-      ));
+      if (success) {
+        setServers(prev => prev.map(server =>
+          server.id === serverId
+            ? { 
+                ...server, 
+                status: 'connected', 
+                lastConnected: new Date(), 
+                errorMessage: undefined,
+                toolCount: tools.length 
+              }
+            : server
+        ));
 
-      Toast.show({
-        type: 'success',
-        text1: 'Server Connected',
-        text2: 'MCP server is now available',
-      });
+        Toast.show({
+          type: 'success',
+          text1: 'MCP Server Connected',
+          text2: `Connected with ${tools.length} tools available`,
+        });
+      } else {
+        throw new Error('Failed to connect to MCP server');
+      }
     } catch (error) {
       setServers(prev => prev.map(server =>
         server.id === serverId
@@ -128,21 +107,22 @@ export const MCPServerManagement: React.FC = () => {
   };
 
   const disconnectServer = async (serverId: string) => {
+    if (serverId !== 'combined') return;
+    
     setLoading(serverId);
     try {
-      // Simulate disconnection process
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await mcpDisconnect();
       
       setServers(prev => prev.map(server =>
         server.id === serverId
-          ? { ...server, status: 'disconnected', errorMessage: undefined }
+          ? { ...server, status: 'disconnected', errorMessage: undefined, toolCount: 0 }
           : server
       ));
 
       Toast.show({
         type: 'info',
-        text1: 'Server Disconnected',
-        text2: 'MCP server has been disconnected',
+        text1: 'MCP Server Disconnected',
+        text2: 'Server has been disconnected',
       });
     } catch (error) {
       Toast.show({
@@ -156,9 +136,13 @@ export const MCPServerManagement: React.FC = () => {
   };
 
   const restartServer = async (serverId: string) => {
+    if (serverId !== 'combined') return;
+    
     setLoading(serverId);
     try {
-      // First disconnect
+      // Disconnect first
+      await mcpDisconnect();
+      
       setServers(prev => prev.map(server =>
         server.id === serverId
           ? { ...server, status: 'disconnected' }
@@ -167,26 +151,37 @@ export const MCPServerManagement: React.FC = () => {
 
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Then reconnect
+      // Show connecting state
       setServers(prev => prev.map(server =>
         server.id === serverId
           ? { ...server, status: 'connecting' }
           : server
       ));
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Reconnect
+      const success = await mcpConnect('combined');
+      
+      if (success) {
+        setServers(prev => prev.map(server =>
+          server.id === serverId
+            ? { 
+                ...server, 
+                status: 'connected', 
+                lastConnected: new Date(), 
+                errorMessage: undefined,
+                toolCount: tools.length 
+              }
+            : server
+        ));
 
-      setServers(prev => prev.map(server =>
-        server.id === serverId
-          ? { ...server, status: 'connected', lastConnected: new Date(), errorMessage: undefined }
-          : server
-      ));
-
-      Toast.show({
-        type: 'success',
-        text1: 'Server Restarted',
-        text2: 'MCP server has been restarted successfully',
-      });
+        Toast.show({
+          type: 'success',
+          text1: 'MCP Server Restarted',
+          text2: `Server restarted with ${tools.length} tools`,
+        });
+      } else {
+        throw new Error('Failed to restart server');
+      }
     } catch (error) {
       setServers(prev => prev.map(server =>
         server.id === serverId
@@ -205,33 +200,53 @@ export const MCPServerManagement: React.FC = () => {
   };
 
   const connectAllServers = async () => {
-    setLoading('all');
-    try {
-      for (const server of servers) {
-        if (server.status !== 'connected') {
-          setServers(prev => prev.map(s =>
-            s.id === server.id ? { ...s, status: 'connecting' } : s
-          ));
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          setServers(prev => prev.map(s =>
-            s.id === server.id ? { ...s, status: 'connected', lastConnected: new Date() } : s
-          ));
-        }
-      }
+    // Only one server to connect to
+    await connectServer('combined');
+  };
 
-      Toast.show({
-        type: 'success',
-        text1: 'All Servers Connected',
-        text2: 'MCP server network is fully operational',
-      });
+  const testServer = async (serverId: string) => {
+    if (serverId !== 'combined' || tools.length === 0) {
+      Alert.alert(
+        'Test Failed',
+        'MCP server is not connected or has no tools available'
+      );
+      return;
+    }
+
+    try {
+      // Test the list_available_tools function if available
+      const listToolsCapability = tools.find(tool => tool.name === 'list_available_tools');
+      
+      if (listToolsCapability) {
+        Toast.show({
+          type: 'success',
+          text1: 'Test Successful',
+          text2: `MCP server responding with ${tools.length} tools`,
+        });
+
+        Alert.alert(
+          'MCP Server Test',
+          `✅ Connection successful!\n\n🔧 Tools available: ${tools.length}\n📋 Server: Combined Solana + Node Management\n🔗 Status: Operational`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'MCP Server Status',
+          `🔧 Tools available: ${tools.length}\n📋 Server: Combined Solana + Node Management\n🔗 Status: Connected but test tool not available`,
+          [{ text: 'OK' }]
+        );
+      }
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: 'Bulk Connection Failed',
-        text2: 'Some servers failed to connect',
+        text1: 'Test Failed',
+        text2: 'Error testing MCP server connection',
       });
-    } finally {
-      setLoading(null);
+
+      Alert.alert(
+        'Test Failed',
+        `❌ Error testing server: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   };
 
@@ -281,6 +296,7 @@ export const MCPServerManagement: React.FC = () => {
 
   const connectedCount = servers.filter(s => s.status === 'connected').length;
   const totalCount = servers.length;
+  const totalTools = servers.reduce((sum, server) => sum + server.toolCount, 0);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -294,6 +310,10 @@ export const MCPServerManagement: React.FC = () => {
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{connectedCount}/{totalCount}</Text>
             <Text style={styles.statLabel}>Connected</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>{totalTools}</Text>
+            <Text style={styles.statLabel}>Total Tools</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{servers.filter(s => s.status === 'error').length}</Text>
@@ -358,6 +378,11 @@ export const MCPServerManagement: React.FC = () => {
                 </View>
 
                 <View style={styles.statusRow}>
+                  <Text style={styles.detailLabel}>Tools Available:</Text>
+                  <Text style={styles.detailValue}>{server.toolCount} tools</Text>
+                </View>
+
+                <View style={styles.statusRow}>
                   <Text style={styles.detailLabel}>Last Connected:</Text>
                   <Text style={styles.detailValue}>{formatLastConnected(server.lastConnected)}</Text>
                 </View>
@@ -370,7 +395,7 @@ export const MCPServerManagement: React.FC = () => {
                 )}
 
                 <View style={styles.capabilitiesContainer}>
-                  <Text style={styles.capabilitiesLabel}>Capabilities:</Text>
+                  <Text style={styles.capabilitiesLabel}>Available Tools ({server.capabilities.length}):</Text>
                   <View style={styles.capabilitiesList}>
                     {server.capabilities.map((capability, index) => (
                       <View key={index} style={styles.capabilityTag}>
@@ -425,26 +450,10 @@ export const MCPServerManagement: React.FC = () => {
 
                   <TouchableOpacity
                     style={[styles.actionButton, styles.testButton]}
-                    onPress={() => {
-                      Alert.alert(
-                        'Test Connection',
-                        `Testing connection to ${server.name}...`,
-                        [
-                          {
-                            text: 'OK',
-                            onPress: () => {
-                              Toast.show({
-                                type: 'success',
-                                text1: 'Connection Test',
-                                text2: 'Server responded successfully',
-                              });
-                            }
-                          }
-                        ]
-                      );
-                    }}
+                    onPress={() => testServer(server.id)}
+                    disabled={isLoading}
                   >
-                    <Text style={styles.testButtonText}>Test</Text>
+                    <Text style={styles.actionButtonText}>Test Connection</Text>
                   </TouchableOpacity>
                 </View>
               </View>
