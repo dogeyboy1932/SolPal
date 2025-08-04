@@ -20,12 +20,21 @@ export class SolanaMCPServer extends BaseMCPServer {
    * Initialize server with Solana context
    */
   initialize(connection: Connection, publicKey: PublicKey | null, signTxFunction?: (transaction: Transaction) => Promise<string>) {
+    console.log("REINITIALIZED");
     this.connection = connection;
     this.publicKey = publicKey;
     if (signTxFunction) {
       this.signTransaction = signTxFunction;
     }
   }
+
+  
+  disconnect() {
+    console.log("DISCONNECTING");
+    this.connection = null;
+    this.publicKey = null;
+  }
+
 
   /**
    * Define all tools available in this server
@@ -161,6 +170,10 @@ export class SolanaMCPServer extends BaseMCPServer {
   }
 
   async get_wallet_address(): Promise<any> {
+    console.log("GET WALLET ADDRESS CALLED")
+    console.log(this.connection)
+    console.log(this.publicKey);
+
     try {
       if (!this.connection || !this.publicKey) {
         return {
@@ -303,6 +316,9 @@ export class SolanaMCPServer extends BaseMCPServer {
 
   async create_sol_transfer(args: { to: string; amount: number; execute?: boolean }): Promise<any> {
     console.log("EXECUTE ARG IS: " + args.execute);
+
+    console.log(this.connection)
+    console.log(this.publicKey)
 
     try {
       if (!this.publicKey || !this.connection) {

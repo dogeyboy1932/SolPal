@@ -88,7 +88,7 @@ export const AIConnectionManager: React.FC<AIConnectionManagerProps> = ({
             {Object.entries(MCP_SERVERS).map(([serverType, config]) => (
               <View key={serverType} style={styles.mcpServerRow}>
                 <View style={styles.mcpServerInfo}>
-                  <Text style={styles.mcpServerTitle}>{config.label}</Text>
+                  <Text style={styles.mcpServerTitle}>{config.name}</Text>
                   <View style={styles.mcpStatusContainer}>
                     <View style={[
                       styles.mcpStatusDot, 

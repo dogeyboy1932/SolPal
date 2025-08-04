@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Node } from '../../types/nodes';
-import { generateNodeSpecificPrompts, generateSmartSuggestions } from '../../lib/node-ai-prompts';
+import { generateNodeSpecificPrompts, generateSmartSuggestions } from '../../services/chat-prompts';
 
 interface SmartSuggestionsProps {
   activeNodes: Node[];

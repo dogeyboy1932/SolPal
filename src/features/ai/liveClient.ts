@@ -26,7 +26,6 @@ import {
   type LiveConfig,
   type ShellResponseMessage,
 } from "../../types/live-types";
-import { blobToJSON, base64ToArrayBuffer } from "../../lib/utils";
 
 /**
  * the events that this client will emit
@@ -57,6 +56,30 @@ export type MultimodalLiveAPIClientConnection = {
 let fullResponse = ""
 
 
+
+const blobToJSON = (blob: Blob) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result) {
+        const json = JSON.parse(reader.result as string);
+        resolve(json);
+      } else {
+        reject("oops");
+      }
+    };
+    reader.readAsText(blob);
+  });
+
+
+const base64ToArrayBuffer = (base64: string) => {
+  var binaryString = atob(base64);
+  var bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
 
 
 /**

@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, type ReactNode, useRef,
 
 // Use mobile-compatible MCP adapter instead of web-based client
 import { MobileMCPClient, createMobileMCPClient } from '../../mcpServers/mobileServerAdapter';
+import { getServerConfig, hasServer, createLiveConfigWithTools } from '@/services/mcpService';
+import { loadMCPPreferences, saveMCPPreferences, enableServer, disableServer } from '../../services/mcpService';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 // import { setupMCPServer } from '../../mcpServers/_shared';
@@ -10,7 +12,6 @@ import type { Node } from '../../types/nodes';
 import { MultimodalLiveClient } from './liveClient';
 
 import { CONST_CONFIG } from '../../config/ai_config';
-import { createLiveConfigWithTools } from '../../lib/utils';
 
 // Voice functionality for React Native
 import { AudioRecorder } from '../voice/AudioRecorder';
@@ -52,6 +53,8 @@ interface GeminiContextType {
   connect: () => void;
   disconnect: () => void;
   toggleMCPServer: (serverType: string, enabled?: boolean) => Promise<void>;
+  getActiveMCPServers: () => Record<string, boolean>;
+  refreshLLMTools: () => Promise<void>;
 }
 
 const GeminiContext = createContext<GeminiContextType | undefined>(undefined);
@@ -81,51 +84,70 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
 
   const { connection, signAndSendTransaction, ...state } = useWallet();
 
-  // Auto-connect to combined MCP server when provider mounts
+  // Initialize MCP client and restore user preferences
   useEffect(() => {
-    const initializeCombinedServer = async () => {
-      if (tools.length === 0) { // Only connect if we don't have tools yet
-        console.log('🚀 Auto-connecting to combined MCP server...');
+    const initializeMCPClient = async () => {
+      if (!mcpClient) {
+        console.log('🚀 Initializing MCP Client and loading preferences...');
         try {
-          console.log(`🔌 Connecting to combined MCP Server...`);
-
-          // Create mobile-compatible MCP client
           const newClient = await createMobileMCPClient();
           setMcpClient(newClient);
-
-
-
-          // Get tools
-          const toolList = await newClient.listTools();
-          const newTools = toolList.tools.map((tool: MCPTool) => ({
+          
+          // Load user preferences and restore previously enabled servers
+          const preferences = await loadMCPPreferences();
+          console.log(`📱 Loaded preferences: ${preferences.enabledServers.length} servers to restore`);
+          
+          // Restore enabled servers from preferences
+          const restoredServers: Record<string, boolean> = {};
+          for (const serverId of preferences.enabledServers) {
+            try {
+              const success = await newClient.enableServer(serverId);
+              restoredServers[serverId] = success;
+              if (success) {
+                console.log(`✅ Restored server: ${serverId}`);
+              } else {
+                console.warn(`⚠️ Failed to restore server: ${serverId}`);
+              }
+            } catch (error) {
+              console.error(`❌ Error restoring server ${serverId}:`, error);
+              restoredServers[serverId] = false;
+            }
+          }
+          
+          setActiveMCPServers(restoredServers);
+          
+          // Update tools after restoring servers
+          const activeTools = await newClient.getActiveTools();
+          const formattedTools = activeTools.map((tool: MCPTool) => ({
             name: tool.name,
             description: tool.description || tool.name,
             parameters: tool.parameters || { type: "object", properties: {}, required: [] }
           }));
+          setTools(formattedTools);
           
-          setTools(newTools);
-          // console.log(`✅ Auto-connected to combined server with ${newTools.length} tools:`, newTools.map((t: MCPTool) => t.name));
-          
-          // Test tool calling after successful connection
-          setTimeout(async () => {
-            console.log('🚀 Starting Mobile MCP Client test sequence...');
-            // await newClient.testToolCalling();
-          }, 2000);
+          console.log(`✅ MCP Client initialized with ${Object.keys(restoredServers).length} servers and ${formattedTools.length} tools`);
         } catch (error) {
-          console.warn('⚠️ Failed to auto-connect to combined server:', error);
+          console.warn('⚠️ Failed to initialize MCP client:', error);
         }
       }
     };
 
-    initializeCombinedServer();
+    initializeMCPClient();
   }, []); // Run once on mount
+
+
+
 
   // Update wallet context for AI
   useEffect(() => {
     if (state.connected && state.publicKey && mcpClient) {
       console.log(`🔗 Wallet connected: ${state.publicKey}`);
       mcpClient.updateWalletContext(connection, new PublicKey(state.publicKey), signAndSendTransaction);
-    } 
+    } else if (mcpClient) {
+      console.log('🔗 Wallet disconnected');
+      mcpClient.updateWalletContext(null, null);
+    }
+
   }, [state.connected, state.publicKey]);
 
 
@@ -429,37 +451,93 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
   }, [liveConnect]);
 
   const toggleMCPServer = useCallback(async (serverType: string, enabled?: boolean) => {
+    if (!mcpClient) {
+      console.error('❌ MCP Client not initialized');
+      return;
+    }
+
     const isEnabled = enabled !== undefined ? enabled : !activeMCPServers[serverType];
     
-    // try {
-    //   if (isEnabled && !mcpServerInstances[serverType]) {
-    //     // Start MCP server
-    //     console.log(`🚀 Starting ${serverType} MCP server...`);
-    //     const server = await setupMCPServer(serverType);
-    //     setMcpServerInstances(prev => ({
-    //       ...prev,
-    //       [serverType]: server
-    //     }));
-    //   } else if (!isEnabled && mcpServerInstances[serverType]) {
-    //     // Stop MCP server
-    //     console.log(`⏹️ Stopping ${serverType} MCP server...`);
-    //     await mcpServerInstances[serverType].close();
-    //     setMcpServerInstances(prev => {
-    //       const newInstances = { ...prev };
-    //       delete newInstances[serverType];
-    //       return newInstances;
-    //     });
-    //   }
+    try {
+      if (isEnabled) {
+        // Enable server
+        console.log(`🚀 Enabling ${serverType} MCP server...`);
+        const success = await mcpClient.enableServer(serverType);
+        
+        if (success) {
+          setActiveMCPServers(prev => ({
+            ...prev,
+            [serverType]: true
+          }));
+          
+          // Save to persistent preferences
+          await enableServer(serverType);
+          
+          // Refresh tools after enabling server
+          await refreshLLMTools();
+          console.log(`✅ ${serverType} MCP server enabled and saved to preferences`);
+        } else {
+          console.error(`❌ Failed to enable ${serverType} MCP server`);
+        }
+      } else {
+        // Disable server
+        console.log(`⏹️ Disabling ${serverType} MCP server...`);
+        await mcpClient.disableServer(serverType);
+        
+        setActiveMCPServers(prev => ({
+          ...prev,
+          [serverType]: false
+        }));
+        
+        // Save to persistent preferences
+        await disableServer(serverType);
+        
+        // Refresh tools after disabling server
+        await refreshLLMTools();
+        console.log(`🔌 ${serverType} MCP server disabled and removed from preferences`);
+      }
+    } catch (error) {
+      console.error(`❌ Failed to toggle ${serverType} MCP server:`, error);
+    }
+  }, [mcpClient, activeMCPServers]);
 
-    //   setActiveMCPServers(prev => ({
-    //     ...prev,
-    //     [serverType]: isEnabled
-    //   }));
+  // Get currently active MCP servers
+  const getActiveMCPServers = useCallback((): Record<string, boolean> => {
+    return activeMCPServers;
+  }, [activeMCPServers]);
 
-    // } catch (error) {
-    //   console.error(`❌ Failed to toggle ${serverType} MCP server:`, error);
-    // }
-  }, [activeMCPServers, mcpServerInstances]);
+  // Refresh tools from all active servers and update LLM
+  const refreshLLMTools = useCallback(async (): Promise<void> => {
+    if (!mcpClient) {
+      console.warn('⚠️ Cannot refresh tools - MCP Client not initialized');
+      return;
+    }
+
+    try {
+      console.log('🔄 Refreshing LLM tools from active servers...');
+      
+      // Get tools from all active servers
+      const activeTools = await mcpClient.getActiveTools();
+      const formattedTools = activeTools.map((tool: MCPTool) => ({
+        name: tool.name,
+        description: tool.description || tool.name,
+        parameters: tool.parameters || { type: "object", properties: {}, required: [] }
+      }));
+      
+      setTools(formattedTools);
+      
+      // If LLM is connected, reconnect with new tools
+      if (liveConnected) {
+        console.log('🔄 Reconnecting LLM with updated tools...');
+        await liveDisconnect();
+        await liveConnect(formattedTools);
+      }
+      
+      console.log(`✅ Refreshed LLM tools: ${formattedTools.length} total from active servers`);
+    } catch (error) {
+      console.error('❌ Failed to refresh LLM tools:', error);
+    }
+  }, [mcpClient, liveConnected, liveConnect, liveDisconnect]);
 
   const disconnect = useCallback(async () => {
     // Disconnect all MCP servers first
@@ -507,6 +585,8 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
       connect,
       disconnect,
       toggleMCPServer,
+      getActiveMCPServers,
+      refreshLLMTools,
     }}>
       {children}
     </GeminiContext.Provider>

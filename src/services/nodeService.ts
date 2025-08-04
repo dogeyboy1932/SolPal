@@ -81,7 +81,7 @@ export class NodeService {
 
   // Find nodes by wallet address
   getNodeByWalletAddress(address: string): Node | undefined {
-    const nodes = this.getAllNodes();
+    const nodes = this.getLLMAccessibleNodesService();
     return nodes.find(node => {
       if (node.type === 'person') {
         return (node as PersonNode).walletAddress === address;
@@ -92,7 +92,7 @@ export class NodeService {
 
   // Find nodes by name (fuzzy match)
   getNodeByName(name: string): Node | undefined {
-    const nodes = this.getAllNodes();
+    const nodes = this.getLLMAccessibleNodesService();
     return nodes.find(node => 
       node.name.toLowerCase().includes(name.toLowerCase())
     );
@@ -100,7 +100,7 @@ export class NodeService {
 
   // Get nodes with wallet addresses (for transaction targets)
   getNodesWithWallets(): Node[] {
-    const nodes = this.getAllNodes();
+    const nodes = this.getLLMAccessibleNodesService();
     return nodes.filter(node => {
       if (node.type === 'person') {
         return !!(node as PersonNode).walletAddress;
@@ -236,7 +236,7 @@ export class NodeService {
 
   async getAllNodesService(): Promise<any> {
     try {
-      const allNodes = this.getAllNodes();
+      const allNodes = this.getLLMAccessibleNodesService();
       
       return {
         content: [{
