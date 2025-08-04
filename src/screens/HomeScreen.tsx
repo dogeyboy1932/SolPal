@@ -6,10 +6,14 @@ import {
   TouchableOpacity,
   Platform,
   StatusBar as RNStatusBar,
-  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+
+// UI Libraries
+import { Surface, Card, Avatar } from 'react-native-paper';
+
+// Components
 import AITransactionChat from '@/features/ai/AITransactionChat';
 import { ManualOperationsScreen } from './ManualOperationsScreen';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
@@ -20,72 +24,60 @@ type TabType = 'chat' | 'manual';
 export const HomeScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('chat');
 
-  const TabButton = ({ 
-    tab, 
-    icon, 
-    label, 
-    isActive 
-  }: { 
-    tab: TabType; 
-    icon: string; 
-    label: string; 
-    isActive: boolean;
-  }) => (
-    <TouchableOpacity
-      style={styles.tabButton}
-      onPress={() => setActiveTab(tab)}
-      activeOpacity={0.6}
-    >
-      <View style={styles.tabContent}>
-        <View style={[
-          styles.iconContainer,
-          isActive && styles.activeIconContainer
-        ]}>
-          <Ionicons
-            name={icon as any}
-            size={24}
-            color={isActive ? '#007AFF' : '#8E8E93'}
-          />
-        </View>
-        <Text style={[
-          styles.tabLabel,
-          isActive && styles.activeTabLabel
-        ]}>
-          {label}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+    <View className="flex-1 bg-surface-primary ">
+      <SafeAreaView className="flex-1">
         {/* iOS-style status bar spacing */}
         {Platform.OS === 'ios' && (
           <View style={{ height: RNStatusBar.currentHeight || 44 }} />
         )}
 
-        {/* Header with Gradient */}
+        {/* Warm AI Header with Balanced Gradient */}
         <LinearGradient
-          colors={['#FFFFFF', '#F8F9FA']}
-          style={styles.headerGradient}
+          colors={['#2D2D2D', '#404040', '#B85C38']}
+          className="border-b border-accent-amber/20"
         >
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <View style={styles.titleContainer}>
-                <Text style={styles.title}>AI Solana Mobile</Text>
-                <Text style={styles.subtitle}>Your AI-powered Solana wallet</Text>
+          <Surface className="bg-transparent mt-2" elevation={0}>
+            <View className="px-5 py-4 pb-6">
+              <View className="flex-row justify-between items-center mb-4">
+                <View className="flex-1">
+                  <Text className="text-3xl font-bold text-neutral-light mb-1 font-ios">
+                    AI Solana Mobile
+                  </Text>
+                  <Text className="text-base text-accent-gold font-ios">
+                    Intelligent blockchain interactions
+                  </Text>
+                </View>
+                
+                {/* AI Avatar */}
+                <Avatar.Icon 
+                  size={48} 
+                  icon="robot" 
+                  style={{ backgroundColor: '#E49B3F' }}
+                  color="#1A1A1A"
+                />
               </View>
-              <WalletConnectButton />
+              
+              {/* Wallet Connection & Private Key */}
+              <Card className="bg-surface-secondary border border-accent-amber/40 py-2">
+                <Card.Content className="p-4 space-y-4">
+                  {/* Wallet Connection Section */}
+                  <Text className="text-sm font-semibold text-neutral-light mb-2">
+                    Wallet Connection
+                  </Text>
+                  <WalletConnectButton />
+                  
+                  {/* Private Key Section */}
+                  <PrivateKeyInput />
+
+                </Card.Content>
+              </Card>
             </View>
-            
-            {/* Private Key Input for Development */}
-            <PrivateKeyInput />
-          </View>
+          </Surface>
         </LinearGradient>
 
-        {/* Main Content Area */}
-        <View style={styles.content}>
+        {/* Main Content Area with Warm AI Theme */}
+        <View className="flex-1 bg-surface-primary">
           {activeTab === 'chat' ? (
             <AITransactionChat />
           ) : (
@@ -93,137 +85,59 @@ export const HomeScreen: React.FC = () => {
           )}
         </View>
 
-        {/* iOS-style Bottom Navigation */}
-        <View style={styles.bottomNav}>
-          {/* Blur effect overlay */}
-          <View style={styles.tabBar}>
-            <TabButton
-              tab="chat"
-              icon="chatbubble"
-              label="AI Chat"
-              isActive={activeTab === 'chat'}
-            />
-            <TabButton
-              tab="manual"
-              icon="settings"
-              label="Manual"
-              isActive={activeTab === 'manual'}
-            />
+        {/* Warm AI Bottom Navigation */}
+        <Surface 
+          elevation={3}
+          className="bg-surface-secondary border-t border-accent-amber/20"
+        >
+          <View className="flex-row bg-surface-secondary">
+            <TouchableOpacity
+              className={`flex-1 p-4 ${activeTab === 'chat' ? 'bg-accent-amber/20' : ''}`}
+              onPress={() => setActiveTab('chat')}
+              activeOpacity={0.7}
+            >
+              <View className="items-center">
+                <Ionicons
+                  name="chatbubble"
+                  size={24}
+                  color={activeTab === 'chat' ? '#E49B3F' : '#8B7355'}
+                />
+                <Text className={`text-xs mt-1 ${
+                  activeTab === 'chat' ? 'text-accent-gold' : 'text-neutral-medium'
+                }`}>
+                  AI Chat
+                </Text>
+              </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              className={`flex-1 p-4 ${activeTab === 'manual' ? 'bg-accent-amber/20' : ''}`}
+              onPress={() => setActiveTab('manual')}
+              activeOpacity={0.7}
+            >
+              <View className="items-center">
+                <Ionicons
+                  name="settings"
+                  size={24}
+                  color={activeTab === 'manual' ? '#E49B3F' : '#8B7355'}
+                />
+                <Text className={`text-xs mt-1 ${
+                  activeTab === 'manual' ? 'text-accent-gold' : 'text-neutral-medium'
+                }`}>
+                  Manual
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
           
-          {/* Home indicator for iOS-style */}
+          {/* iOS Home Indicator */}
           {Platform.OS === 'ios' && (
-            <View style={styles.homeIndicatorContainer}>
-              <View style={styles.homeIndicator} />
+            <View className="items-center py-2">
+              <View className="w-32 h-1 bg-neutral-medium/30 rounded-full" />
             </View>
           )}
-        </View>
+        </Surface>
       </SafeAreaView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  headerGradient: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5EA',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    paddingBottom: 24,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1C1C1E',
-    marginBottom: 2,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: '#8E8E93',
-    fontWeight: '400',
-  },
-  content: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-  },
-  bottomNav: {
-    backgroundColor: 'rgba(248, 249, 250, 0.95)',
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    paddingTop: 8,
-    paddingBottom: 4,
-  },
-  tabButton: {
-    flex: 1,
-  },
-  tabContent: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  activeIconContainer: {
-    backgroundColor: '#E3F2FD',
-  },
-  tabLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#8E8E93',
-  },
-  activeTabLabel: {
-    color: '#007AFF',
-  },
-  homeIndicatorContainer: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  homeIndicator: {
-    width: 134,
-    height: 5,
-    backgroundColor: '#C7C7CC',
-    borderRadius: 3,
-  },
-});

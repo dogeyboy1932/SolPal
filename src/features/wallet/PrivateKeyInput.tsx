@@ -99,7 +99,14 @@ export const PrivateKeyInput: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View className="border-t border-accent-amber/30 pt-2 mt-4">
+      <Text className="text-sm font-semibold text-neutral-light mb-2">
+        Development Access
+      </Text>
+    
+    <View style={styles.container} >
+      
+      
       {/* Collapsible Header */}
       <TouchableOpacity 
         style={styles.header}
@@ -210,6 +217,7 @@ export const PrivateKeyInput: React.FC = () => {
           </View>
         </View>
       )}
+    </View>
     </View>
   );
 };
