@@ -254,6 +254,283 @@ export class SolanaService {
   getConnection(): Connection {
     return this.connection;
   }
+
+  // MCP-Compatible Service Methods
+
+  async getWalletBalance(connection: Connection | null, publicKey: PublicKey | null): Promise<any> {
+    try {
+      if (!connection || !publicKey) {
+        return {
+          success: false,
+          connected: false,
+          balance: 0,
+          currency: 'SOL',
+          message: 'Wallet not connected. Please connect your wallet first.'
+        };
+      }
+
+      const balance = await this.getBalance(publicKey);
+      
+      return {
+        success: true,
+        connected: true,
+        balance: balance,
+        currency: 'SOL',
+        address: publicKey.toBase58(),
+        network: this.getConnection().rpcEndpoint,
+        message: `Current balance: ${balance} SOL`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        connected: false,
+        balance: 0,
+        currency: 'SOL',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Failed to fetch wallet balance'
+      };
+    }
+  }
+
+  async getWalletAddress(connection: Connection | null, publicKey: PublicKey | null): Promise<any> {
+    try {
+      if (!connection || !publicKey) {
+        return {
+          success: false,
+          connected: false,
+          address: null,
+          message: 'Wallet not connected. Please connect your wallet first.'
+        };
+      }
+
+      return {
+        success: true,
+        connected: true,
+        address: publicKey.toBase58(),
+        message: 'Wallet address retrieved successfully'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        connected: false,
+        address: null,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Failed to get wallet address'
+      };
+    }
+  }
+
+  async getTransactionHistoryMCP(connection: Connection | null, publicKey: PublicKey | null, limit?: number): Promise<any> {
+    try {
+      if (!connection || !publicKey) {
+        return {
+          success: false,
+          connected: false,
+          transactions: [],
+          message: 'Wallet not connected. Please connect your wallet first.'
+        };
+      }
+
+      const transactionLimit = limit || 10;
+      const transactions = await this.getTransactionHistory(publicKey, transactionLimit);
+      
+      if (transactions.length === 0) {
+        return {
+          success: true,
+          connected: true,
+          transactions: [],
+          count: 0,
+          walletAddress: publicKey.toString(),
+          message: 'No transactions found for this wallet'
+        };
+      }
+
+      const formattedTransactions = transactions.map(tx => ({
+        signature: tx.signature,
+        timestamp: tx.timestamp,
+        slot: tx.slot,
+        confirmationStatus: tx.confirmationStatus,
+        error: tx.err,
+        explorerUrl: `https://explorer.solana.com/tx/${tx.signature}?cluster=devnet`
+      }));
+
+      return {
+        success: true,
+        connected: true,
+        transactions: formattedTransactions,
+        count: transactions.length,
+        walletAddress: publicKey.toString(),
+        message: `Retrieved ${transactions.length} transactions`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        connected: false,
+        transactions: [],
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Failed to fetch transaction history'
+      };
+    }
+  }
+
+  async validateWalletAddress(address: string): Promise<any> {
+    try {
+      let isValid = false;
+      let publicKey: PublicKey | null = null;
+
+      try {
+        publicKey = new PublicKey(address);
+        isValid = PublicKey.isOnCurve(publicKey);
+      } catch {
+        isValid = false;
+      }
+
+      return {
+        success: true,
+        valid: isValid,
+        address: address,
+        message: isValid ? 'Valid Solana wallet address' : 'Invalid Solana wallet address'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        valid: false,
+        address: address,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Address validation failed'
+      };
+    }
+  }
+
+  async requestSolAirdropMCP(connection: Connection | null, publicKey: PublicKey | null, amount?: number): Promise<any> {
+    try {
+      if (!connection || !publicKey) {
+        return {
+          success: false,
+          connected: false,
+          error: 'Wallet not connected',
+          message: 'Wallet not connected. Please connect your wallet first.'
+        };
+      }
+
+      const airdropAmount = amount || 1.0;
+      const lamports = airdropAmount * LAMPORTS_PER_SOL;
+
+      const signature = await this.requestAirdrop(publicKey, lamports);
+
+      return {
+        success: true,
+        connected: true,
+        amount: airdropAmount,
+        signature: signature,
+        message: `Successfully airdropped ${airdropAmount} SOL`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        connected: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Airdrop request failed'
+      };
+    }
+  }
+
+  async createSolTransferMCP(
+    connection: Connection | null, 
+    publicKey: PublicKey | null, 
+    signTransaction: ((transaction: Transaction) => Promise<string>) | null,
+    to: string, 
+    amount: number, 
+    execute?: boolean
+  ): Promise<any> {
+    try {
+      if (!publicKey || !connection) {
+        return {
+          success: false,
+          connected: false,
+          error: 'Wallet not connected',
+          message: 'Wallet not connected. Please connect your wallet first.'
+        };
+      }
+
+      // Validate recipient address
+      let recipientKey: PublicKey;
+      try {
+        recipientKey = new PublicKey(to);
+      } catch {
+        return {
+          success: false,
+          error: 'Invalid recipient address',
+          message: 'The provided recipient address is not a valid Solana wallet address'
+        };
+      }
+
+      // Check sender balance
+      const balance = await this.getBalance(publicKey);
+      if (balance < amount) {
+        return {
+          success: false,
+          error: 'Insufficient balance',
+          message: `Insufficient balance. Current: ${balance} SOL, Required: ${amount} SOL`
+        };
+      }
+
+      // Create transaction
+      const transaction = await this.createTransferTransaction(
+        publicKey,
+        recipientKey,
+        amount
+      );
+
+      // Estimate fee
+      const estimatedFee = await this.estimateTransactionFee(transaction);
+
+      // If not executing, just preview
+      if (!execute) {
+        return {
+          success: true,
+          executed: false,
+          preview: {
+            from: publicKey.toString(),
+            to: to,
+            amount: amount,
+            estimatedFee: estimatedFee,
+            totalCost: amount + estimatedFee
+          },
+          message: 'Transaction preview created. Set execute=true to send the transaction.'
+        };
+      }
+
+      // Execute transaction
+      if (!signTransaction) {
+        return {
+          success: false,
+          error: 'No signing function available',
+          message: 'Cannot execute transaction: wallet signing function not available'
+        };
+      }
+
+      const signature = await signTransaction(transaction);
+
+      return {
+        success: true,
+        executed: true,
+        from: publicKey.toString(),
+        to: to,
+        amount: amount,
+        signature,
+        explorerUrl: `https://explorer.solana.com/tx/${signature}?cluster=devnet`,
+        message: 'SOL transfer completed successfully'
+      };
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: `Failed to ${execute ? 'execute' : 'preview'} transfer`
+      };
+    }
+  }
 }
 
 export const solanaService = new SolanaService();

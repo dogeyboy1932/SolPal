@@ -262,8 +262,6 @@ export const createLiveConfigWithTools = (mcpTools: MCPTool[]): LiveConfig => {
     return LLM_CONFIG;
   }
 
-  // console.log('🔧 Converting MCP tools to Live API format:', mcpTools);
-
   // Convert MCP tools to proper Live API FunctionDeclaration format
   const mcpFunctionDeclarations = mcpTools.map(tool => {
     const functionDeclaration = {

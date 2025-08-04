@@ -1,7 +1,11 @@
 export interface MCPTool {
   name: string;
   description: string;
-  parameters: any;
+  parameters: {
+    type: string;
+    properties?: Record<string, any>;
+    required?: string[];
+  };
 }
 
 

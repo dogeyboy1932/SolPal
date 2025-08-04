@@ -14,151 +14,102 @@ export class NodeMCPServer extends BaseMCPServer {
   readonly serverDescription = "Provides person, event, and community node management";
 
   /**
-   * Define all tools available in this server
+   * Set up all tools using server.tool() pattern
    */
-  protected defineTools(): Record<string, MCPTool> {
-    return {
-      list_accessible_nodes: {
-        name: "list_accessible_nodes",
-        description: "List all accessible nodes in the network",
-        parameters: {
-          type: "object",
-          properties: {
-            type: {
-              type: "string",
-              description: "Filter by node type (person, event, community) - optional"
-            }
-          },
-          required: []
+  protected setupTools(): void {
+    this.tool(
+      "list_accessible_nodes",
+      {
+        type: {
+          type: "string",
+          description: "Filter by node type (person, event, community) - optional"
         }
       },
+      "List all accessible nodes in the network",
+      async (args) => await nodeService.listAccessibleNodes(args.type)
+    );
 
-      create_person_node: {
-        name: "create_person_node",
-        description: "Create a new person node",
-        parameters: {
-          type: "object",
-          properties: {
-            name: {
-              type: "string",
-              description: "Person's name"
-            },
-            walletAddress: {
-              type: "string",
-              description: "Person's wallet address"
-            },
-            notes: {
-              type: "string",
-              description: "Additional notes about the person"
-            },
-            tags: {
-              type: "array",
-              items: { type: "string" },
-              description: "Tags to categorize the person"
-            }
-          },
-          required: ["name"]
+    this.tool(
+      "create_person_node",
+      {
+        name: {
+          type: "string",
+          description: "Person's name",
+          required: true
+        },
+        walletAddress: {
+          type: "string",
+          description: "Person's wallet address"
+        },
+        notes: {
+          type: "string",
+          description: "Additional notes about the person"
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tags to categorize the person"
         }
       },
+      "Create a new person node",
+      async (args) => await nodeService.createPersonNodeService(args)
+    );
 
-      get_all_nodes: {
-        name: "get_all_nodes",
-        description: "Get all nodes in the network",
-        parameters: {
-          type: "object",
-          properties: {},
-          required: []
+    this.tool(
+      "get_all_nodes",
+      {},
+      "Get all nodes in the network",
+      async (args) => await nodeService.getAllNodesService()
+    );
+
+    this.tool(
+      "search_nodes",
+      {
+        query: {
+          type: "string",
+          description: "Search query",
+          required: true
+        },
+        type: {
+          type: "string",
+          description: "Node type filter"
         }
       },
+      "Search nodes by criteria",
+      async (args) => await nodeService.searchNodesService(args)
+    );
 
-      search_nodes: {
-        name: "search_nodes",
-        description: "Search nodes by criteria",
-        parameters: {
-          type: "object",
-          properties: {
-            query: {
-              type: "string",
-              description: "Search query"
-            },
-            type: {
-              type: "string",
-              description: "Node type filter"
-            }
-          },
-          required: []
+    this.tool(
+      "get_nodes_with_wallets",
+      {},
+      "Get all nodes that have wallet addresses",
+      async (args) => await nodeService.getNodesWithWalletsService()
+    );
+
+    this.tool(
+      "get_node_by_wallet",
+      {
+        address: {
+          type: "string",
+          description: "Wallet address to search for",
+          required: true
         }
       },
+      "Find a node by wallet address",
+      async (args) => await nodeService.getNodeByWalletService(args)
+    );
 
-      get_nodes_with_wallets: {
-        name: "get_nodes_with_wallets",
-        description: "Get all nodes that have wallet addresses",
-        parameters: {
-          type: "object",
-          properties: {},
-          required: []
+    this.tool(
+      "get_node_details",
+      {
+        id: {
+          type: "string",
+          description: "Node ID to get details for",
+          required: true
         }
       },
-
-      get_node_by_wallet: {
-        name: "get_node_by_wallet",
-        description: "Find a node by wallet address",
-        parameters: {
-          type: "object",
-          properties: {
-            address: {
-              type: "string",
-              description: "Wallet address to search for"
-            }
-          },
-          required: ["address"]
-        }
-      },
-
-      get_node_details: {
-        name: "get_node_details",
-        description: "Get detailed information about a specific node",
-        parameters: {
-          type: "object",
-          properties: {
-            id: {
-              type: "string",
-              description: "Node ID to get details for"
-            }
-          },
-          required: ["id"]
-        }
-      }
-    };
-  }
-
-  // Tool implementations
-
-  async list_accessible_nodes(args: { type?: string }): Promise<any> {
-    return await nodeService.listAccessibleNodes(args.type);
-  }
-
-  async create_person_node(args: { name: string; walletAddress?: string; notes?: string; tags?: string[] }): Promise<any> {
-    return await nodeService.createPersonNodeService(args);
-  }
-
-  async get_all_nodes(): Promise<any> {
-    return await nodeService.getAllNodesService();
-  }
-
-  async search_nodes(args: { query?: string; type?: string }): Promise<any> {
-    return await nodeService.searchNodesService(args);
-  }
-
-  async get_nodes_with_wallets(): Promise<any> {
-    return await nodeService.getNodesWithWalletsService();
-  }
-
-  async get_node_by_wallet(args: { address: string }): Promise<any> {
-    return await nodeService.getNodeByWalletService(args);
-  }
-
-  async get_node_details(args: { id: string }): Promise<any> {
-    return await nodeService.getNodeDetailsService(args);
+      "Get detailed information about a specific node",
+      async (args) => await nodeService.getNodeDetailsService(args)
+    );
   }
 }

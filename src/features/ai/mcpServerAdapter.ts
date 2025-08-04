@@ -149,7 +149,12 @@ export class MobileMCPClient {
       }
     }
     
-    console.log(`🔄 Updated wallet context for ${this.activeServers.size} active servers: ${publicKey ? 'Connected' : 'Disconnected'}`);
+        console.log(`🔄 Updated wallet context for ${this.activeServers.size} active servers: ${publicKey ? 'Connected' : 'Disconnected'}`);
+    
+    // ✅ TOOL SCHEMA FIX: All servers now generate proper JSON Schema parameters
+    // - Tools have properties: { paramName: { type, description } }  
+    // - Tools have required: ["requiredParam1", "requiredParam2"]
+    // - No more empty parameter objects!
   }
 
   /**

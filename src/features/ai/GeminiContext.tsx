@@ -121,7 +121,7 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
           const formattedTools = activeTools.map((tool: MCPTool) => ({
             name: tool.name,
             description: tool.description || tool.name,
-            parameters: tool.parameters || { type: "object", properties: {}, required: [] }
+            parameters: tool.parameters // ✅ No fallback needed - BaseMCP now generates proper schemas
           }));
           setTools(formattedTools);
           
@@ -215,8 +215,8 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
         console.log('✅ Gemini Live setup complete');
         setLiveConnected(true);
       })
-      .on("close", () => {
-        console.log('🔌 Gemini Live disconnected');
+      .on("close", (reason) => {
+        console.log('🔌 Gemini Live disconnected:', reason);
         setLiveConnected(false);
       });
 
@@ -269,7 +269,7 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
       const newTools = toolList.tools.map((tool: MCPTool) => ({
         name: tool.name,
         description: tool.description || tool.name,
-        parameters: tool.parameters || { type: "object", properties: {}, required: [] }
+        parameters: tool.parameters // ✅ No fallback needed - BaseMCP now generates proper schemas
       }));
       
       setTools(newTools);
@@ -516,12 +516,12 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('🔄 Refreshing LLM tools from active servers...');
       
-      // Get tools from all active servers
+      // Get tools from all active servers  
       const activeTools = await mcpClient.getActiveTools();
       const formattedTools = activeTools.map((tool: MCPTool) => ({
         name: tool.name,
         description: tool.description || tool.name,
-        parameters: tool.parameters || { type: "object", properties: {}, required: [] }
+        parameters: tool.parameters // ✅ No fallback needed - BaseMCP now generates proper schemas
       }));
       
       setTools(formattedTools);

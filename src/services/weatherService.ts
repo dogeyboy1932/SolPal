@@ -67,4 +67,196 @@ export class WeatherService {
   static get apiBase(): string {
     return this.NWS_API_BASE;
   }
+
+  /**
+   * Get current weather for a location - MCP compatible
+   */
+  static async getCurrentWeather(location: string): Promise<any> {
+    try {
+      console.log(`🌤️ Weather: Getting current weather for ${location}`);
+      
+      const coords = await this.getCoordinatesForCity(location);
+      if (!coords) {
+        return {
+          success: false,
+          error: 'Location not found',
+          message: `Could not find coordinates for "${location}". Please try with a US city and state, e.g., "San Francisco, CA"`
+        };
+      }
+
+      const pointsUrl = `${this.apiBase}/points/${coords.lat.toFixed(4)},${coords.lon.toFixed(4)}`;
+      const pointsData = await this.makeNWSRequest(pointsUrl);
+
+      if (!pointsData?.properties?.forecast) {
+        return {
+          success: false,
+          error: 'NWS API error',
+          message: `Failed to retrieve grid point data for ${location}. This location may not be supported by the NWS API (only US locations are supported).`
+        };
+      }
+
+      const forecastData = await this.makeNWSRequest(pointsData.properties.forecast);
+      const periods = forecastData?.properties?.periods || [];
+      
+      if (periods.length === 0) {
+        return {
+          success: false,
+          error: 'No forecast data',
+          message: "No forecast periods available"
+        };
+      }
+
+      const currentPeriod = periods[0];
+      return {
+        success: true,
+        data: {
+          location,
+          coordinates: `${coords.lat.toFixed(4)}, ${coords.lon.toFixed(4)}`,
+          period: currentPeriod.name || "Current",
+          temperature: `${currentPeriod.temperature || "Unknown"}°${currentPeriod.temperatureUnit || "F"}`,
+          wind: `${currentPeriod.windSpeed || "Unknown"} ${currentPeriod.windDirection || ""}`,
+          conditions: currentPeriod.shortForecast || "No forecast available"
+        },
+        message: `Current weather for ${location}`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Failed to get current weather'
+      };
+    }
+  }
+
+  /**
+   * Get weather forecast for a location - MCP compatible
+   */
+  static async getForecast(location: string): Promise<any> {
+    try {
+      console.log(`🌤️ Weather: Getting forecast for ${location}`);
+      
+      const coords = await this.getCoordinatesForCity(location);
+      if (!coords) {
+        return {
+          success: false,
+          error: 'Location not found',
+          message: `Could not find coordinates for "${location}". Please try with a US city and state, e.g., "Plainfield, IL"`
+        };
+      }
+
+      const pointsUrl = `${this.apiBase}/points/${coords.lat.toFixed(4)},${coords.lon.toFixed(4)}`;
+      const pointsData = await this.makeNWSRequest(pointsUrl);
+
+      if (!pointsData?.properties?.forecast) {
+        return {
+          success: false,
+          error: 'NWS API error',
+          message: `Failed to retrieve grid point data for ${location}. This location may not be supported by the NWS API (only US locations are supported).`
+        };
+      }
+
+      const forecastData = await this.makeNWSRequest(pointsData.properties.forecast);
+      const periods = forecastData?.properties?.periods || [];
+      
+      if (periods.length === 0) {
+        return {
+          success: false,
+          error: 'No forecast data',
+          message: "No forecast periods available"
+        };
+      }
+
+      const formattedForecast = periods.map((period: any) => ({
+        name: period.name || "Unknown",
+        temperature: `${period.temperature || "Unknown"}°${period.temperatureUnit || "F"}`,
+        wind: `${period.windSpeed || "Unknown"} ${period.windDirection || ""}`,
+        conditions: period.shortForecast || "No forecast available"
+      }));
+
+      return {
+        success: true,
+        data: {
+          location,
+          forecast: formattedForecast,
+          count: periods.length
+        },
+        message: `Weather forecast for ${location}`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Failed to get weather forecast'
+      };
+    }
+  }
+
+  /**
+   * Get weather alerts for a state - MCP compatible
+   */
+  static async getAlerts(state: string): Promise<any> {
+    try {
+      console.log(`🌤️ Weather: Getting alerts for ${state}`);
+      
+      const stateCode = state.toUpperCase();
+      if (stateCode.length !== 2) {
+        return {
+          success: false,
+          error: 'Invalid state code',
+          message: 'State code must be a two-letter US state code (e.g., IL, CA, NY)'
+        };
+      }
+
+      const alertsUrl = `${this.apiBase}/alerts?area=${stateCode}`;
+      const alertsData = await this.makeNWSRequest(alertsUrl);
+
+      if (!alertsData) {
+        return {
+          success: false,
+          error: 'NWS API error',
+          message: "Failed to retrieve alerts data"
+        };
+      }
+
+      const features = alertsData.features || [];
+      if (features.length === 0) {
+        return {
+          success: true,
+          data: {
+            state: stateCode,
+            alerts: [],
+            count: 0
+          },
+          message: `No active alerts for ${stateCode}`
+        };
+      }
+
+      const formattedAlerts = features.map((feature: any) => {
+        const props = feature.properties;
+        return {
+          event: props.event || "Unknown",
+          area: props.areaDesc || "Unknown",
+          severity: props.severity || "Unknown",
+          status: props.status || "Unknown",
+          headline: props.headline || "No headline"
+        };
+      });
+
+      return {
+        success: true,
+        data: {
+          state: stateCode,
+          alerts: formattedAlerts,
+          count: features.length
+        },
+        message: `Found ${features.length} active alerts for ${stateCode}`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        message: 'Failed to get weather alerts'
+      };
+    }
+  }
 }
