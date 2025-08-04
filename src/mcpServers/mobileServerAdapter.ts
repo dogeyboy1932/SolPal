@@ -239,31 +239,31 @@ export class MobileMCPClient {
   }
 
   // Test method to verify tool calling works
-  async testToolCalling() {
-    console.log('🧪 Testing Mobile MCP Client tool calling...');
+  // async testToolCalling() {
+  //   console.log('🧪 Testing Mobile MCP Client tool calling...');
     
-    try {
-      // Test basic tool
-      const result1 = await this.callTool('list_available_tools', {});
-      console.log('✅ Test 1 - list_available_tools:', result1);
+  //   try {
+  //     // Test basic tool
+  //     const result1 = await this.callTool('list_available_tools', {});
+  //     console.log('✅ Test 1 - list_available_tools:', result1);
       
-      // Test tool with parameters
-      const result2 = await this.callTool('validate_wallet_address', { 
-        address: '11111111111111111111111111111111111111111111' 
-      });
-      console.log('✅ Test 2 - validate_wallet_address:', result2);
+  //     // Test tool with parameters
+  //     const result2 = await this.callTool('validate_wallet_address', { 
+  //       address: '11111111111111111111111111111111111111111111' 
+  //     });
+  //     console.log('✅ Test 2 - validate_wallet_address:', result2);
       
-      // Test wallet tools
-      const result3 = await this.callTool('get_wallet_balance', {});
-      console.log('✅ Test 3 - get_wallet_balance:', result3);
+  //     // Test wallet tools
+  //     const result3 = await this.callTool('get_wallet_balance', {});
+  //     console.log('✅ Test 3 - get_wallet_balance:', result3);
       
-      console.log('🎉 All Mobile MCP Client tests passed!');
-      return true;
-    } catch (error) {
-      console.error('❌ Mobile MCP Client test failed:', error);
-      return false;
-    }
-  }
+  //     console.log('🎉 All Mobile MCP Client tests passed!');
+  //     return true;
+  //   } catch (error) {
+  //     console.error('❌ Mobile MCP Client test failed:', error);
+  //     return false;
+  //   }
+  // }
 }
 
 /**

@@ -28,14 +28,16 @@ import { MCPServerManagement } from '@/features/ai/MCPServerManagement';
 import { AIConnectionManager } from '@/features/ai/AIConnectionManager';
 import { ManualNodeManagement } from '@/features/nodes/ManualNodeManagement';
 import { NodeAccessControl } from '@/features/nodes/NodeAccessControl';
-import { SmartTransactionFeatures } from '@/features/ai/SmartTransactionFeatures';
+// import { SmartTransactionFeatures } from '@/features/ai/SmartTransactionFeatures';
 import { E2ETestRunner } from '@/features/system/E2ETestRunner';
 
 export const ManualOperationsScreen: React.FC = () => {
   const { connected, connecting, publicKey, disconnect } = useWallet();
   const { liveConnected, liveDisconnect } = useGemini();
   const [refreshing, setRefreshing] = React.useState(false);
-  const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp' | 'nodes' | 'node_access' | 'smart_ai' | 'e2e_test'>('balance');
+  const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp' | 'nodes' | 'node_access' 
+  // | 'smart_ai' 
+  | 'e2e_test'>('balance');
 
   // Cross-platform alert function
   const showAlert = (title: string, message: string, buttons: Array<{text: string, onPress?: () => void, style?: 'default' | 'cancel' | 'destructive'}>) => {
@@ -176,12 +178,12 @@ export const ManualOperationsScreen: React.FC = () => {
       case 'node_access':
         return <NodeAccessControl />;
       
-      case 'smart_ai':
-        return (
-          <View className="flex-1">
-            <SmartTransactionFeatures />
-          </View>
-        );
+      // case 'smart_ai':
+      //   return (
+      //     <View className="flex-1">
+      //       <SmartTransactionFeatures />
+      //     </View>
+      //   );
       
       case 'e2e_test':
         return (
@@ -350,7 +352,7 @@ export const ManualOperationsScreen: React.FC = () => {
             { key: 'backup', icon: 'shield-checkmark', title: 'Backup' },
             { key: 'ai_status', icon: 'sparkles', title: 'AI Status' },
             
-            { key: 'smart_ai', icon: 'brain', title: 'Smart AI' },
+            // { key: 'smart_ai', icon: 'brain', title: 'Smart AI' },
             { key: 'mcp', icon: 'link', title: 'MCP' },
             { key: 'e2e_test', icon: 'flask', title: 'E2E Test' },
           ].map((section) => (

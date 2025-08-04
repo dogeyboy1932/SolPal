@@ -88,6 +88,8 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
           const newClient = await createMobileMCPClient();
           setMcpClient(newClient);
 
+
+
           // Get tools
           const toolList = await newClient.listTools();
           const newTools = toolList.tools.map((tool: MCPTool) => ({
@@ -97,12 +99,12 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
           }));
           
           setTools(newTools);
-          console.log(`✅ Auto-connected to combined server with ${newTools.length} tools:`, newTools.map((t: MCPTool) => t.name));
+          // console.log(`✅ Auto-connected to combined server with ${newTools.length} tools:`, newTools.map((t: MCPTool) => t.name));
           
           // Test tool calling after successful connection
           setTimeout(async () => {
             console.log('🚀 Starting Mobile MCP Client test sequence...');
-            await newClient.testToolCalling();
+            // await newClient.testToolCalling();
           }, 2000);
         } catch (error) {
           console.warn('⚠️ Failed to auto-connect to combined server:', error);
