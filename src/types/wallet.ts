@@ -1,3 +1,5 @@
+import { Connection } from "@solana/web3.js";
+
 export interface WalletState {
   connected: boolean;
   connecting: boolean;
@@ -16,6 +18,7 @@ export interface WalletContextType extends WalletState {
   refreshBalance: () => Promise<void>;
   signAndSendTransaction: (transaction: any) => Promise<string>;
   switchAccount: (accountIndex: number) => Promise<void>;
+  connection: Connection | null;
 }
 
 export interface Transaction {

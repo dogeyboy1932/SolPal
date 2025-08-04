@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode, useRef,
 import { MobileMCPClient, createMobileMCPClient } from '../../mcpServers/mobileServerAdapter';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import { setupMCPServer } from '../../mcpServers/_shared';
+// import { setupMCPServer } from '../../mcpServers/_shared';
 import type { ToolCall, LiveFunctionResponse, MCPTool } from '../../types/live-types';
 import type { Node } from '../../types/nodes';
 import { MultimodalLiveClient } from './liveClient';
@@ -15,6 +15,9 @@ import { createLiveConfigWithTools } from '../../lib/utils';
 // Voice functionality for React Native
 import { AudioRecorder } from '../voice/AudioRecorder';
 import { VoicePermissions } from '../voice/VoicePermissions';
+import { useWallet } from '@/contexts/WalletContext';
+import { PublicKey } from '@solana/web3.js';
+
 
 interface GeminiContextType {
   mcpConnect: (serverType: string) => Promise<boolean>;
@@ -76,6 +79,8 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
     [apiKey],
   );
 
+  const { connection, signAndSendTransaction, ...state } = useWallet();
+
   // Auto-connect to combined MCP server when provider mounts
   useEffect(() => {
     const initializeCombinedServer = async () => {
@@ -83,7 +88,7 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
         console.log('🚀 Auto-connecting to combined MCP server...');
         try {
           console.log(`🔌 Connecting to combined MCP Server...`);
-          
+
           // Create mobile-compatible MCP client
           const newClient = await createMobileMCPClient();
           setMcpClient(newClient);
@@ -114,6 +119,17 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
 
     initializeCombinedServer();
   }, []); // Run once on mount
+
+  // Update wallet context for AI
+  useEffect(() => {
+    if (state.connected && state.publicKey && mcpClient) {
+      console.log(`🔗 Wallet connected: ${state.publicKey}`);
+      mcpClient.updateWalletContext(connection, new PublicKey(state.publicKey), signAndSendTransaction);
+    } 
+  }, [state.connected, state.publicKey]);
+
+
+
 
   // Set up live client event handlers
   useEffect(() => {
@@ -415,34 +431,34 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
   const toggleMCPServer = useCallback(async (serverType: string, enabled?: boolean) => {
     const isEnabled = enabled !== undefined ? enabled : !activeMCPServers[serverType];
     
-    try {
-      if (isEnabled && !mcpServerInstances[serverType]) {
-        // Start MCP server
-        console.log(`🚀 Starting ${serverType} MCP server...`);
-        const server = await setupMCPServer(serverType);
-        setMcpServerInstances(prev => ({
-          ...prev,
-          [serverType]: server
-        }));
-      } else if (!isEnabled && mcpServerInstances[serverType]) {
-        // Stop MCP server
-        console.log(`⏹️ Stopping ${serverType} MCP server...`);
-        await mcpServerInstances[serverType].close();
-        setMcpServerInstances(prev => {
-          const newInstances = { ...prev };
-          delete newInstances[serverType];
-          return newInstances;
-        });
-      }
+    // try {
+    //   if (isEnabled && !mcpServerInstances[serverType]) {
+    //     // Start MCP server
+    //     console.log(`🚀 Starting ${serverType} MCP server...`);
+    //     const server = await setupMCPServer(serverType);
+    //     setMcpServerInstances(prev => ({
+    //       ...prev,
+    //       [serverType]: server
+    //     }));
+    //   } else if (!isEnabled && mcpServerInstances[serverType]) {
+    //     // Stop MCP server
+    //     console.log(`⏹️ Stopping ${serverType} MCP server...`);
+    //     await mcpServerInstances[serverType].close();
+    //     setMcpServerInstances(prev => {
+    //       const newInstances = { ...prev };
+    //       delete newInstances[serverType];
+    //       return newInstances;
+    //     });
+    //   }
 
-      setActiveMCPServers(prev => ({
-        ...prev,
-        [serverType]: isEnabled
-      }));
+    //   setActiveMCPServers(prev => ({
+    //     ...prev,
+    //     [serverType]: isEnabled
+    //   }));
 
-    } catch (error) {
-      console.error(`❌ Failed to toggle ${serverType} MCP server:`, error);
-    }
+    // } catch (error) {
+    //   console.error(`❌ Failed to toggle ${serverType} MCP server:`, error);
+    // }
   }, [activeMCPServers, mcpServerInstances]);
 
   const disconnect = useCallback(async () => {

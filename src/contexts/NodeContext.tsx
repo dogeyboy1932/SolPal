@@ -15,7 +15,60 @@ import {
   NodeContext as NodeContextType,
   NodeType
 } from '../types/nodes';
-import { initializeNodeManagementFunctions } from '../mcpServers/combinedServer';
+import { nodeService } from '@/services/nodeService';
+// import { initializeNodeManagementFunctions } from '../mcpServers/combinedServer';
+
+// Global variables to store Node context state setters and getters
+let globalCreatePersonNode: ((node: CreatePersonNodeData) => Promise<PersonNode>) | null = null;
+let globalCreateEventNode: ((node: CreateEventNodeData) => Promise<EventNode>) | null = null;
+let globalCreateCommunityNode: ((node: CreateCommunityNodeData) => Promise<CommunityNode>) | null = null;
+let globalUpdatePersonNode: ((id: string, updates: UpdatePersonNodeData) => Promise<void>) | null = null;
+let globalUpdateEventNode: ((id: string, updates: UpdateEventNodeData) => Promise<void>) | null = null;
+let globalUpdateCommunityNode: ((id: string, updates: UpdateCommunityNodeData) => Promise<void>) | null = null;
+let globalGetNodes: (() => Node[]) | null = null;
+let globalGetNodeById: ((id: string) => Node | undefined) | null = null;
+let globalSearchNodes: ((filters: NodeFilters) => Node[]) | null = null;
+let globalGetLLMAccessibleNodes: (() => Node[]) | null = null;
+
+// Initialize the global node management functions (call this from NodeContext)
+export function initializeNodeManagementFunctions(
+  createPersonNode: (node: CreatePersonNodeData) => Promise<PersonNode>,
+  createEventNode: (node: CreateEventNodeData) => Promise<EventNode>,
+  createCommunityNode: (node: CreateCommunityNodeData) => Promise<CommunityNode>,
+  updatePersonNode: (id: string, updates: UpdatePersonNodeData) => Promise<void>,
+  updateEventNode: (id: string, updates: UpdateEventNodeData) => Promise<void>,
+  updateCommunityNode: (id: string, updates: UpdateCommunityNodeData) => Promise<void>,
+  getNodes: () => Node[],
+  getNodeById: (id: string) => Node | undefined,
+  searchNodes: (filters: NodeFilters) => Node[],
+  getLLMAccessibleNodes: () => Node[]
+) {
+  // Initialize both the global variables (for backwards compatibility) and nodeService
+  globalCreatePersonNode = createPersonNode;
+  globalCreateEventNode = createEventNode;
+  globalCreateCommunityNode = createCommunityNode;
+  globalUpdatePersonNode = updatePersonNode;
+  globalUpdateEventNode = updateEventNode;
+  globalUpdateCommunityNode = updateCommunityNode;
+  globalGetNodes = getNodes;
+  globalGetNodeById = getNodeById;
+  globalSearchNodes = searchNodes;
+  globalGetLLMAccessibleNodes = getLLMAccessibleNodes;
+  
+  // Initialize nodeService with the same functions
+  nodeService.initializeNodeManagementFunctions(
+    createPersonNode,
+    createEventNode,
+    createCommunityNode,
+    updatePersonNode,
+    updateEventNode,
+    updateCommunityNode,
+    getNodes,
+    getNodeById,
+    searchNodes,
+    getLLMAccessibleNodes
+  );
+}
 
 interface NodeContextValue {
   // Node management

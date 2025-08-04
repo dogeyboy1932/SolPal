@@ -1,195 +1,120 @@
 /**
  * Mobile-compatible MCP Server Adapter
  * This replaces the web-based TabClientTransport with direct function calls
- * for React Native compatibility
+ * for React Native compatibility using class-based servers
  */
 
 import type { MCPTool, ToolCall, LiveFunctionResponse } from '../types/live-types';
-import * as combinedServer from './combinedServer';
+import { Connection, PublicKey, Transaction } from '@solana/web3.js';
+import { SolanaMCPServer } from './SolanaMCPServer';
+import { NodeMCPServer, initializeNodeManagementFunctions } from './NodeMCPServer';
 
-// Define the server tools directly for mobile compatibility
-const MOBILE_SERVER_TOOLS: MCPTool[] = [
-  {
-    name: "list_available_tools",
-    description: "List all available MCP server tools",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  {
-    name: "get_wallet_balance",
-    description: "Get the current wallet balance in SOL",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  {
-    name: "get_wallet_address",
-    description: "Get the current wallet address",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  {
-    name: "get_transaction_history",
-    description: "Get recent transaction history",
-    parameters: { 
-      type: "object", 
-      properties: {
-        limit: { type: "number", description: "Number of transactions to retrieve" }
-      }, 
-      required: [] 
-    }
-  },
-  {
-    name: "validate_wallet_address",
-    description: "Validate a Solana wallet address",
-    parameters: { 
-      type: "object", 
-      properties: {
-        address: { type: "string", description: "Wallet address to validate" }
-      }, 
-      required: ["address"] 
-    }
-  },
-  {
-    name: "request_sol_airdrop",
-    description: "Request SOL airdrop for testing (devnet only)",
-    parameters: { 
-      type: "object", 
-      properties: {
-        amount: { type: "number", description: "Amount of SOL to request (0.1-2.0)" }
-      }, 
-      required: [] 
-    }
-  },
-  {
-    name: "create_sol_transfer",
-    description: "Create and send a SOL transfer transaction",
-    parameters: { 
-      type: "object", 
-      properties: {
-        recipient: { type: "string", description: "Recipient wallet address" },
-        amount: { type: "number", description: "Amount in SOL to transfer" },
-        execute: { type: "boolean", description: "Set to true to execute the transaction, false for preview only" }
-      }, 
-      required: ["recipient", "amount"] 
-    }
-  },
-  {
-    name: "list_accessible_nodes",
-    description: "List all accessible nodes in the network",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  {
-    name: "create_person_node",
-    description: "Create a new person node",
-    parameters: { 
-      type: "object", 
-      properties: {
-        name: { type: "string", description: "Person's name" },
-        walletAddress: { type: "string", description: "Person's wallet address" },
-        notes: { type: "string", description: "Additional notes about the person" },
-        tags: { type: "array", items: { type: "string" }, description: "Tags to categorize the person" }
-      }, 
-      required: ["name"] 
-    }
-  },
-  {
-    name: "get_all_nodes", 
-    description: "Get all nodes in the network",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  {
-    name: "search_nodes",
-    description: "Search nodes by criteria",
-    parameters: { 
-      type: "object", 
-      properties: {
-        query: { type: "string", description: "Search query" },
-        type: { type: "string", description: "Node type filter" }
-      }, 
-      required: [] 
-    }
-  },
-  {
-    name: "get_nodes_with_wallets",
-    description: "Get all nodes that have wallet addresses",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  {
-    name: "get_node_by_wallet",
-    description: "Find a node by wallet address",
-    parameters: { 
-      type: "object", 
-      properties: {
-        address: { type: "string", description: "Wallet address to search for" }
-      }, 
-      required: ["address"] 
-    }
-  },
-  {
-    name: "get_node_details",
-    description: "Get detailed information about a specific node",
-    parameters: { 
-      type: "object", 
-      properties: {
-        id: { type: "string", description: "Node ID to get details for" }
-      }, 
-      required: ["id"] 
-    }
-  },
-  {
-    name: "generate_smart_suggestions",
-    description: "Generate smart suggestions based on context",
-    parameters: { 
-      type: "object", 
-      properties: {
-        context: { type: "string", description: "Context for generating suggestions" }
-      }, 
-      required: [] 
-    }
-  },
-  {
-    name: "analyze_transaction_insights",
-    description: "Analyze transaction patterns and provide insights",
-    parameters: { type: "object", properties: {}, required: [] }
-  },
-  {
-    name: "smart_safety_check",
-    description: "Perform safety checks on transactions",
-    parameters: { 
-      type: "object", 
-      properties: {
-        transaction_data: { type: "object", description: "Transaction data to check" }
-      }, 
-      required: ["transaction_data"] 
-    }
-  }
-];
+export interface MobileServerContext {
+  connection: Connection | null;
+  publicKey: PublicKey | null;
+  signTransaction?: (transaction: Transaction) => Promise<string>;
+}
 
 /**
- * Mobile MCP Client - Direct function call implementation
- * This bypasses the client-server transport layer for mobile environments
+ * Mobile MCP Client - Direct function call implementation using class-based servers
  */
 export class MobileMCPClient {
-  private tools: MCPTool[] = MOBILE_SERVER_TOOLS;
+  private solanaServer: SolanaMCPServer;
+  private nodeServer: NodeMCPServer;
+  private context: MobileServerContext = { connection: null, publicKey: null };
+  private initialized: boolean = false;
 
   constructor() {
-    console.log(`📱 Mobile MCP Client initialized with ${this.tools.length} tools:`, this.tools.map(t => t.name));
+    // Initialize servers
+    this.solanaServer = new SolanaMCPServer();
+    this.nodeServer = new NodeMCPServer();
+    
+    console.log(`📱 Mobile MCP Client initialized with class-based servers`);
   }
 
+  // /**
+  //  * Initialize the client with node management functions
+  //  */
+  // async initialize(nodeContext: {
+  //   createPersonNode: (node: any) => Promise<any>,
+  //   getNodes: () => any[],
+  //   getNodeById: (id: string) => any,
+  //   searchNodes: (filters: any) => any[],
+  //   getLLMAccessibleNodes: () => any[]
+  // }) {
+  //   if (!this.initialized) {
+  //     initializeNodeManagementFunctions(
+  //       nodeContext.createPersonNode,
+  //       nodeContext.getNodes,
+  //       nodeContext.getNodeById,
+  //       nodeContext.searchNodes,
+  //       nodeContext.getLLMAccessibleNodes
+  //     );
+  //     this.initialized = true;
+  //     console.log('🔗 Node management functions initialized');
+  //   }
+  // }
+
+  /**
+   * Update the wallet context (called when wallet connects/disconnects)
+   */
+  updateWalletContext(connection: Connection | null, publicKey: PublicKey | null, signTransaction: (transaction: Transaction) => Promise<string>) {
+    this.context = { connection, publicKey, signTransaction };
+    
+    // Update both servers with new context
+    if (connection && publicKey) {
+      this.solanaServer.initialize(connection, publicKey, signTransaction);
+    }
+    
+    console.log(`🔄 Updated wallet context: ${publicKey ? 'Connected' : 'Disconnected'}`);
+  }
+
+  /**
+   * Get all available tools from all servers
+   */
   async getTools(): Promise<MCPTool[]> {
-    return this.tools;
+    const solanaTools = this.solanaServer.getAvailableTools();
+    const nodeTools = this.nodeServer.getAvailableTools();
+    
+    const allTools = [...solanaTools, ...nodeTools];
+    console.log(`📋 Available tools: ${allTools.length} (Solana: ${solanaTools.length}, Node: ${nodeTools.length})`);
+    
+    return allTools;
   }
 
+  /**
+   * Execute a tool by name with arguments
+   */
   async callTool(name: string, args: any): Promise<any> {
     try {
-      console.log(`🔧 Calling mobile MCP tool: ${name}`, args);
+      console.log(`🔧 Calling MCP tool: ${name}`, args);
       
-      // Route to the actual implementation functions from combinedServer
-      const result = await combinedServer.executeServerTool(name, args);
+      // Try Solana server first
+      if (this.solanaServer.hasTool(name)) {
+        const result = await this.solanaServer.executeTool(name, args);
+        console.log(`✅ Solana tool result for ${name}:`, result);
+        return result;
+      }
       
-      console.log(`✅ Mobile MCP tool result for ${name}:`, result);
-      return result;
+      // Try Node server
+      if (this.nodeServer.hasTool(name)) {
+        const result = await this.nodeServer.executeTool(name, args);
+        console.log(`✅ Node tool result for ${name}:`, result);
+        return result;
+      }
+      
+      // Tool not found
+      const error = `Tool '${name}' not found in any server`;
+      console.error(`❌ ${error}`);
+      return {
+        success: false,
+        error,
+        message: `Available tools: ${(await this.getTools()).map(t => t.name).join(', ')}`
+      };
+      
     } catch (error) {
-      console.error(`❌ Mobile MCP tool error for ${name}:`, error);
+      console.error(`❌ Tool execution error for ${name}:`, error);
       
-      // Return a structured error response
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -198,6 +123,9 @@ export class MobileMCPClient {
     }
   }
 
+  /**
+   * Handle multiple tool calls (Live API format)
+   */
   async handleToolCall(toolCall: ToolCall): Promise<LiveFunctionResponse[]> {
     const functionResponses: LiveFunctionResponse[] = [];
     
@@ -213,6 +141,7 @@ export class MobileMCPClient {
         console.error(`❌ Error calling tool ${call.name}:`, error);
         functionResponses.push({
           response: {
+            success: false,
             error: error instanceof Error ? error.message : 'Unknown error'
           },
           id: call.id
@@ -223,9 +152,25 @@ export class MobileMCPClient {
     return functionResponses;
   }
 
+  /**
+   * Get current node connection
+   */
+  getCurrentConnection(): Connection | null {
+    return this.context.connection;
+  }
+
+  /**
+   * Get current network name
+   */
+  getCurrentNetwork(): string | null {
+    // Since NodeMCPServer no longer handles network connections,
+    // we'll need to track this in the context or elsewhere
+    return 'devnet'; // Default for now
+  }
+
   // Compatibility methods for existing code
   async listTools() {
-    return { tools: this.tools };
+    return { tools: await this.getTools() };
   }
 
   async connect() {
@@ -234,36 +179,36 @@ export class MobileMCPClient {
   }
 
   async disconnect() {
-    // Nothing to disconnect for direct calls
+    // Clear context
+    this.context = { connection: null, publicKey: null };
     return true;
   }
 
-  // Test method to verify tool calling works
-  // async testToolCalling() {
-  //   console.log('🧪 Testing Mobile MCP Client tool calling...');
+  /**
+   * Test method to verify tool calling works
+   */
+  async testToolCalling(): Promise<boolean> {
+    console.log('🧪 Testing Mobile MCP Client tool calling...');
     
-  //   try {
-  //     // Test basic tool
-  //     const result1 = await this.callTool('list_available_tools', {});
-  //     console.log('✅ Test 1 - list_available_tools:', result1);
+    try {
+      // Test basic tool from each server
+      const result1 = await this.callTool('list_available_tools', {});
+      console.log('✅ Test 1 - list_available_tools:', result1);
       
-  //     // Test tool with parameters
-  //     const result2 = await this.callTool('validate_wallet_address', { 
-  //       address: '11111111111111111111111111111111111111111111' 
-  //     });
-  //     console.log('✅ Test 2 - validate_wallet_address:', result2);
+      const result2 = await this.callTool('list_available_nodes', {});
+      console.log('✅ Test 2 - list_available_nodes:', result2);
       
-  //     // Test wallet tools
-  //     const result3 = await this.callTool('get_wallet_balance', {});
-  //     console.log('✅ Test 3 - get_wallet_balance:', result3);
+      // Test wallet tools (may fail if not connected, but should return proper error)
+      const result3 = await this.callTool('get_wallet_balance', {});
+      console.log('✅ Test 3 - get_wallet_balance:', result3);
       
-  //     console.log('🎉 All Mobile MCP Client tests passed!');
-  //     return true;
-  //   } catch (error) {
-  //     console.error('❌ Mobile MCP Client test failed:', error);
-  //     return false;
-  //   }
-  // }
+      console.log('🎉 Mobile MCP Client tests completed!');
+      return true;
+    } catch (error) {
+      console.error('❌ Mobile MCP Client test failed:', error);
+      return false;
+    }
+  }
 }
 
 /**

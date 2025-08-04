@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { useGemini } from './GeminiContext';
+import { useGemini } from '../features/ai/GeminiContext';
 
 interface MCPServer {
   id: string;

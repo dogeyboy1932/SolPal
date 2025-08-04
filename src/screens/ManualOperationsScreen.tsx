@@ -24,7 +24,7 @@ import { TransactionBuilder } from '@/features/transactions/TransactionBuilder';
 import { AdvancedTransactionFeatures } from '@/features/transactions/AdvancedTransactionFeatures';
 import { BackupManualControls } from '@/features/system/BackupManualControls';
 import { AIConnectionStatus } from '@/features/ai/AIConnectionStatus';
-import { MCPServerManagement } from '@/features/ai/MCPServerManagement';
+import { MCPServerManagement } from '@/mcpServers/MCPServerManagement';
 import { AIConnectionManager } from '@/features/ai/AIConnectionManager';
 import { ManualNodeManagement } from '@/features/nodes/ManualNodeManagement';
 import { NodeAccessControl } from '@/features/nodes/NodeAccessControl';

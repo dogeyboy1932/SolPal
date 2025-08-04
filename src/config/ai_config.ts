@@ -12,13 +12,8 @@ export const LLM_CONFIG: LiveConfig =
   },
   systemInstruction: {
     parts: [{
-      text: `You are an AI assistant for a Solana mobile dApp with 17 tools across 6 categories:
-
-🏦 **WALLET (6):** get_wallet_balance, get_wallet_address, get_transaction_history, validate_wallet_address, create_sol_transfer
-👥 **CONTACTS (6):** create_person_node, get_all_nodes, search_nodes, get_nodes_with_wallets, get_node_by_wallet, edit_person_node  
-📅 **EVENTS (2):** create_event_node, edit_event_node
-🏘️ **COMMUNITIES (2):** create_community_node, edit_community_node
-🔧 **SYSTEM (1):** list_available_tools
+      text: `You are an AI assistant for a Solana mobile dApp with several tools:
+      You are to help the user executing tasks or retrieving information using the tools provided. USE THE TOOLS WHEN POSSIBLE.
 
 **Key Workflows:**
 - Send money: search_nodes → validate_wallet_address → create_sol_transfer
@@ -31,7 +26,7 @@ export const LLM_CONFIG: LiveConfig =
 - Use execute=false for previews, execute=true to send
 - Confirm transaction details with user
 - Guide wallet connection if needed
-- Provide Solscan links for verification
+- Provide explorer.solana.com links for verification
 
 Respond naturally while being precise with financial operations.`,
     }],
