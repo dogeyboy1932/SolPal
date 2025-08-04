@@ -4,89 +4,226 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
+  Platform,
+  StatusBar as RNStatusBar,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import AITransactionChat from '@/features/ai/AITransactionChat';
 import { ManualOperationsScreen } from './ManualOperationsScreen';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
 import { PrivateKeyInput } from '@/features/wallet/PrivateKeyInput';
-import { NativeWindTest } from '../components/NativeWindTest';
+
+type TabType = 'chat' | 'manual';
 
 export const HomeScreen: React.FC = () => {
-  const [showManualMode, setShowManualMode] = useState(false);
-  // const [showNativeWindTest, setShowNativeWindTest] = useState(true); // Add test toggle
+  const [activeTab, setActiveTab] = useState<TabType>('chat');
 
-  // // Show NativeWind test first to verify styling
-  // if (showNativeWindTest) {
-  //   return (
-  //     <SafeAreaView className="flex-1">
-  //       <View className="flex-row justify-between items-center p-4 bg-gray-100">
-  //         <Text className="text-lg font-semibold">NativeWind Test Mode</Text>
-  //         <TouchableOpacity 
-  //           className="bg-blue-500 px-3 py-2 rounded"
-  //           onPress={() => setShowNativeWindTest(false)}
-  //         >
-  //           <Text className="text-white text-sm">Back to App</Text>
-  //         </TouchableOpacity>
-  //       </View>
-  //       <NativeWindTest />
-  //     </SafeAreaView>
-  //   );
-  // }
+  const TabButton = ({ 
+    tab, 
+    icon, 
+    label, 
+    isActive 
+  }: { 
+    tab: TabType; 
+    icon: string; 
+    label: string; 
+    isActive: boolean;
+  }) => (
+    <TouchableOpacity
+      style={styles.tabButton}
+      onPress={() => setActiveTab(tab)}
+      activeOpacity={0.6}
+    >
+      <View style={styles.tabContent}>
+        <View style={[
+          styles.iconContainer,
+          isActive && styles.activeIconContainer
+        ]}>
+          <Ionicons
+            name={icon as any}
+            size={24}
+            color={isActive ? '#007AFF' : '#8E8E93'}
+          />
+        </View>
+        <Text style={[
+          styles.tabLabel,
+          isActive && styles.activeTabLabel
+        ]}>
+          {label}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      
-      {!showManualMode ? (
-        <View className="flex-1">
-          {/* Header with Manual Mode Toggle */}
-          <View className="flex-row justify-between items-center py-4 px-5 border-b border-gray-200 bg-white">
-            <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900 mb-0.5">AI Solana Mobile</Text>
-              <Text className="text-sm text-gray-500">Your AI-powered Solana wallet</Text>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        {/* iOS-style status bar spacing */}
+        {Platform.OS === 'ios' && (
+          <View style={{ height: RNStatusBar.currentHeight || 44 }} />
+        )}
+
+        {/* Header with Gradient */}
+        <LinearGradient
+          colors={['#FFFFFF', '#F8F9FA']}
+          style={styles.headerGradient}
+        >
+          <View style={styles.header}>
+            <View style={styles.headerContent}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>AI Solana Mobile</Text>
+                <Text style={styles.subtitle}>Your AI-powered Solana wallet</Text>
+              </View>
+              <WalletConnectButton />
             </View>
-
-            <WalletConnectButton />
             
-            <TouchableOpacity 
-              className="flex-row items-center bg-gray-100 px-3 py-2 rounded-full" 
-              onPress={() => setShowManualMode(true)}
-            >
-              <Ionicons name="settings-outline" size={20} color="#007AFF" />
-              <Text className="text-blue-500 text-sm font-medium ml-1.5">Manual Mode</Text>
-            </TouchableOpacity>
+            {/* Private Key Input for Development */}
+            <PrivateKeyInput />
           </View>
+        </LinearGradient>
 
-          {/* Private Key Input Option */}
-          <PrivateKeyInput />
-
-          {/* AI Chat Interface - Primary UI */}
-          <View className="flex-1">
+        {/* Main Content Area */}
+        <View style={styles.content}>
+          {activeTab === 'chat' ? (
             <AITransactionChat />
-          </View>
-        </View>
-      ) : (
-        <View className="flex-1">
-          {/* Manual Operations Header */}
-          <View className="bg-gray-100 py-4 px-5 border-b border-gray-200">
-            <TouchableOpacity 
-              className="flex-row items-center mb-3" 
-              onPress={() => setShowManualMode(false)}
-            >
-              <Ionicons name="arrow-back" size={24} color="#007AFF" />
-              <Text className="text-blue-500 text-base font-medium ml-2">Back to AI Chat</Text>
-            </TouchableOpacity>
-            
-            <Text className="text-xl font-semibold text-gray-900 mb-0.5">Manual Operations</Text>
-            <Text className="text-sm text-gray-500">Full control interface</Text>
-          </View>
-
-          {/* Manual Operations Interface */}
-          <View className="flex-1">
+          ) : (
             <ManualOperationsScreen />
-          </View>
+          )}
         </View>
-      )}
-    </SafeAreaView>
+
+        {/* iOS-style Bottom Navigation */}
+        <View style={styles.bottomNav}>
+          {/* Blur effect overlay */}
+          <View style={styles.tabBar}>
+            <TabButton
+              tab="chat"
+              icon="chatbubble"
+              label="AI Chat"
+              isActive={activeTab === 'chat'}
+            />
+            <TabButton
+              tab="manual"
+              icon="settings"
+              label="Manual"
+              isActive={activeTab === 'manual'}
+            />
+          </View>
+          
+          {/* Home indicator for iOS-style */}
+          {Platform.OS === 'ios' && (
+            <View style={styles.homeIndicatorContainer}>
+              <View style={styles.homeIndicator} />
+            </View>
+          )}
+        </View>
+      </SafeAreaView>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  headerGradient: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingBottom: 24,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  titleContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginBottom: 2,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#8E8E93',
+    fontWeight: '400',
+  },
+  content: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  bottomNav: {
+    backgroundColor: 'rgba(248, 249, 250, 0.95)',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5EA',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  tabButton: {
+    flex: 1,
+  },
+  tabContent: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  iconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  activeIconContainer: {
+    backgroundColor: '#E3F2FD',
+  },
+  tabLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#8E8E93',
+  },
+  activeTabLabel: {
+    color: '#007AFF',
+  },
+  homeIndicatorContainer: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  homeIndicator: {
+    width: 134,
+    height: 5,
+    backgroundColor: '#C7C7CC',
+    borderRadius: 3,
+  },
+});

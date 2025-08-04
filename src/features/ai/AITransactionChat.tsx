@@ -10,33 +10,24 @@ import {
   Platform,
   ActivityIndicator,
   Animated,
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useWallet } from '../../contexts/WalletContext';
 import { useNodes } from '../../contexts/NodeContext';
 import { useGemini } from './GeminiContext';
-import { WalletConnectButton } from '../wallet/WalletConnectButton';
 import { VoiceControls } from '../voice/VoiceControls';
 
-interface ChatMessage {
-  id: string;
-  type: 'user' | 'ai' | 'system';
-  content: string;
-  timestamp: Date;
-}
-
 export default function AITransactionChat() {
-  const { connected, publicKey } = useWallet();
+  const { connected, publicKey, disconnect: disconnectWallet } = useWallet();
   const { 
     sendMessage, 
     messages, 
     liveConnected, 
-    tools, 
     setApiKey, 
-    liveConnect, 
+    liveConnect,
     liveDisconnect,
-    voiceModeEnabled,
-    toggleVoiceMode,
     isListening,
     startListening,
     stopListening
@@ -44,87 +35,80 @@ export default function AITransactionChat() {
   
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('AIzaSyDsGhQALbwf6jDAHKpZLu1bhVus5CQ-ERQ');
-  const [isApiKeySet, setIsApiKeySet] = useState(false);
-  const [toolExecutionStatus, setToolExecutionStatus] = useState<string>('');
-  const [lastError, setLastError] = useState<string>('');
-  const [lastSuccess, setLastSuccess] = useState<string>('');
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [showApiKeySection, setShowApiKeySection] = useState(!liveConnected);
   
   const scrollViewRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Validate Gemini API key format
-  const isValidApiKey = (key: string): boolean => {
-    return key.length === 39 && key.startsWith('AIzaSy');
-  };
+  // Show API key section when not connected
+  useEffect(() => {
+    setShowApiKeySection(!liveConnected);
+  }, [liveConnected]);
 
-  // Set API key in Gemini context
-  const handleSetApiKey = async () => {
-    if (!isValidApiKey(apiKeyInput.trim())) {
-      showAlert('Invalid API Key', 'Please enter a valid Gemini API key. It should start with "AIzaSy" and be 39 characters long.', [{ text: 'OK' }]);
+  // Set API key and connect
+  const handleConnectToAI = async () => {
+    const trimmedApiKey = apiKeyInput.trim();
+    
+    // Simple validation - just check if not empty
+    if (!trimmedApiKey) {
+      Alert.alert('Invalid API Key', 'Please enter your API key.');
       return;
     }
-
+    
     try {
-      setApiKey(apiKeyInput.trim());
-      setIsApiKeySet(true);
-      console.log('✅ API key set successfully');
-    } catch (error) {
-      console.error('❌ Failed to set API key:', error);
-      showAlert('Error', 'Failed to set API key. Please try again.', [{ text: 'OK' }]);
-    }
-  };
-
-  // Cross-platform alert function
-  const showAlert = (title: string, message: string, buttons: Array<{text: string, onPress?: () => void, style?: 'default' | 'cancel' | 'destructive'}>) => {
-    if (Platform.OS === 'web') {
-      // Web implementation using window.confirm
-      const confirmMessage = `${title}\n\n${message}`;
-      const result = window.confirm(confirmMessage);
+      // Set the API key first
+      setApiKey(trimmedApiKey);
       
-      // Find the appropriate button to execute
-      if (result) {
-        // User clicked OK - execute the non-cancel button
-        const actionButton = buttons.find(btn => btn.style !== 'cancel');
-        if (actionButton && actionButton.onPress) {
-          actionButton.onPress();
-        }
-      } else {
-        // User clicked Cancel - execute cancel button if exists
-        const cancelButton = buttons.find(btn => btn.style === 'cancel');
-        if (cancelButton && cancelButton.onPress) {
-          cancelButton.onPress();
-        }
-      }
-    } else {
-      // Mobile implementation using Alert.alert
-      Alert.alert(title, message, buttons);
-    }
-  };
-
-  // Connect to Gemini Live when user clicks connect button
-  const handleConnectWithApiKey = async () => {
-    if (!isApiKeySet) {
-      return; // Silent fail - button should be disabled anyway
-    }
-
-    setIsLoading(true);
-    try {
-      // Connect to Gemini Live (API key should already be set)
+      // Small delay to ensure API key is set
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const success = await liveConnect();
       if (success) {
-        console.log('✅ Connected to Gemini Live');
+        setShowApiKeySection(false);
       } else {
-        console.log('⚠️ Failed to connect to Gemini Live');
-        showAlert('Connection Failed', 'Could not connect to Gemini. Please check your internet connection and try again.', [{ text: 'OK' }]);
+        Alert.alert('Connection Failed', 'Could not connect to AI. Please check your API key and try again.');
       }
     } catch (error) {
-      console.error('❌ Connection error:', error);
-      showAlert('Connection Error', 'An error occurred while connecting. Please try again.', [{ text: 'OK' }]);
-    } finally {
-      setIsLoading(false);
+      console.error('AI connection error:', error);
+      Alert.alert('Error', 'Failed to connect to AI. Please check your API key and try again.');
     }
+  };
+
+  // Disconnect from AI
+  const handleDisconnectAI = async () => {
+    Alert.alert(
+      'Disconnect AI',
+      'Are you sure you want to disconnect from the AI assistant?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Disconnect', 
+          style: 'destructive',
+          onPress: async () => {
+            await liveDisconnect();
+            setShowApiKeySection(true);
+          }
+        }
+      ]
+    );
+  };
+
+  // Disconnect wallet
+  const handleDisconnectWallet = () => {
+    Alert.alert(
+      'Disconnect Wallet',
+      'Are you sure you want to disconnect your wallet?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Disconnect', 
+          style: 'destructive',
+          onPress: disconnectWallet
+        }
+      ]
+    );
   };
 
   // Animate AI thinking indicator
@@ -149,27 +133,12 @@ export default function AITransactionChat() {
   }, [isLoading]);
 
   const handleSendMessage = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !liveConnected) return;
 
-    // Clear previous status messages
-    setLastError('');
-    setLastSuccess('');
-    setToolExecutionStatus('');
-    
     setIsLoading(true);
     try {
-      // Show tool execution status
-      setToolExecutionStatus('Processing message...');
-      
       await sendMessage(inputText.trim());
       setInputText('');
-      
-      // Show success
-      setLastSuccess('Message sent successfully');
-      setToolExecutionStatus('');
-      
-      // Auto-clear success message
-      setTimeout(() => setLastSuccess(''), 3000);
       
       // Focus back to input and scroll to bottom
       setTimeout(() => {
@@ -178,457 +147,537 @@ export default function AITransactionChat() {
       }, 100);
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send message. Please try again.';
-      setLastError(errorMessage);
-      setToolExecutionStatus('');
-      
-      // Auto-clear error message
-      setTimeout(() => setLastError(''), 5000);
+      Alert.alert('Error', 'Failed to send message. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Determine placeholder text based on connection status
-  const getPlaceholderText = () => {
-    return connected ? "Ask me anything about Solana..." : "Connect wallet to enable transactions";
-  };
+  const MessageBubble = ({ message, isUser }: { message: any; isUser: boolean }) => (
+    <View style={[styles.messageBubble, isUser ? styles.userBubble : styles.aiBubble]}>
+      {!isUser && (
+        <View style={styles.aiAvatar}>
+          <Ionicons name="sparkles" size={16} color="#007AFF" />
+        </View>
+      )}
+      <View style={[styles.messageContent, isUser ? styles.userContent : styles.aiContent]}>
+        <Text style={[styles.messageText, isUser ? styles.userText : styles.aiText]}>
+          {message.content}
+        </Text>
+        <Text style={[styles.messageTime, isUser ? styles.userTime : styles.aiTime]}>
+          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+      </View>
+    </View>
+  );
 
-  // Always show main chat interface
+  const SuggestionChip = ({ text, onPress }: { text: string; onPress: () => void }) => (
+    <TouchableOpacity style={styles.suggestionChip} onPress={onPress}>
+      <Text style={styles.suggestionText}>{text}</Text>
+    </TouchableOpacity>
+  );
+
+  const suggestions = [
+    "Check my balance",
+    "Show transaction history", 
+    "Send 0.1 SOL",
+    "Request airdrop",
+    "Create new contact"
+  ];
+
   return (
-    <KeyboardAvoidingView 
-      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {/* Header */}
-      <View style={{ 
-        backgroundColor: '#007AFF',
-        paddingTop: 60, 
-        paddingBottom: 20, 
-        paddingHorizontal: 20 
-      }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <Ionicons name="chatbubble-ellipses" size={28} color="#FFFFFF" />
-            </Animated.View>
-            <Text style={{ fontSize: 20, fontWeight: '600', color: '#FFFFFF', marginLeft: 12 }}>
-              AI Transaction Chat
-            </Text>
-          </View>
-          
-          {/* Status Indicators */}
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            {/* Connection Status */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 12 }}>
-              {liveConnected ? (
-                <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
-              ) : (
-                <Ionicons name="time" size={20} color="#FFA726" />
+    <View style={styles.container}>
+      {/* Header with Connection Status and Controls */}
+      <LinearGradient
+        colors={['#FFFFFF', '#F8F9FA']}
+        style={styles.header}
+      >
+        <View style={styles.connectionStatus}>
+          {/* Wallet Status */}
+          <View style={styles.statusRow}>
+            <View style={styles.statusInfo}>
+              <View style={styles.statusIndicator}>
+                <View style={[styles.statusDot, connected ? styles.connectedDot : styles.disconnectedDot]} />
+                <Text style={styles.statusLabel}>Wallet</Text>
+              </View>
+              {connected && publicKey && (
+                <Text style={styles.walletAddress}>
+                  {`${publicKey.toString().slice(0, 8)}...${publicKey.toString().slice(-8)}`}
+                </Text>
               )}
             </View>
-            
-            {/* Tools Indicator */}
-            <View style={{ 
-              backgroundColor: 'rgba(255,255,255,0.2)', 
-              borderRadius: 12, 
-              paddingHorizontal: 8, 
-              paddingVertical: 4,
-              marginRight: 8
-            }}>
-              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '500' }}>
-                {tools.length} tools
-              </Text>
+            {connected && (
+              <TouchableOpacity style={styles.disconnectButton} onPress={handleDisconnectWallet}>
+                <Ionicons name="power" size={16} color="#FF3B30" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* AI Status */}
+          <View style={styles.statusRow}>
+            <View style={styles.statusInfo}>
+              <View style={styles.statusIndicator}>
+                <View style={[styles.statusDot, liveConnected ? styles.connectedDot : styles.disconnectedDot]} />
+                <Text style={styles.statusLabel}>AI Assistant</Text>
+              </View>
             </View>
-            
-            {/* Disconnect Button */}
             {liveConnected && (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.2)',
-                  borderRadius: 12,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                }}
-                onPress={() => {
-                  showAlert(
-                    'Disconnect AI',
-                    'Are you sure you want to disconnect from Gemini AI?',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Disconnect', style: 'destructive', onPress: async () => {
-                        try {
-                          await liveDisconnect();
-                        } catch (error) {
-                          console.error('Error disconnecting AI:', error);
-                          showAlert('Error', 'Failed to disconnect from AI', [{ text: 'OK' }]);
-                        }
-                      }}
-                    ]
-                  );
-                }}
-              >
-                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '500' }}>
-                  Disconnect
-                </Text>
+              <TouchableOpacity style={styles.disconnectButton} onPress={handleDisconnectAI}>
+                <Ionicons name="power" size={16} color="#FF3B30" />
               </TouchableOpacity>
             )}
           </View>
         </View>
-      </View>
 
-      {/* API Key Input Section */}
-      <View style={{ 
-        backgroundColor: '#2A2A2A', 
-        padding: 16, 
-        marginHorizontal: 12,
-        marginVertical: 8,
-        borderRadius: 8 
-      }}>
-        <Text style={{ color: 'white', marginBottom: 8, fontSize: 14, fontWeight: '500' }}>
-          Gemini API Key
-        </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TextInput
-            style={{
-              flex: 1,
-              backgroundColor: '#1A1A1A',
-              color: 'white',
-              padding: 12,
-              borderRadius: 6,
-              marginRight: 8,
-              fontSize: 14
-            }}
-            placeholder="Enter your Gemini API key"
-            placeholderTextColor="#666"
-            value={apiKeyInput}
-            onChangeText={(text) => {
-              setApiKeyInput(text);
-              // Reset API key set status when user changes the input
-              if (isApiKeySet) {
-                setIsApiKeySet(false);
-              }
-            }}
-            secureTextEntry={true}
-            editable={!liveConnected}
-          />
-          
-          {/* Set API Key Button */}
-          {!isApiKeySet && (
-            <TouchableOpacity
-              style={{
-                backgroundColor: isValidApiKey(apiKeyInput) ? '#2196F3' : '#666',
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                borderRadius: 6,
-                marginRight: 8,
-                opacity: isValidApiKey(apiKeyInput) ? 1 : 0.5
-              }}
-              onPress={handleSetApiKey}
-              disabled={!isValidApiKey(apiKeyInput) || liveConnected}
-            >
-              <Text style={{ color: 'white', fontWeight: '500' }}>
-                Set
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {/* API Key Set Status */}
-          {isApiKeySet && !liveConnected && (
-            <View style={{
-              backgroundColor: '#388E3C',
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              borderRadius: 6,
-              marginRight: 8,
-              flexDirection: 'row',
-              alignItems: 'center'
-            }}>
-              <Ionicons name="checkmark-circle" size={16} color="white" style={{ marginRight: 4 }} />
-              <Text style={{ color: 'white', fontWeight: '500', fontSize: 12 }}>
-                Key Set
-              </Text>
+        {/* API Key Section - Show when not connected */}
+        {showApiKeySection && (
+          <View style={styles.apiKeySection}>
+            <Text style={styles.apiKeyTitle}>Connect AI Assistant</Text>
+            <Text style={styles.apiKeySubtitle}>Enter your Gemini API key to enable AI features</Text>
+            
+            <View style={styles.apiKeyInputContainer}>
+              <TextInput
+                style={styles.apiKeyInput}
+                value={apiKeyInput}
+                onChangeText={setApiKeyInput}
+                placeholder="Enter your API key"
+                placeholderTextColor="#C7C7CC"
+                autoCapitalize="none"
+                autoCorrect={false}
+                secureTextEntry={false}
+              />
+              
+              <TouchableOpacity
+                style={[
+                  styles.connectButton,
+                  !apiKeyInput.trim() && styles.connectButtonDisabled
+                ]}
+                onPress={handleConnectToAI}
+                disabled={!apiKeyInput.trim()}
+              >
+                <LinearGradient
+                  colors={
+                    apiKeyInput.trim()
+                      ? ['#007AFF', '#0056CC']
+                      : ['#C7C7CC', '#A8A8A8']
+                  }
+                  style={styles.connectGradient}
+                >
+                  <Ionicons name="sparkles" size={16} color="white" />
+                  <Text style={styles.connectButtonText}>Connect</Text>
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
-          )}
-
-          {/* Connect Button */}
-          <TouchableOpacity
-            style={{
-              backgroundColor: (isApiKeySet && !liveConnected) ? '#4CAF50' : '#666',
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderRadius: 6,
-              opacity: (isApiKeySet && !liveConnected) ? 1 : 0.5
-            }}
-            onPress={handleConnectWithApiKey}
-            disabled={!isApiKeySet || liveConnected || isLoading}
-          >
-            {liveConnected ? (
-              <Text style={{ color: 'white', fontWeight: '500' }}>
-                Connected
-              </Text>
-            ) : (
-              <Text style={{ color: 'white', fontWeight: '500' }}>
-                {isLoading ? 'Connecting...' : 'Connect'}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-        
-        {/* Connection Status */}
-        {liveConnected && (
-          <View style={{
-            backgroundColor: '#1B5E20',
-            padding: 8,
-            borderRadius: 6,
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginTop: 8
-          }}>
-            <Ionicons name="checkmark-circle" size={16} color="#4CAF50" style={{ marginRight: 8 }} />
-            <Text style={{ color: '#4CAF50', fontWeight: '500', fontSize: 12 }}>
-              Connected to Gemini Live with {tools.length} tools
-            </Text>
           </View>
         )}
-      </View>
+      </LinearGradient>
 
-      {/* Messages */}
-      <ScrollView 
-        ref={scrollViewRef}
-        style={{ flex: 1, backgroundColor: '#F2F2F7' }}
-        contentContainerStyle={{ padding: 16 }}
-        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      {/* Main Chat Interface */}
+      <KeyboardAvoidingView 
+        style={styles.chatContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        {messages.map((message) => (
-          <View
-            key={message.id}
-            style={{
-              alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
-              backgroundColor: message.role === 'user' ? '#007AFF' : '#FFFFFF',
-              borderRadius: 18,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              marginVertical: 4,
-              maxWidth: '85%',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 2,
-              elevation: 2,
-            }}
-          >
-            <Text
-              style={{
-                color: message.role === 'user' ? '#FFFFFF' : '#1C1C1E',
-                fontSize: 16,
-                lineHeight: 22,
-              }}
-            >
-              {message.content}
-            </Text>
-            <Text
-              style={{
-                color: message.role === 'user' ? 'rgba(255,255,255,0.7)' : '#8E8E93',
-                fontSize: 12,
-                marginTop: 4,
-              }}
-            >
-              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
-          </View>
-        ))}
-        
-        {/* AI Thinking Indicator */}
-        {isLoading && (
-          <View
-            style={{
-              alignSelf: 'flex-start',
-              backgroundColor: '#FFFFFF',
-              borderRadius: 18,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              marginVertical: 4,
-              maxWidth: '85%',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 2,
-              elevation: 2,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <ActivityIndicator size="small" color="#007AFF" style={{ marginRight: 8 }} />
-              <Text style={{ color: '#8E8E93', fontSize: 16 }}>
-                {toolExecutionStatus || 'AI is thinking...'}
+        {/* Messages */}
+        <ScrollView 
+          ref={scrollViewRef}
+          style={styles.messagesContainer}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.messagesContent}
+        >
+          {messages.length === 0 ? (
+            <View style={styles.welcomeContainer}>
+              <View style={styles.welcomeIcon}>
+                <Ionicons name="sparkles" size={32} color="#007AFF" />
+              </View>
+              <Text style={styles.welcomeTitle}>AI Solana Assistant</Text>
+              <Text style={styles.welcomeMessage}>
+                I can help you manage your Solana wallet, send transactions, check balances, and more!
               </Text>
+              
+              {/* Suggestion Chips */}
+              {liveConnected && (
+                <View style={styles.suggestionsContainer}>
+                  <Text style={styles.suggestionsTitle}>Try asking:</Text>
+                  <View style={styles.suggestionsGrid}>
+                    {suggestions.map((suggestion, index) => (
+                      <SuggestionChip
+                        key={index}
+                        text={suggestion}
+                        onPress={() => setInputText(suggestion)}
+                      />
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
+          ) : (
+            messages.map((message) => (
+              <MessageBubble
+                key={message.id}
+                message={message}
+                isUser={message.role === 'user'}
+              />
+            ))
+          )}
+          
+          {/* AI Thinking Indicator */}
+          {isLoading && (
+            <View style={styles.thinkingContainer}>
+              <View style={styles.aiAvatar}>
+                <Ionicons name="sparkles" size={16} color="#007AFF" />
+              </View>
+              <Animated.View style={[styles.thinkingBubble, { opacity: pulseAnim }]}>
+                <View style={styles.thinkingDots}>
+                  <View style={styles.thinkingDot} />
+                  <View style={styles.thinkingDot} />
+                  <View style={styles.thinkingDot} />
+                </View>
+              </Animated.View>
+            </View>
+          )}
+        </ScrollView>
+
+        {/* Input Area */}
+        {liveConnected && (
+          <View style={styles.inputArea}>
+            <View style={styles.inputContainer}>
+              <TextInput
+                ref={inputRef}
+                style={styles.textInput}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder={connected ? "Message AI Assistant..." : "Connect wallet to enable transactions"}
+                placeholderTextColor="#C7C7CC"
+                multiline
+                maxLength={500}
+                editable={liveConnected}
+              />
+              
+              {/* Send Button */}
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  (!inputText.trim() || !liveConnected || isLoading) && styles.sendButtonDisabled
+                ]}
+                onPress={handleSendMessage}
+                disabled={!inputText.trim() || !liveConnected || isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Ionicons name="send" size={20} color="white" />
+                )}
+              </TouchableOpacity>
+
+              {/* Voice Control */}
+              <VoiceControls
+                isListening={isListening}
+                onStartListening={startListening}
+                onStopListening={stopListening}
+              />
             </View>
           </View>
         )}
-      </ScrollView>
-
-
-
-
-      {/* Status Messages */}
-      {(!!lastError || !!lastSuccess || (!!toolExecutionStatus && !isLoading)) && (
-        <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-          {lastError && (
-            <View style={{ 
-              backgroundColor: '#FFEBEE', 
-              borderColor: '#FFCDD2', 
-              borderWidth: 1, 
-              borderRadius: 8,
-              padding: 12,
-              marginBottom: 4
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="alert-circle" size={20} color="#D32F2F" />
-                <Text style={{ color: '#C62828', fontSize: 14, marginLeft: 8, flex: 1 }}>
-                  {lastError}
-                </Text>
-              </View>
-            </View>
-          )}
-          
-          {lastSuccess && (
-            <View style={{ 
-              backgroundColor: '#E8F5E8', 
-              borderColor: '#C8E6C9', 
-              borderWidth: 1, 
-              borderRadius: 8,
-              padding: 12,
-              marginBottom: 4
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Ionicons name="checkmark-circle" size={20} color="#388E3C" />
-                <Text style={{ color: '#2E7D32', fontSize: 14, marginLeft: 8, flex: 1 }}>
-                  {lastSuccess}
-                </Text>
-              </View>
-            </View>
-          )}
-          
-          {toolExecutionStatus && !isLoading && (
-            <View style={{ 
-              backgroundColor: '#E3F2FD', 
-              borderColor: '#BBDEFB', 
-              borderWidth: 1, 
-              borderRadius: 8,
-              padding: 12,
-              marginBottom: 4
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator size="small" color="#1976D2" style={{ marginRight: 8 }} />
-                <Text style={{ color: '#1565C0', fontSize: 14, flex: 1 }}>
-                  {toolExecutionStatus}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Connection Status Banner */}
-      {!connected && (
-        <View style={{ 
-          backgroundColor: '#FFF3CD', 
-          borderColor: '#FFEAA7', 
-          borderWidth: 1, 
-          padding: 12, 
-          marginHorizontal: 16 
-        }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="warning" size={20} color="#B86100" />
-            <Text style={{ color: '#856404', fontSize: 14, marginLeft: 8, flex: 1 }}>
-              Wallet not connected. Connect wallet to access transaction tools.
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* Input Area */}
-      <View style={{ 
-        backgroundColor: '#FFFFFF', 
-        borderTopWidth: 1, 
-        borderTopColor: '#E5E5EA',
-        paddingTop: 12,
-        paddingBottom: 12,
-        paddingHorizontal: 16
-      }}>
-        {/* Text Input */}
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-          <TextInput
-            ref={inputRef}
-            style={{
-              flex: 1,
-              backgroundColor: '#F2F2F7',
-              borderRadius: 20,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              fontSize: 16,
-              maxHeight: 100,
-              marginRight: 8,
-              borderWidth: 2,
-              borderColor: '#E5E5EA',
-            }}
-            placeholder={getPlaceholderText()}
-            placeholderTextColor="#8E8E93"
-            value={inputText}
-            onChangeText={(text) => {
-              setInputText(text);
-              // Clear error when user starts typing
-              if (lastError) setLastError('');
-            }}
-            multiline
-            onSubmitEditing={(event) => {
-              // For multiline inputs, onSubmitEditing is triggered by Enter key
-              // But we want to send on Enter, not create new line
-              if (inputText.trim()) {
-                handleSendMessage();
-              }
-            }}
-            blurOnSubmit={false}
-            returnKeyType="send"
-            enablesReturnKeyAutomatically={true}
-            editable={!isLoading}
-            onFocus={() => {
-              // Clear status messages when focusing input
-              setLastError('');
-              setLastSuccess('');
-            }}
-          />
-          
-          <TouchableOpacity
-            style={{
-              backgroundColor: inputText.trim() ? '#007AFF' : '#E5E5EA',
-              borderRadius: 20,
-              width: 40,
-              height: 40,
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginRight: 8,
-            }}
-            onPress={handleSendMessage}
-            disabled={!inputText.trim()}
-          >
-            <Ionicons 
-              name="send" 
-              size={20} 
-              color={inputText.trim() ? '#FFFFFF' : '#8E8E93'} 
-            />
-          </TouchableOpacity>
-
-          {/* Voice Controls */}
-          <VoiceControls
-            isListening={isListening}
-            voiceEnabled={voiceModeEnabled}
-            onToggleVoice={toggleVoiceMode}
-            onStartListening={startListening}
-            onStopListening={stopListening}
-          />
-        </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  connectionStatus: {
+    gap: 12,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  statusInfo: {
+    flex: 1,
+  },
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  connectedDot: {
+    backgroundColor: '#34C759',
+  },
+  disconnectedDot: {
+    backgroundColor: '#FF3B30',
+  },
+  statusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
+  walletAddress: {
+    fontSize: 12,
+    color: '#8E8E93',
+    fontFamily: 'monospace',
+  },
+  disconnectButton: {
+    padding: 8,
+  },
+  apiKeySection: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  apiKeyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginBottom: 4,
+  },
+  apiKeySubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 16,
+  },
+  apiKeyInputContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  apiKeyInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    backgroundColor: '#F2F2F7',
+  },
+  apiKeyInputError: {
+    borderColor: '#FF3B30',
+    borderWidth: 2,
+  },
+  apiKeyError: {
+    color: '#FF3B30',
+    fontSize: 12,
+    marginTop: 8,
+    marginLeft: 4,
+  },
+  connectButton: {
+    borderRadius: 8,
+  },
+  connectButtonDisabled: {
+    opacity: 0.5,
+  },
+  connectGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  connectButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  chatContainer: {
+    flex: 1,
+  },
+  messagesContainer: {
+    flex: 1,
+  },
+  messagesContent: {
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  welcomeContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 48,
+  },
+  welcomeIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1C1C1E',
+    marginBottom: 12,
+  },
+  welcomeMessage: {
+    fontSize: 16,
+    color: '#8E8E93',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  suggestionsContainer: {
+    alignSelf: 'stretch',
+  },
+  suggestionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  suggestionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  suggestionChip: {
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  suggestionText: {
+    fontSize: 14,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
+  messageBubble: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginVertical: 4,
+  },
+  userBubble: {
+    justifyContent: 'flex-end',
+  },
+  aiBubble: {
+    justifyContent: 'flex-start',
+  },
+  aiAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    alignSelf: 'flex-end',
+  },
+  messageContent: {
+    maxWidth: '75%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  userContent: {
+    backgroundColor: '#007AFF',
+    borderBottomRightRadius: 4,
+  },
+  aiContent: {
+    backgroundColor: 'white',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  messageText: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  userText: {
+    color: 'white',
+  },
+  aiText: {
+    color: '#1C1C1E',
+  },
+  messageTime: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+  userTime: {
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  aiTime: {
+    color: '#8E8E93',
+  },
+  thinkingContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginVertical: 4,
+  },
+  thinkingBubble: {
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+  },
+  thinkingDots: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  thinkingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#C7C7CC',
+  },
+  inputArea: {
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5EA',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  textInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#E5E5EA',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    maxHeight: 100,
+    backgroundColor: '#F2F2F7',
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#C7C7CC',
+  },
+});

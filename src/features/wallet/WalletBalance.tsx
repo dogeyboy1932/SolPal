@@ -4,7 +4,10 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useWallet } from '@/contexts/WalletContext';
 
 export const WalletBalance: React.FC = () => {
@@ -22,37 +25,106 @@ export const WalletBalance: React.FC = () => {
   }
 
   return (
-    <View className="bg-white rounded-xl p-4 m-4 shadow-lg">
-      <View className="flex-row justify-between items-center mb-3">
-        <Text className="text-lg font-semibold text-gray-800">Wallet Balance</Text>
-        <TouchableOpacity
-          onPress={handleRefresh}
-          disabled={refreshing}
-          className="p-1"
-        >
-          {refreshing ? (
-            <ActivityIndicator size="small" color="#3b82f6" />
-          ) : (
-            <Text className="text-lg text-blue-500">↻</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-      
-      <View className="items-center mb-4">
-        <Text className="text-3xl font-bold text-gray-800">
-          {balance !== null ? `${balance.toFixed(4)} SOL` : 'Loading...'}
-        </Text>
-        <Text className="text-base text-gray-600 mt-1">
-          ≈ ${balance !== null ? (balance * 20).toFixed(2) : '0.00'} USD
-        </Text>
-      </View>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#007AFF', '#0056CC']}
+        style={styles.balanceCard}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Wallet Balance</Text>
+          <TouchableOpacity
+            onPress={handleRefresh}
+            disabled={refreshing}
+            style={styles.refreshButton}
+          >
+            {refreshing ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Ionicons name="refresh" size={20} color="white" />
+            )}
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.balanceContainer}>
+          <Text style={styles.balanceAmount}>
+            {balance !== null ? `${balance.toFixed(4)} SOL` : 'Loading...'}
+          </Text>
+          <Text style={styles.balanceUSD}>
+            ≈ ${balance !== null ? (balance * 20).toFixed(2) : '0.00'} USD
+          </Text>
+        </View>
 
-      <View className="bg-gray-50 rounded-lg p-3">
-        <Text className="text-xs text-gray-600 mb-1">Public Key:</Text>
-        <Text className="text-xs text-gray-700 leading-4" style={{ fontFamily: 'monospace' }}>
-          {publicKey}
-        </Text>
-      </View>
+        <View style={styles.publicKeyContainer}>
+          <Text style={styles.publicKeyLabel}>Public Key:</Text>
+          <Text style={styles.publicKeyValue}>
+            {`${publicKey.toString().slice(0, 12)}...${publicKey.toString().slice(-12)}`}
+          </Text>
+        </View>
+      </LinearGradient>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    margin: 16,
+  },
+  balanceCard: {
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'white',
+  },
+  refreshButton: {
+    padding: 4,
+  },
+  balanceContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  balanceAmount: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: 'white',
+    marginBottom: 4,
+  },
+  balanceUSD: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+  },
+  publicKeyContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: 12,
+    padding: 12,
+  },
+  publicKeyLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  publicKeyValue: {
+    fontSize: 12,
+    color: 'white',
+    fontFamily: 'monospace',
+    lineHeight: 16,
+  },
+});

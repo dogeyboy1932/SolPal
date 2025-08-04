@@ -9,6 +9,8 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useWallet } from '../contexts/WalletContext';
 import { useGemini } from '../features/ai/GeminiContext';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
@@ -71,12 +73,17 @@ export const ManualOperationsScreen: React.FC = () => {
   const renderSectionContent = () => {
     if (!connected || !publicKey) {
       return (
-        <View className="flex-1 justify-center items-center px-10 py-10">
-          <Text className="text-xl font-bold text-gray-800 mb-2 text-center">Wallet Not Connected</Text>
-          <Text className="text-base text-gray-600 text-center mb-8 leading-6">
+        <View className="flex-1 justify-center items-center px-10 py-15">
+          <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-6">
+            <Ionicons name="wallet-outline" size={48} color="#8E8E93" />
+          </View>
+          <Text className="text-2xl font-bold text-gray-900 mb-3 text-center">Wallet Not Connected</Text>
+          <Text className="text-base text-gray-500 text-center leading-6 mb-8">
             Connect your wallet to access manual Solana operations
           </Text>
-          <WalletConnectButton />
+          <View className="self-stretch">
+            <WalletConnectButton />
+          </View>
         </View>
       );
     }
@@ -93,10 +100,10 @@ export const ManualOperationsScreen: React.FC = () => {
         return (
           <View className="p-5">
             <View className="gap-5">
-              <Text className="text-lg font-semibold text-gray-800 mb-4 mt-5">Send SOL</Text>
+              <Text className="text-lg font-semibold text-gray-900 mb-4 mt-5">Send SOL</Text>
               <TransferSOL />
               
-              <Text className="text-lg font-semibold text-gray-800 mb-4 mt-5">Send SPL Token</Text>
+              <Text className="text-lg font-semibold text-gray-900 mb-4 mt-5">Send SPL Token</Text>
               <TransferSPLToken />
             </View>
           </View>
@@ -190,20 +197,21 @@ export const ManualOperationsScreen: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-
-
       {/* Status Bar */}
-      <View className="flex-row justify-between items-center px-5 py-1 bg-white border-b border-gray-200">
-        <View className="flex-row items-center">
-          <View 
-            className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`}
-          />
-          <Text className="text-sm text-gray-800 font-medium">
-            {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
-          </Text>
+      <LinearGradient
+        colors={['#FFFFFF', '#F8F9FA']}
+        className="px-5 py-3 border-b border-gray-200"
+      >
+        <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-row items-center flex-1">
+            <View className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <Text className="text-sm text-gray-900 font-medium flex-1">
+              {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
+            </Text>
+          </View>
           {connected && (
             <TouchableOpacity
-              className="bg-red-500 px-2 py-1 rounded ml-2"
+              className="bg-red-500 px-3 py-1.5 rounded ml-2"
               onPress={() => {
                 console.log('Wallet disconnect button pressed');
                 try {
@@ -241,21 +249,21 @@ export const ManualOperationsScreen: React.FC = () => {
                 }
               }}
             >
-              <Text className="text-white text-xs font-medium">Disconnect</Text>
+              <Text className="text-white text-xs font-semibold">Disconnect</Text>
             </TouchableOpacity>
           )}
         </View>
         
-        <View className="flex-row items-center">
-          <View 
-            className={`w-2 h-2 rounded-full mr-2 ${liveConnected ? 'bg-green-500' : 'bg-red-500'}`}
-          />
-          <Text className="text-sm text-gray-800 font-medium">
-            AI {liveConnected ? 'Connected' : 'Disconnected'}
-          </Text>
+        <View className="flex-row items-center justify-between mb-2">
+          <View className="flex-row items-center flex-1">
+            <View className={`w-2 h-2 rounded-full mr-2 ${liveConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <Text className="text-sm text-gray-900 font-medium flex-1">
+              AI {liveConnected ? 'Connected' : 'Disconnected'}
+            </Text>
+          </View>
           {liveConnected && (
             <TouchableOpacity
-              className="bg-red-500 px-2 py-1 rounded ml-2"
+              className="bg-red-500 px-3 py-1.5 rounded ml-2"
               onPress={() => {
                 console.log('AI disconnect button pressed');
                 try {
@@ -293,18 +301,17 @@ export const ManualOperationsScreen: React.FC = () => {
                 }
               }}
             >
-              <Text className="text-white text-xs font-medium">Disconnect</Text>
+              <Text className="text-white text-xs font-semibold">Disconnect</Text>
             </TouchableOpacity>
           )}
         </View>
         
         {connected && publicKey && (
-          <Text className="text-xs text-gray-600 font-mono">
+          <Text className="text-xs text-gray-500 font-mono text-center mt-1">
             {`${publicKey.toString().slice(0, 8)}...${publicKey.toString().slice(-8)}`}
           </Text>
         )}
-      </View>
-
+      </LinearGradient>
 
       {/* Content */}
       <ScrollView
@@ -318,198 +325,54 @@ export const ManualOperationsScreen: React.FC = () => {
         {renderSectionContent()}
       </ScrollView>
 
-
-
       {/* Section Navigation */}
-      <View className="bg-white border-b border-gray-200 h-8">
-        
+      <View className="bg-white border-t border-gray-200 pb-8 max-h-20">
         <ScrollView 
-          horizontal 
-          className="bg-white border-b border-gray-200"
+          horizontal={true}
+          className="bg-white flex-grow-0 h-15"
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 8 }}
+          contentContainerStyle={{ paddingHorizontal: 8, alignItems: 'center', flexDirection: 'row' }}
+          nestedScrollEnabled={true}
+          directionalLockEnabled={false}
+          pagingEnabled={false}
+          decelerationRate="fast"
         >
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'balance' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('balance')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'balance' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              💰 Balance
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'send' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('send')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'send' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              📤 Send
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'history' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('history')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'history' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              📋 History
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'templates' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('templates')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'templates' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              📄 Templates
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'operations' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('operations')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'operations' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔧 Operations
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'builder' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('builder')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'builder' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔨 Builder
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'advanced' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('advanced')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'advanced' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              ⚡ Advanced
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'backup' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('backup')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'backup' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🛠️ Backup
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'ai_status' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('ai_status')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'ai_status' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🤖 AI Status
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'nodes' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('nodes')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'nodes' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              👥 Nodes
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'node_access' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('node_access')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'node_access' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔐 Access
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'smart_ai' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('smart_ai')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'smart_ai' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🧠 Smart AI
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'mcp' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('mcp')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'mcp' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🔗 MCP
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            className={` px-4 items-center border-b-2 min-w-[100px] ${
-              activeSection === 'e2e_test' ? 'border-blue-500' : 'border-transparent'
-            }`}
-            onPress={() => setActiveSection('e2e_test')}
-          >
-            <Text className={`text-sm font-medium ${
-              activeSection === 'e2e_test' ? 'text-blue-500 font-semibold' : 'text-gray-600'
-            }`}>
-              🧪 E2E Test
-            </Text>
-          </TouchableOpacity>
+          {[
+            { key: 'balance', icon: 'wallet', title: 'Balance' },
+            { key: 'send', icon: 'send', title: 'Send' },
+            { key: 'history', icon: 'time', title: 'History' },
+            { key: 'templates', icon: 'document-text', title: 'Templates' },
+            { key: 'nodes', icon: 'globe', title: 'Nodes' },
+            { key: 'node_access', icon: 'lock-closed', title: 'Access' },
+            { key: 'operations', icon: 'settings', title: 'Operations' },
+            { key: 'builder', icon: 'construct', title: 'Builder' },
+            { key: 'advanced', icon: 'flash', title: 'Advanced' },
+            { key: 'backup', icon: 'shield-checkmark', title: 'Backup' },
+            { key: 'ai_status', icon: 'sparkles', title: 'AI Status' },
+            
+            { key: 'smart_ai', icon: 'brain', title: 'Smart AI' },
+            { key: 'mcp', icon: 'link', title: 'MCP' },
+            { key: 'e2e_test', icon: 'flask', title: 'E2E Test' },
+          ].map((section) => (
+            <TouchableOpacity
+              key={section.key}
+              className={`px-4 py-3 items-center justify-center min-w-25 border-b-2 flex-row gap-1.5 mx-0.5 ${
+                activeSection === section.key ? 'border-blue-500' : 'border-transparent'
+              }`}
+              onPress={() => setActiveSection(section.key as any)}
+            >
+              <Ionicons 
+                name={section.icon as any} 
+                size={16} 
+                color={activeSection === section.key ? '#007AFF' : '#8E8E93'} 
+              />
+              <Text className={`text-xs font-medium ${
+                activeSection === section.key ? 'text-blue-500 font-semibold' : 'text-gray-500'
+              }`}>
+                {section.title}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </View>
     </SafeAreaView>
