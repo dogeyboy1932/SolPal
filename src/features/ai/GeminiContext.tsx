@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode, useRef, useMemo, useCallback } from 'react';
 
 // Use mobile-compatible MCP adapter instead of web-based client
-import { MobileMCPClient, createMobileMCPClient } from '../../mcpServers/mobileServerAdapter';
+import { MobileMCPClient, createMobileMCPClient } from './mcpServerAdapter';
 import { getServerConfig, hasServer, createLiveConfigWithTools } from '@/services/mcpService';
 import { loadMCPPreferences, saveMCPPreferences, enableServer, disableServer } from '../../services/mcpService';
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";

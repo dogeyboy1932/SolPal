@@ -4,18 +4,18 @@
  * for React Native compatibility using configurable class-based servers
  */
 
-import type { MCPTool, ToolCall, LiveFunctionResponse } from '../types/live-types';
+import type { MCPTool, ToolCall, LiveFunctionResponse } from '../../types/live-types';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { BaseMCPServer } from './BaseMCP';
+import { BaseMCPServer } from '../../mcpServers/BaseMCP';
 import { 
   MCP_SERVER_REGISTRY, 
   MCPServerConfig, 
   ServerContext,
-} from '../config/mcp_config';
+} from '../../config/mcp_config';
 import { getServerConfig, hasServer } from '@/services/mcpService';
 
 
-export interface MobileServerContext {
+export interface MCPServerContext {
   connection: Connection | null;
   publicKey: PublicKey | null;
   signTransaction?: (transaction: Transaction) => Promise<string>;
@@ -28,7 +28,7 @@ export interface MobileServerContext {
 export class MobileMCPClient {
   private activeServers: Map<string, BaseMCPServer> = new Map();
   private availableServers: Map<string, () => BaseMCPServer> = new Map();
-  private context: MobileServerContext = { connection: null, publicKey: null };
+  private context: MCPServerContext = { connection: null, publicKey: null };
   private serverConfigs: Map<string, MCPServerConfig> = new Map();
 
   constructor() {
@@ -184,12 +184,6 @@ export class MobileMCPClient {
     return allTools;
   }
 
-  /**
-   * Legacy method for compatibility - returns all active tools
-   */
-  async getTools(): Promise<MCPTool[]> {
-    return this.getActiveTools();
-  }
 
   /**
    * Execute a tool by name with arguments across all active servers
@@ -332,7 +326,7 @@ export class MobileMCPClient {
 
   // Compatibility methods for existing code
   async listTools() {
-    return { tools: await this.getTools() };
+    return { tools: await this.getActiveTools() };
   }
 
   async connect() {
