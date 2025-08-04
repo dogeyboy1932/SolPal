@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { PublicKey } from '@solana/web3.js';
 import { useWallet } from '@/contexts/WalletContext';
-import { solanaService } from '@/services/SolanaService';
+import { solanaService } from '@/services/solanaService';
 import Toast from 'react-native-toast-message';
 
 interface TokenAccount {

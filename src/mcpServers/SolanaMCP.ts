@@ -3,9 +3,9 @@
  * Contains all wallet and blockchain-related tools
  */
 
-import { BaseMCPServer, MCPTool, MCPToolResult, MCPParams } from './BaseMCPServer';
+import { BaseMCPServer, MCPTool, MCPToolResult, MCPParams } from './BaseMCP';
 import { Connection, PublicKey, LAMPORTS_PER_SOL, Transaction, SystemProgram } from '@solana/web3.js';
-import { solanaService } from '../services/SolanaService';
+import { solanaService } from '../services/solanaService';
 
 export class SolanaMCPServer extends BaseMCPServer {
   readonly serverName = "Solana Blockchain Server";

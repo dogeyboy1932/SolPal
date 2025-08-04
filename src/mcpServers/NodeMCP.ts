@@ -3,7 +3,7 @@
  * Contains all application node management tools (person, event, community)
  */
 
-import { BaseMCPServer, MCPTool, MCPToolResult, MCPParams } from './BaseMCPServer';
+import { BaseMCPServer, MCPTool, MCPToolResult, MCPParams } from './BaseMCP';
 import { nodeService } from '../services/nodeService';
 
 // Export the initialization function from nodeService

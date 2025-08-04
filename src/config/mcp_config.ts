@@ -1,18 +1,28 @@
 /**
  * MCP Configuration - Available Server Registry
- * Central registry for all available MCP server types and configurations
+ * Central registry for all available MCP ser    ],
+    requiresWallet: false,
+    dependencies: []
+  }
+
+  // Future servers can be added here:
+  // ai: { ... }, // AI assistant tools
+  // utility: { ... }, // General utility tools
+  // system: { ... }, // System monitoring tools
+};igurations
  */
 
-import { BaseMCPServer } from '../mcpServers/BaseMCPServer';
-import { SolanaMCPServer } from '../mcpServers/SolanaMCPServer';
-import { NodeMCPServer } from '../mcpServers/NodeMCPServer';
+import { BaseMCPServer } from '../mcpServers/BaseMCP';
+import { SolanaMCPServer } from '../mcpServers/SolanaMCP';
+import { NodeMCPServer } from '../mcpServers/NodeMCP';
+import { WeatherMCPServer } from '../mcpServers/WeatherMCP';
 import type { Connection, PublicKey, Transaction } from '@solana/web3.js';
 
 export interface MCPServerConfig {
   id: string;
   name: string;
   description: string;
-  category: 'solana' | 'nodes' | 'system' | 'ai' | 'utility';
+  category: 'solana' | 'nodes' | 'weather' | 'system' | 'ai' | 'utility';
   createInstance: (context?: any) => BaseMCPServer;
   capabilities: string[];
   dependencies?: string[];
@@ -75,7 +85,39 @@ export const MCP_SERVER_REGISTRY: Record<string, MCPServerConfig> = {
     ],
     requiresWallet: false,
     dependencies: []
+  },
+
+  weather: {
+    id: 'weather',
+    name: 'Weather Information',
+    description: 'Current weather conditions, forecasts, and weather alerts for US locations',
+    category: 'weather',
+    createInstance: () => {
+      return new WeatherMCPServer();
+    },
+    capabilities: [
+      'Current weather conditions',
+      'Multi-day weather forecasts',
+      'Weather alerts by state',
+      'US location support',
+      'National Weather Service data'
+    ],
+    requiresWallet: false,
+    dependencies: []
   }
+  //   },
+  //   capabilities: [
+  //     'Wallet balance checking',
+  //     'SOL transfers',
+  //     'SPL token transfers', 
+  //     'Transaction history',
+  //     'Address validation',
+  //     'Network operations',
+  //     'Airdrop requests'
+  //   ],
+  //   requiresWallet: true,
+  //   dependencies: []
+  // },
 
   // Future servers can be added here:
   // ai: { ... }, // AI assistant tools

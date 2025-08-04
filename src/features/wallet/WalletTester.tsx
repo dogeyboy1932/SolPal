@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useWallet } from '@/contexts/WalletContext';
 import { PublicKey } from '@solana/web3.js';
-import { solanaService } from '@/services/SolanaService';
+import { solanaService } from '@/services/solanaService';
 import { webWalletAdapter } from '@/services/WebWalletAdapter';
 import Toast from 'react-native-toast-message';
 

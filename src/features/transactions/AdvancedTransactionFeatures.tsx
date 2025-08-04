@@ -11,7 +11,7 @@ import {
   Switch,
 } from 'react-native';
 import { useWallet } from '@/contexts/WalletContext';
-import { solanaService } from '@/services/SolanaService';
+import { solanaService } from '@/services/solanaService';
 import { PublicKey, LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js';
 import Toast from 'react-native-toast-message';
 

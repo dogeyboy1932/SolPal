@@ -6,7 +6,7 @@
 
 import type { MCPTool, ToolCall, LiveFunctionResponse } from '../types/live-types';
 import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { BaseMCPServer } from './BaseMCPServer';
+import { BaseMCPServer } from './BaseMCP';
 import { 
   MCP_SERVER_REGISTRY, 
   MCPServerConfig, 
