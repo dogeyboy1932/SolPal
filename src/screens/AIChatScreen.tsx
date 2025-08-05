@@ -85,6 +85,7 @@ export default function AITransactionChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('AIzaSyDsGhQALbwf6jDAHKpZLu1bhVus5CQ-ERQ');
   const [showApiKeySection, setShowApiKeySection] = useState(!liveConnected);
+  const [isApiKeySet, setIsApiKeySet] = useState(false);
   
   // Node and MCP management states
   const [showNodeList, setShowNodeList] = useState(false);
@@ -119,22 +120,25 @@ export default function AITransactionChat() {
   }, [activeNodes, liveConnected, updateNodeContext]);
 
   // Set API key and connect
-  const handleConnectToAI = async () => {
+  const handleSetApiKey = () => {
     const trimmedApiKey = apiKeyInput.trim();
     
-    // Simple validation - just check if not empty
     if (!trimmedApiKey) {
       Alert.alert('Invalid API Key', 'Please enter your API key.');
       return;
     }
     
+    setApiKey(trimmedApiKey);
+    setIsApiKeySet(true);
+  };
+
+  const handleConnectToAI = async () => {
+    if (!isApiKeySet) {
+      Alert.alert('API Key Required', 'Please set your API key first.');
+      return;
+    }
+    
     try {
-      // Set the API key first
-      setApiKey(trimmedApiKey);
-      
-      // Small delay to ensure API key is set
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
       const success = await liveConnect();
       if (success) {
         setShowApiKeySection(false);
@@ -160,6 +164,7 @@ export default function AITransactionChat() {
           onPress: async () => {
             await liveDisconnect();
             setShowApiKeySection(true);
+            setIsApiKeySet(false);
           }
         }
       ]
@@ -385,7 +390,7 @@ export default function AITransactionChat() {
         {/* Top Row: Wallet & AI Status */}
         <View className="flex-row justify-between items-center pb-1">
           {/* Wallet Status */}
-          <View className="flex-row items-center">
+          {/* <View className="flex-row items-center">
             <View className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
             <Text className="text-sm font-semibold text-gray-900">Wallet</Text>
             {connected && (
@@ -393,7 +398,7 @@ export default function AITransactionChat() {
                 <Ionicons name="power" size={14} color="#FF3B30" />
               </TouchableOpacity>
             )}
-          </View>
+          </View> */}
 
           {/* AI Status */}
           <View className="flex-row items-center">
@@ -441,11 +446,14 @@ export default function AITransactionChat() {
             <Text className="text-base font-bold text-gray-900 mb-1">Connect AI Assistant</Text>
             <Text className="text-sm text-gray-500 mb-2">Enter your Gemini API key to enable AI features</Text>
             
-            <View className="flex-row gap-3 items-center">
+            <View className="flex-row gap-2 items-center">
               <TextInput
                 className="flex-1 border border-gray-300 rounded-lg px-3 text-sm bg-gray-50 h-10"
                 value={apiKeyInput}
-                onChangeText={setApiKeyInput}
+                onChangeText={(text) => {
+                  setApiKeyInput(text);
+                  setIsApiKeySet(false); // Reset API key set status when input changes
+                }}
                 placeholder="Enter your API key"
                 placeholderTextColor="#C7C7CC"
                 autoCapitalize="none"
@@ -453,14 +461,30 @@ export default function AITransactionChat() {
                 secureTextEntry={false}
               />
               
+              {/* Set API Key Button */}
               <TouchableOpacity
-                className={`rounded-lg ${!apiKeyInput.trim() ? 'opacity-50' : ''}`}
+                className={`rounded-lg w-10 h-10 items-center justify-center ${
+                  !apiKeyInput.trim() ? 'bg-gray-300' : isApiKeySet ? 'bg-green-500' : 'bg-blue-500'
+                }`}
+                onPress={handleSetApiKey}
+                disabled={!apiKeyInput.trim() || isApiKeySet}
+              >
+                <Ionicons 
+                  name={isApiKeySet ? "checkmark" : "key"} 
+                  size={16} 
+                  color="white" 
+                />
+              </TouchableOpacity>
+
+              {/* Connect Button */}
+              <TouchableOpacity
+                className={`rounded-lg ${!isApiKeySet ? 'opacity-50' : ''}`}
                 onPress={handleConnectToAI}
-                disabled={!apiKeyInput.trim()}
+                disabled={!isApiKeySet}
               >
                 <LinearGradient
                   colors={
-                    apiKeyInput.trim()
+                    isApiKeySet
                       ? ['#007AFF', '#0056CC']
                       : ['#C7C7CC', '#A8A8A8']
                   }
@@ -471,6 +495,12 @@ export default function AITransactionChat() {
                 </LinearGradient>
               </TouchableOpacity>
             </View>
+            
+            {isApiKeySet && (
+              <Text className="text-xs text-green-600 mt-2">
+                ✓ API key set successfully. You can now connect to the AI assistant.
+              </Text>
+            )}
           </View>
         )}
 

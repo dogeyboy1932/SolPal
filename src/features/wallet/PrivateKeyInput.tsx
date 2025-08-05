@@ -100,7 +100,7 @@ export const PrivateKeyInput: React.FC = () => {
   }
 
   return (
-    <View className="border-t border-accent-amber/30">
+    <View className="pb-1 border-b border-accent-amber/30">
       <Text className="text-sm font-semibold text-neutral-light mb-1">
         Development Access
       </Text>

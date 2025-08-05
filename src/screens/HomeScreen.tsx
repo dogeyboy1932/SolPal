@@ -86,7 +86,7 @@ export const HomeScreen: React.FC = () => {
                   <PrivateKeyInput />
                   
                   {/* Wallet Connection Section */}
-                  <Text className="text-sm font-semibold text-neutral-light mb-1 pt-2 mt-4">
+                  <Text className="text-sm font-semibold text-neutral-light mb-1 pt-1 mt-1">
                     Wallet Connection
                   </Text>
 
