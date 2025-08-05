@@ -37,7 +37,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "nativewind-env.d.ts", ".archive/manual_ops/TransactionBuilder.tsx", ".archive/manual_ops/HomeScreen.tsx", "src/screens/ChatScreen.tsx",
+    "nativewind-env.d.ts",
   ],
   "exclude": [
     "node_modules"
