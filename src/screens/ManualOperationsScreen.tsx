@@ -123,7 +123,7 @@ export const ManualOperationsScreen: React.FC = () => {
             <WalletOperations />
           </View>
         );
-
+      
       default:
         return null;
     }
@@ -157,6 +157,8 @@ export const ManualOperationsScreen: React.FC = () => {
           { key: 'history', icon: 'time', title: 'History' },
           { key: 'templates', icon: 'document-text', title: 'Templates' },
           { key: 'operations', icon: 'settings', title: 'Operations' },
+          // a
+
         ].map((section, index) => (
           <React.Fragment key={section.key}>
             <TouchableOpacity

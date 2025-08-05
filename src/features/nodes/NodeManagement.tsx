@@ -301,10 +301,9 @@ export const ManualNodeManagement: React.FC = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="bg-white p-5 border-b border-gray-200">
-        <Text className="text-2xl font-bold text-gray-900 mb-1">Node Management</Text>
+      <View className="bg-white p-3 border-b border-gray-200">
         <View className="mt-1">
           <Text className="text-sm text-gray-600">
             {stats.total} nodes • {stats.withWallets} with wallets
@@ -313,8 +312,8 @@ export const ManualNodeManagement: React.FC = () => {
       </View>
 
       {/* Search Bar */}
-      <View className="bg-white px-5 pb-4 border-b border-gray-200">
-        <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 gap-3">
+      <View className="bg-white px-5 py-3  border-b border-gray-200">
+        <View className="flex-row px-3 items-center bg-gray-100 rounded-xl">
           <Ionicons name="search" size={20} color="#6B7280" />
           <TextInput
             className="flex-1 text-base text-gray-900"
@@ -440,6 +439,6 @@ export const ManualNodeManagement: React.FC = () => {
           {renderForm()}
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };

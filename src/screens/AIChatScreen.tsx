@@ -32,6 +32,7 @@ import { EventNodeForm } from '../features/nodes/forms/EventNodeForm';
 import { CommunityNodeForm } from '../features/nodes/forms/CommunityNodeForm';
 import { SmartSuggestionsPanel, ConversationSuggestions } from '../features/ai/SmartSuggestions';
 import { MCPServerManagement } from '../features/ai/MCPServerManagement';
+import { ManualNodeManagement } from '@/features/nodes/NodeManagement';
 
 const NodeTypeColors = {
   person: '#D97539', // warm-primary
@@ -507,7 +508,7 @@ export default function AITransactionChat() {
       </View>
 
       {/* Active Nodes Bar */}
-      {activeNodes.length > 0 && (
+      {nodes.length > 0 && (
         <View className="bg-white border-b border-gray-300 py-2">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row items-center px-4 gap-2">
@@ -670,7 +671,7 @@ export default function AITransactionChat() {
             </View>
           </LinearGradient>
 
-          <View className="p-4">
+          <View className="p-4 flex-1">
             <TouchableOpacity
               className="bg-blue-500 px-4 py-3 rounded-xl mb-4"
               onPress={() => {
@@ -683,9 +684,23 @@ export default function AITransactionChat() {
               </Text>
             </TouchableOpacity>
 
-            <ScrollView className="flex-1">
-              {nodes.map(node => renderNodeItem({ item: node }))}
-            </ScrollView>
+            {nodes.length === 0 ? (
+              <View className="flex-1 items-center justify-center">
+                <Ionicons name="people-outline" size={64} color="#D1D5DB" />
+                <Text className="text-lg font-semibold text-gray-600 mt-4 mb-2">No Nodes Yet</Text>
+                <Text className="text-sm text-gray-500 text-center">
+                  Create your first node to start building your network
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={nodes}
+                renderItem={renderNodeItem}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 20 }}
+              />
+            )}
           </View>
         </View>
       </Modal>
@@ -697,13 +712,15 @@ export default function AITransactionChat() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowNodeCreation(false)}
       >
-        <View className="flex-1 bg-gray-50">
-          <LinearGradient
-            colors={['#FFEE58', '#FFD54F', '#FFCA28']}
-            className="pt-12 pb-4 px-4"
-          >
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xl font-bold text-gray-900">Create Node</Text>
+        <Modal
+          visible={showNodeCreation}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setShowNodeCreation(false)}
+        >
+          <SafeAreaView className="flex-1 bg-gray-50">
+            <View className="flex-row items-center justify-between bg-white px-5 py-4 border-b border-gray-200">
+              <Text className="text-xl font-bold text-gray-900">Node Management</Text>
               <TouchableOpacity
                 className="w-8 h-8 rounded-full bg-black/10 items-center justify-center"
                 onPress={() => setShowNodeCreation(false)}
@@ -711,38 +728,9 @@ export default function AITransactionChat() {
                 <Ionicons name="close" size={20} color="#333" />
               </TouchableOpacity>
             </View>
-          </LinearGradient>
-
-          <View className="p-4">
-            <View className="flex-row mb-4 bg-gray-200 rounded-xl p-1">
-              {(['person', 'event', 'community'] as const).map(type => (
-                <TouchableOpacity
-                  key={type}
-                  className={`flex-1 py-2 rounded-lg ${nodeCreationType === type ? 'bg-white shadow-sm' : ''}`}
-                  onPress={() => setNodeCreationType(type)}
-                >
-                  <Text className={`text-center font-medium ${
-                    nodeCreationType === type ? 'text-gray-900' : 'text-gray-600'
-                  }`}>
-                    {NodeTypeIcons[type]} {type.charAt(0).toUpperCase() + type.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <ScrollView className="flex-1">
-              {nodeCreationType === 'person' && (
-                <PersonNodeForm onSave={handleSavePersonNode} onCancel={handleCancelNodeCreation} />
-              )}
-              {nodeCreationType === 'event' && (
-                <EventNodeForm onSave={handleSaveEventNode} onCancel={handleCancelNodeCreation} />
-              )}
-              {nodeCreationType === 'community' && (
-                <CommunityNodeForm onSave={handleSaveCommunityNode} onCancel={handleCancelNodeCreation} />
-              )}
-            </ScrollView>
-          </View>
-        </View>
+            <ManualNodeManagement />
+          </SafeAreaView>
+        </Modal>
       </Modal>
 
       {/* MCP Management Modal */}

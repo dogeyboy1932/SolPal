@@ -228,28 +228,92 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
   }, [liveClient, mcpClient]);
 
   // Voice audio streaming (following mcpb-latent pattern)
-  useEffect(() => {
-    const onData = (base64: string) => {
-      if (liveConnected && voiceModeEnabled) {
-        liveClient.sendRealtimeInput([
-          {
-            mimeType: "audio/pcm;rate=16000",
-            data: base64,
-          },
-        ]);
-      }
-    };
+  // useEffect(() => {
+  //   console.log("HERE")
+  //   const onData = (base64: string) => {
+  //     console.log(`🎤 Audio data received: ${base64.length} bytes`);
 
-    if (liveConnected && voiceModeEnabled && isListening && audioRecorder) {
-      audioRecorder.on("data", onData).start();
-    } else {
+  //     if (liveConnected && voiceModeEnabled) {
+  //       liveClient.sendRealtimeInput([
+  //         {
+  //           mimeType: "audio/pcm;rate=16000",
+  //           data: base64,
+  //         },
+  //       ]);
+  //     }
+  //   };
+
+  //   console.log(audioRecorder);
+
+  //   if (liveConnected && voiceModeEnabled && isListening && audioRecorder) {
+  //     console.log("CAPTURING AUDIO");
+  //     audioRecorder.on("data", onData).start();
+  //   } else {
+  //     audioRecorder.stop();
+  //   }
+
+  //   return () => {
+  //     audioRecorder.off("data", onData);
+  //   };
+  // }, [liveConnected, liveClient, voiceModeEnabled, isListening, audioRecorder]);
+
+  useEffect(() => {
+  // console.log("=== AUDIO EFFECT DEBUG ===");
+  // console.log("liveConnected:", liveConnected);
+  // console.log("voiceModeEnabled:", voiceModeEnabled);
+  // console.log("isListening:", isListening);
+  // console.log("audioRecorder:", audioRecorder);
+  // console.log("audioRecorder type:", typeof audioRecorder);
+  // console.log("audioRecorder methods:", audioRecorder ? Object.getOwnPropertyNames(Object.getPrototypeOf(audioRecorder)) : 'N/A');
+  
+  const onData = (base64: string) => {
+    // console.log(`🎤 Audio data received: ${base64.length} bytes`);
+
+    if (liveConnected && voiceModeEnabled) {
+      liveClient.sendRealtimeInput([
+        {
+          mimeType: "audio/pcm;rate=16000",
+          data: base64,
+        },
+      ]);
+    }
+  };
+
+  const onStart = () => {
+    console.log("🎤 AudioRecorder started successfully");
+  };
+
+  const onError = (error: Error) => {
+    console.error("🎤 AudioRecorder error:", error);
+  };
+
+  if (liveConnected && voiceModeEnabled && isListening && audioRecorder) {
+    console.log("Setting up audio recorder listeners...");
+    
+    audioRecorder.on("data", onData);
+    audioRecorder.on("start", onStart);
+    audioRecorder.on("error", onError);
+    
+    console.log("Starting audio recorder...");
+    audioRecorder.start().catch((error) => {
+      console.error("Failed to start audio recorder:", error);
+    });
+  } else {
+    console.log("Conditions not met for audio recording or stopping recorder");
+    if (audioRecorder) {
       audioRecorder.stop();
     }
+  }
 
-    return () => {
+  return () => {
+    console.log("Cleaning up audio recorder listeners...");
+    if (audioRecorder) {
       audioRecorder.off("data", onData);
-    };
-  }, [liveConnected, liveClient, voiceModeEnabled, isListening, audioRecorder]);
+      audioRecorder.off("start", onStart);
+      audioRecorder.off("error", onError);
+    }
+  };
+}, [liveConnected, liveClient, voiceModeEnabled, isListening, audioRecorder]);
 
   // MCP Connection
   const mcpConnect = useCallback(async (serverType: string): Promise<boolean> => {

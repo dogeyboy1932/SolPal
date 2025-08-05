@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { PersonNode, CreatePersonNodeData, UpdatePersonNodeData } from '../../../types/nodes';
 import { useNodes } from '../../../contexts/NodeContext';
 
@@ -83,17 +83,17 @@ export const PersonNodeForm: React.FC<PersonNodeFormProps> = ({
   };
 
   return (
-    <ScrollView className="flex-1 bg-amber-50" keyboardShouldPersistTaps="handled">
-      <View className="p-4">
-        <Text className="text-2xl font-bold text-amber-900 mb-6 text-center">
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+      <View style={styles.form}>
+        <Text style={styles.title}>
           {isEditing ? 'Edit Person' : 'Create Person'}
         </Text>
 
         {/* Name Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Name *</Text>
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Name *</Text>
           <TextInput
-            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
+            style={styles.input}
             value={formData.name}
             onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
             placeholder="Enter person's name"
@@ -102,25 +102,24 @@ export const PersonNodeForm: React.FC<PersonNodeFormProps> = ({
         </View>
 
         {/* Description Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Description</Text>
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Description</Text>
           <TextInput
-            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900 h-20"
+            style={[styles.input, styles.textArea]}
             value={formData.description}
             onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
             placeholder="Brief description"
             placeholderTextColor="#999"
             multiline
             numberOfLines={3}
-            textAlignVertical="top"
           />
         </View>
 
         {/* Wallet Address Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Wallet Address</Text>
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Wallet Address</Text>
           <TextInput
-            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
+            style={styles.input}
             value={formData.walletAddress}
             onChangeText={(text) => setFormData(prev => ({ ...prev, walletAddress: text }))}
             placeholder="Solana wallet address"
@@ -130,24 +129,22 @@ export const PersonNodeForm: React.FC<PersonNodeFormProps> = ({
         </View>
 
         {/* Relationship Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Relationship</Text>
-          <View className="flex-row flex-wrap gap-2">
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Relationship</Text>
+          <View style={styles.relationshipContainer}>
             {relationshipOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
-                className={`px-4 py-2 rounded-full border ${
-                  formData.relationship === option.value
-                    ? 'bg-orange-500 border-orange-600'
-                    : 'bg-white border-amber-300'
-                }`}
+                style={[
+                  styles.relationshipButton,
+                  formData.relationship === option.value && styles.relationshipButtonActive
+                ]}
                 onPress={() => setFormData(prev => ({ ...prev, relationship: option.value }))}
               >
-                <Text className={`text-sm font-medium ${
-                  formData.relationship === option.value
-                    ? 'text-white'
-                    : 'text-amber-800'
-                }`}>
+                <Text style={[
+                  styles.relationshipButtonText,
+                  formData.relationship === option.value && styles.relationshipButtonTextActive
+                ]}>
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -156,10 +153,10 @@ export const PersonNodeForm: React.FC<PersonNodeFormProps> = ({
         </View>
 
         {/* Email Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Email</Text>
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Email</Text>
           <TextInput
-            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
+            style={styles.input}
             value={formData.email}
             onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
             placeholder="email@example.com"
@@ -170,10 +167,10 @@ export const PersonNodeForm: React.FC<PersonNodeFormProps> = ({
         </View>
 
         {/* Phone Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Phone</Text>
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Phone</Text>
           <TextInput
-            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
+            style={styles.input}
             value={formData.phone}
             onChangeText={(text) => setFormData(prev => ({ ...prev, phone: text }))}
             placeholder="Phone number"
@@ -183,69 +180,63 @@ export const PersonNodeForm: React.FC<PersonNodeFormProps> = ({
         </View>
 
         {/* Notes Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Notes</Text>
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Notes</Text>
           <TextInput
-            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900 h-24"
+            style={[styles.input, styles.textArea]}
             value={formData.notes}
             onChangeText={(text) => setFormData(prev => ({ ...prev, notes: text }))}
             placeholder="Additional notes"
             placeholderTextColor="#999"
             multiline
             numberOfLines={4}
-            textAlignVertical="top"
           />
         </View>
 
         {/* Tags Field */}
-        <View className="mb-4">
-          <Text className="text-base font-semibold text-amber-800 mb-2">Tags</Text>
-          <View className="flex-row gap-2 mb-2">
+        <View style={styles.fieldContainer}>
+          <Text style={styles.label}>Tags</Text>
+          <View style={styles.tagInputContainer}>
             <TextInput
-              className="flex-1 bg-white border border-amber-300 rounded-lg px-3 py-2 text-amber-900"
+              style={[styles.input, styles.tagInput]}
               value={newTag}
               onChangeText={setNewTag}
               placeholder="Add tag"
               placeholderTextColor="#999"
               onSubmitEditing={addTag}
             />
-            <TouchableOpacity 
-              className="bg-orange-500 px-4 py-2 rounded-lg justify-center" 
-              onPress={addTag}
-            >
-              <Text className="text-white font-medium">Add</Text>
+            <TouchableOpacity style={styles.addTagButton} onPress={addTag}>
+              <Text style={styles.addTagButtonText}>Add</Text>
             </TouchableOpacity>
           </View>
-          <View className="flex-row flex-wrap gap-2">
+          <View style={styles.tagsContainer}>
             {formData.tags?.map((tag, index) => (
               <TouchableOpacity
                 key={index}
-                className="bg-amber-100 border border-amber-300 rounded-full px-3 py-1"
+                style={styles.tag}
                 onPress={() => removeTag(tag)}
               >
-                <Text className="text-amber-800 text-sm">{tag} ×</Text>
+                <Text style={styles.tagText}>{tag} ×</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {/* Action Buttons */}
-        <View className="flex-row gap-3 mt-6">
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
-            className="flex-1 bg-gray-100 border border-gray-300 rounded-lg py-3 items-center"
+            style={[styles.button, styles.cancelButton]}
             onPress={onCancel}
           >
-            <Text className="text-gray-700 font-semibold text-base">Cancel</Text>
+            <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            className={`flex-1 rounded-lg py-3 items-center ${
-              isSaving ? 'bg-orange-300' : 'bg-orange-500'
-            }`}
+            style={[styles.button, styles.saveButton]}
             onPress={handleSave}
             disabled={isSaving}
           >
-            <Text className="text-white font-semibold text-base">
+            <Text style={styles.saveButtonText}>
               {isSaving ? 'Saving...' : 'Save'}
             </Text>
           </TouchableOpacity>
@@ -254,3 +245,128 @@ export const PersonNodeForm: React.FC<PersonNodeFormProps> = ({
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  form: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  fieldContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#333',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  relationshipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  relationshipButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+  relationshipButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  relationshipButtonText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  relationshipButtonTextActive: {
+    color: '#fff',
+  },
+  tagInputContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  tagInput: {
+    flex: 1,
+  },
+  addTagButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  addTagButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  tagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  tag: {
+    backgroundColor: '#e0e0e0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  tagText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '600',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+  },
+  saveButtonText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
+  },
+});
