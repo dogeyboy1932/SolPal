@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  ScrollView,
-  StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl,
+  ScrollView,
   TextInput,
+  RefreshControl,
 } from 'react-native';
 import { useWallet } from '@/contexts/WalletContext';
 import { solanaService } from '@/services/solanaService';
@@ -131,12 +130,12 @@ export const TransactionHistory: React.FC = () => {
     if (connected && publicKey) {
       loadTransactionHistory();
     }
-  }, [connected, publicKey]);
+  }, []);
 
   if (!connected) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.notConnectedText}>
+      <View className="bg-amber-50 rounded-xl p-4 mx-4 shadow-sm border border-amber-200">
+        <Text className="text-center text-amber-800 text-base p-5">
           Please connect your wallet to view transaction history
         </Text>
       </View>
@@ -144,26 +143,26 @@ export const TransactionHistory: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Transaction History</Text>
+    <View className="bg-white rounded-xl p-4 shadow-lg border border-amber-200">
+      <View className="flex-row justify-between items-center mb-4">
+        <Text className="text-xl font-semibold text-amber-900">Transaction History</Text>
         <TouchableOpacity 
           onPress={() => loadTransactionHistory()}
           disabled={loading}
-          style={styles.refreshButton}
+          className="p-1"
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#3b82f6" />
+            <ActivityIndicator size="small" color="#E49B3F" />
           ) : (
-            <Text style={styles.refreshText}>↻</Text>
+            <Text className="text-lg text-orange-500">↻</Text>
           )}
         </TouchableOpacity>
       </View>
 
       {/* Search Input */}
-      <View style={styles.searchContainer}>
+      <View className="mb-4">
         <TextInput
-          style={styles.searchInput}
+          className="bg-white border border-amber-300 rounded-lg px-3 py-2 text-amber-900"
           placeholder="Search by signature or date..."
           value={searchQuery}
           onChangeText={handleSearchChange}
@@ -172,20 +171,20 @@ export const TransactionHistory: React.FC = () => {
       </View>
 
       {/* Filter Buttons */}
-      <View style={styles.filterContainer}>
+      <View className="flex-row flex-wrap gap-2 mb-4">
         {(['all', 'success', 'failed', 'pending'] as FilterType[]).map((filter) => (
           <TouchableOpacity
             key={filter}
-            style={[
-              styles.filterButton,
-              activeFilter === filter && styles.activeFilterButton
-            ]}
+            className={`px-3 py-2 rounded-lg border ${
+              activeFilter === filter 
+                ? 'bg-orange-500 border-orange-600' 
+                : 'bg-white border-amber-300'
+            }`}
             onPress={() => handleFilterChange(filter)}
           >
-            <Text style={[
-              styles.filterText,
-              activeFilter === filter && styles.activeFilterText
-            ]}>
+            <Text className={`text-sm font-medium ${
+              activeFilter === filter ? 'text-white' : 'text-amber-800'
+            }`}>
               {filter.charAt(0).toUpperCase() + filter.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -193,60 +192,60 @@ export const TransactionHistory: React.FC = () => {
       </View>
 
       {loading && transactions.length === 0 ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3b82f6" />
-          <Text style={styles.loadingText}>Loading transactions...</Text>
+        <View className="flex-1 justify-center items-center py-8">
+          <ActivityIndicator size="large" color="#E49B3F" />
+          <Text className="text-amber-700 text-base mt-2">Loading transactions...</Text>
         </View>
       ) : filteredTransactions.length === 0 && transactions.length > 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No transactions match your filters</Text>
-          <Text style={styles.emptySubtext}>
+        <View className="py-8 items-center">
+          <Text className="text-amber-800 text-base font-medium">No transactions match your filters</Text>
+          <Text className="text-amber-600 text-sm mt-1">
             Try adjusting your search or filter criteria
           </Text>
         </View>
       ) : filteredTransactions.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No transactions found</Text>
-          <Text style={styles.emptySubtext}>
+        <View className="py-8 items-center">
+          <Text className="text-amber-800 text-base font-medium">No transactions found</Text>
+          <Text className="text-amber-600 text-sm mt-1">
             Your transaction history will appear here
           </Text>
         </View>
       ) : (
         <ScrollView
-          style={styles.transactionsList}
+          className="flex-1"
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           showsVerticalScrollIndicator={false}
         >
           {filteredTransactions.map((tx, index) => (
-            <View key={tx.signature} style={styles.transactionItem}>
-              <View style={styles.transactionHeader}>
-                <Text style={styles.transactionSignature}>
+            <View key={tx.signature} className="bg-white rounded-lg p-4 mb-3 border border-amber-200 shadow-sm">
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-amber-900 font-mono text-sm">
                   {formatSignature(tx.signature)}
                 </Text>
-                <View style={[
-                  styles.statusBadge,
-                  { backgroundColor: getStatusColor(tx) }
-                ]}>
-                  <Text style={styles.statusText}>
+                <View 
+                  className="px-2 py-1 rounded-full"
+                  style={{ backgroundColor: getStatusColor(tx) }}
+                >
+                  <Text className="text-white text-xs font-medium">
                     {getTransactionStatus(tx)}
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.transactionDetails}>
-                <Text style={styles.transactionDate}>
+              <View className="gap-1">
+                <Text className="text-amber-700 text-sm">
                   {formatDate(tx.timestamp)}
                 </Text>
-                <Text style={styles.transactionSlot}>
+                <Text className="text-amber-600 text-xs">
                   Slot: {tx.slot.toLocaleString()}
                 </Text>
               </View>
 
               {tx.err && (
-                <View style={styles.errorContainer}>
-                  <Text style={styles.errorText}>
+                <View className="bg-red-50 border border-red-200 rounded p-2 mt-2">
+                  <Text className="text-red-700 text-xs">
                     Error: {JSON.stringify(tx.err)}
                   </Text>
                 </View>
@@ -258,162 +257,3 @@ export const TransactionHistory: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1f2937',
-  },
-  refreshButton: {
-    padding: 4,
-  },
-  refreshText: {
-    fontSize: 18,
-    color: '#3b82f6',
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    color: '#6b7280',
-    fontSize: 16,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 18,
-    color: '#374151',
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-  },
-  transactionsList: {
-    maxHeight: 400,
-  },
-  transactionItem: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-  },
-  transactionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  transactionSignature: {
-    fontSize: 14,
-    fontFamily: 'monospace',
-    color: '#374151',
-    flex: 1,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  statusText: {
-    fontSize: 12,
-    color: 'white',
-    fontWeight: '500',
-  },
-  transactionDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  transactionDate: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  transactionSlot: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  errorContainer: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: '#fef2f2',
-    borderRadius: 4,
-  },
-  errorText: {
-    fontSize: 12,
-    color: '#ef4444',
-  },
-  notConnectedText: {
-    textAlign: 'center',
-    color: '#6b7280',
-    fontSize: 16,
-    padding: 20,
-  },
-  searchContainer: {
-    marginBottom: 16,
-  },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#f9fafb',
-    color: '#374151',
-  },
-  filterContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
-  },
-  filterButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    backgroundColor: '#f9fafb',
-    alignItems: 'center',
-  },
-  activeFilterButton: {
-    backgroundColor: '#3b82f6',
-    borderColor: '#3b82f6',
-  },
-  filterText: {
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
-  },
-  activeFilterText: {
-    color: 'white',
-  },
-});

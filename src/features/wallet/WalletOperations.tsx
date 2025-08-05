@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   TextInput,
   Alert,
@@ -243,40 +242,40 @@ export const WalletOperations: React.FC = () => {
     switch (operationResult.type) {
       case 'airdrop':
         return (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>Airdrop Result</Text>
-            <Text style={styles.resultText}>Amount: {operationResult.amount} SOL</Text>
-            <Text style={styles.resultText}>Signature: {operationResult.signature}</Text>
-            <Text style={styles.successText}>{operationResult.message}</Text>
+          <View className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <Text className="text-lg font-semibold text-green-800 mb-2">Airdrop Result</Text>
+            <Text className="text-sm text-green-700 mb-1">Amount: {operationResult.amount} SOL</Text>
+            <Text className="text-sm text-green-700 mb-1">Signature: {operationResult.signature}</Text>
+            <Text className="text-sm text-green-600 font-medium">{operationResult.message}</Text>
           </View>
         );
 
       case 'account_info':
         const { data } = operationResult;
         return (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>Account Information</Text>
-            <Text style={styles.resultText}>Address: {data.address}</Text>
-            <Text style={styles.resultText}>Balance: {data.balance} SOL</Text>
-            <Text style={styles.resultText}>Owner: {data.owner}</Text>
-            <Text style={styles.resultText}>Executable: {data.executable ? 'Yes' : 'No'}</Text>
-            <Text style={styles.resultText}>Rent Epoch: {data.rentEpoch}</Text>
-            <Text style={styles.resultText}>Data Size: {data.dataSize} bytes</Text>
+          <View className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <Text className="text-lg font-semibold text-blue-800 mb-2">Account Information</Text>
+            <Text className="text-sm text-blue-700 mb-1">Address: {data.address}</Text>
+            <Text className="text-sm text-blue-700 mb-1">Balance: {data.balance} SOL</Text>
+            <Text className="text-sm text-blue-700 mb-1">Owner: {data.owner}</Text>
+            <Text className="text-sm text-blue-700 mb-1">Executable: {data.executable ? 'Yes' : 'No'}</Text>
+            <Text className="text-sm text-blue-700 mb-1">Rent Epoch: {data.rentEpoch}</Text>
+            <Text className="text-sm text-blue-700">Data Size: {data.dataSize} bytes</Text>
           </View>
         );
 
       case 'token_accounts':
         return (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>Token Accounts ({operationResult.data.length})</Text>
+          <View className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+            <Text className="text-lg font-semibold text-purple-800 mb-2">Token Accounts ({operationResult.data.length})</Text>
             {operationResult.data.length === 0 ? (
-              <Text style={styles.resultText}>No token accounts found</Text>
+              <Text className="text-sm text-purple-700">No token accounts found</Text>
             ) : (
               operationResult.data.map((account: any, index: number) => (
-                <View key={index} style={styles.tokenAccount}>
-                  <Text style={styles.tokenMint}>Mint: {account.mint.slice(0, 20)}...</Text>
-                  <Text style={styles.resultText}>Balance: {account.balance}</Text>
-                  <Text style={styles.resultText}>Decimals: {account.decimals}</Text>
+                <View key={index} className="bg-purple-100 rounded p-3 mb-2">
+                  <Text className="text-sm font-semibold text-purple-800 mb-1">Mint: {account.mint.slice(0, 20)}...</Text>
+                  <Text className="text-sm text-purple-700">Balance: {account.balance}</Text>
+                  <Text className="text-sm text-purple-700">Decimals: {account.decimals}</Text>
                 </View>
               ))
             )}
@@ -285,28 +284,28 @@ export const WalletOperations: React.FC = () => {
 
       case 'validate_address':
         return (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>Address Validation</Text>
-            <Text style={styles.resultText}>Address: {operationResult.data.address}</Text>
-            <Text style={[
-              styles.resultText,
-              { color: operationResult.data.isValid ? '#10b981' : '#ef4444' }
-            ]}>
+          <View className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <Text className="text-lg font-semibold text-yellow-800 mb-2">Address Validation</Text>
+            <Text className="text-sm text-yellow-700 mb-1">Address: {operationResult.data.address}</Text>
+            <Text 
+              className="text-sm font-medium mb-1"
+              style={{ color: operationResult.data.isValid ? '#10b981' : '#ef4444' }}
+            >
               Status: {operationResult.data.isValid ? 'Valid' : 'Invalid'}
             </Text>
             {operationResult.data.error && (
-              <Text style={styles.errorText}>{operationResult.data.error}</Text>
+              <Text className="text-sm text-red-600">{operationResult.data.error}</Text>
             )}
           </View>
         );
 
       case 'export_key':
         return (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>Public Key Export</Text>
-            <Text style={styles.resultText}>{operationResult.data.message}</Text>
-            <View style={styles.keyContainer}>
-              <Text style={styles.keyText}>{operationResult.data.publicKey}</Text>
+          <View className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+            <Text className="text-lg font-semibold text-indigo-800 mb-2">Public Key Export</Text>
+            <Text className="text-sm text-indigo-700 mb-2">{operationResult.data.message}</Text>
+            <View className="bg-indigo-100 rounded p-3">
+              <Text className="text-xs font-mono text-indigo-800">{operationResult.data.publicKey}</Text>
             </View>
           </View>
         );
@@ -318,8 +317,8 @@ export const WalletOperations: React.FC = () => {
 
   if (!connected) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.notConnectedText}>
+      <View className="flex-1 bg-amber-50">
+        <Text className="text-center text-amber-800 text-base p-8">
           Please connect your wallet to access wallet operations
         </Text>
       </View>
@@ -327,55 +326,56 @@ export const WalletOperations: React.FC = () => {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Text style={styles.title}>Wallet Operations</Text>
-      <Text style={styles.subtitle}>
+    <ScrollView className="flex-1 bg-neutral-light p-4" showsVerticalScrollIndicator={false}>
+      <Text className="text-2xl font-bold text-amber-900 mb-2">Wallet Operations</Text>
+      <Text className="text-base text-amber-700 mb-6">
         Advanced wallet management and utility functions
       </Text>
 
       {/* Operations Grid */}
-      <View style={styles.operationsGrid}>
+      <View className="grid grid-cols-3 grid-rows-2 gap-3 mb-6">
         {WALLET_OPERATIONS.map((operation) => (
           <TouchableOpacity
             key={operation.id}
-            style={[
-              styles.operationCard,
-              selectedOperation?.id === operation.id && styles.selectedCard
-            ]}
+            className={`flex-1 min-w-40% bg-white p-4 rounded-xl border-2 shadow-sm ${
+              selectedOperation?.id === operation.id 
+                ? 'border-orange-500 bg-orange-50' 
+                : 'border-amber-200'
+            }`}
             onPress={() => executeOperation(operation)}
             disabled={loading}
           >
-            <Text style={styles.operationIcon}>{operation.icon}</Text>
-            <Text style={styles.operationName}>{operation.name}</Text>
-            <Text style={styles.operationDescription}>{operation.description}</Text>
+            <Text className="text-2xl text-center mb-2">{operation.icon}</Text>
+            <Text className="text-sm font-semibold text-amber-900 text-center mb-1">{operation.name}</Text>
+            <Text className="text-xs text-amber-700 text-center">{operation.description}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {/* Address Validation Input */}
-      <View style={styles.validationSection}>
-        <Text style={styles.sectionTitle}>Address Validation</Text>
+      <View className="mb-6">
+        <Text className="text-lg font-semibold text-amber-900 mb-3">Address Validation</Text>
         <TextInput
-          style={styles.addressInput}
+          className="bg-white border border-amber-200 rounded-lg p-3 mb-3 text-amber-900"
           value={addressToValidate}
           onChangeText={setAddressToValidate}
           placeholder="Enter Solana address to validate"
-          placeholderTextColor="#999"
+          placeholderTextColor="#92400e"
         />
         <TouchableOpacity
-          style={styles.validateButton}
+          className="bg-orange-500 p-3 rounded-lg items-center"
           onPress={validateAddress}
           disabled={loading}
         >
-          <Text style={styles.validateButtonText}>Validate Address</Text>
+          <Text className="text-white font-semibold">Validate Address</Text>
         </TouchableOpacity>
       </View>
 
       {/* Loading Indicator */}
       {loading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>
+        <View className="items-center py-6">
+          <ActivityIndicator size="large" color="#E49B3F" />
+          <Text className="text-amber-700 mt-2 text-center">
             Executing {selectedOperation?.name}...
           </Text>
         </View>
@@ -386,190 +386,10 @@ export const WalletOperations: React.FC = () => {
 
       {/* Clear Result Button */}
       {operationResult && (
-        <TouchableOpacity style={styles.clearButton} onPress={clearResult}>
-          <Text style={styles.clearButtonText}>Clear Result</Text>
+        <TouchableOpacity className="bg-gray-500 p-3 rounded-lg items-center mt-4" onPress={clearResult}>
+          <Text className="text-white font-semibold">Clear Result</Text>
         </TouchableOpacity>
       )}
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
-  },
-  operationsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-    marginBottom: 32,
-  },
-  operationCard: {
-    width: '47%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  selectedCard: {
-    borderColor: '#007AFF',
-    borderWidth: 2,
-  },
-  operationIcon: {
-    fontSize: 32,
-    marginBottom: 8,
-  },
-  operationName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  operationDescription: {
-    fontSize: 12,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 16,
-  },
-  validationSection: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  addressInput: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 12,
-    backgroundColor: '#f9f9f9',
-  },
-  validateButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-  },
-  validateButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 24,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#666',
-  },
-  resultContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  resultTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  resultText: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  successText: {
-    fontSize: 14,
-    color: '#10b981',
-    fontWeight: '500',
-    marginTop: 8,
-  },
-  errorText: {
-    fontSize: 14,
-    color: '#ef4444',
-    marginTop: 4,
-  },
-  tokenAccount: {
-    backgroundColor: '#f9f9f9',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  tokenMint: {
-    fontSize: 12,
-    color: '#666',
-    fontFamily: 'monospace',
-    marginBottom: 4,
-  },
-  keyContainer: {
-    backgroundColor: '#f9f9f9',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  keyText: {
-    fontSize: 12,
-    color: '#333',
-    fontFamily: 'monospace',
-    textAlign: 'center',
-  },
-  clearButton: {
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  clearButtonText: {
-    color: '#666',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  notConnectedText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 16,
-    padding: 40,
-  },
-});

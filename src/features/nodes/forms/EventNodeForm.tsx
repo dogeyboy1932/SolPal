@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { EventNode, CreateEventNodeData, UpdateEventNodeData } from '../../../types/nodes';
 import { useNodes } from '../../../contexts/NodeContext';
 
@@ -121,17 +121,17 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
   };
 
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-      <View style={styles.form}>
-        <Text style={styles.title}>
+    <ScrollView className="flex-1 bg-amber-50" keyboardShouldPersistTaps="handled">
+      <View className="p-4">
+        <Text className="text-2xl font-bold text-amber-900 mb-6 text-center">
           {isEditing ? 'Edit Event' : 'Create Event'}
         </Text>
 
         {/* Name Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Event Name *</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Event Name *</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.name}
             onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
             placeholder="Enter event name"
@@ -140,36 +140,39 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* Description Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Description</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Description</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900 h-20"
             value={formData.description}
             onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
             placeholder="Event description"
             placeholderTextColor="#999"
             multiline
             numberOfLines={3}
+            textAlignVertical="top"
           />
         </View>
 
         {/* Event Type Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Event Type</Text>
-          <View style={styles.typeContainer}>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Event Type</Text>
+          <View className="flex-row flex-wrap gap-2">
             {eventTypeOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
-                style={[
-                  styles.typeButton,
-                  formData.eventType === option.value && styles.typeButtonActive
-                ]}
+                className={`px-4 py-2 rounded-full border ${
+                  formData.eventType === option.value
+                    ? 'bg-orange-500 border-orange-600'
+                    : 'bg-white border-amber-300'
+                }`}
                 onPress={() => setFormData(prev => ({ ...prev, eventType: option.value }))}
               >
-                <Text style={[
-                  styles.typeButtonText,
-                  formData.eventType === option.value && styles.typeButtonTextActive
-                ]}>
+                <Text className={`text-sm font-medium ${
+                  formData.eventType === option.value
+                    ? 'text-white'
+                    : 'text-amber-800'
+                }`}>
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -178,10 +181,10 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* Date Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Start Date & Time *</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Start Date & Time *</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={dateString}
             onChangeText={handleDateChange}
             placeholder="YYYY-MM-DDTHH:mm"
@@ -190,10 +193,10 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* End Date Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>End Date & Time</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">End Date & Time</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={endDateString}
             onChangeText={handleEndDateChange}
             placeholder="YYYY-MM-DDTHH:mm (optional)"
@@ -202,10 +205,10 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* Location Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Location</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Location</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.location}
             onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
             placeholder="Event location"
@@ -214,10 +217,10 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* Organizer Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Organizer</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Organizer</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.organizer}
             onChangeText={(text) => setFormData(prev => ({ ...prev, organizer: text }))}
             placeholder="Event organizer"
@@ -226,10 +229,10 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* Ticket Price Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Ticket Price (SOL)</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Ticket Price (SOL)</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.ticketPrice?.toString() || ''}
             onChangeText={(text) => {
               const price = text ? parseFloat(text) : undefined;
@@ -242,10 +245,10 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* Max Attendees Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Max Attendees</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Max Attendees</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.maxAttendees?.toString() || ''}
             onChangeText={(text) => {
               const count = text ? parseInt(text) : undefined;
@@ -258,63 +261,69 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         </View>
 
         {/* Requirements Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Requirements</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Requirements</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900 h-20"
             value={formData.requirements}
             onChangeText={(text) => setFormData(prev => ({ ...prev, requirements: text }))}
             placeholder="Any special requirements"
             placeholderTextColor="#999"
             multiline
             numberOfLines={3}
+            textAlignVertical="top"
           />
         </View>
 
         {/* Tags Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Tags</Text>
-          <View style={styles.tagInputContainer}>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Tags</Text>
+          <View className="flex-row gap-2 mb-2">
             <TextInput
-              style={[styles.input, styles.tagInput]}
+              className="flex-1 bg-white border border-amber-300 rounded-lg px-3 py-2 text-amber-900"
               value={newTag}
               onChangeText={setNewTag}
               placeholder="Add tag"
               placeholderTextColor="#999"
               onSubmitEditing={addTag}
             />
-            <TouchableOpacity style={styles.addTagButton} onPress={addTag}>
-              <Text style={styles.addTagButtonText}>Add</Text>
+            <TouchableOpacity 
+              className="bg-orange-500 px-4 py-2 rounded-lg justify-center" 
+              onPress={addTag}
+            >
+              <Text className="text-white font-medium">Add</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.tagsContainer}>
+          <View className="flex-row flex-wrap gap-2">
             {formData.tags?.map((tag, index) => (
               <TouchableOpacity
                 key={index}
-                style={styles.tag}
+                className="bg-amber-100 border border-amber-300 rounded-full px-3 py-1"
                 onPress={() => removeTag(tag)}
               >
-                <Text style={styles.tagText}>{tag} ×</Text>
+                <Text className="text-amber-800 text-sm">{tag} ×</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
+        <View className="flex-row gap-3 mt-6">
           <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
+            className="flex-1 bg-gray-100 border border-gray-300 rounded-lg py-3 items-center"
             onPress={onCancel}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text className="text-gray-700 font-semibold text-base">Cancel</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, styles.saveButton]}
+            className={`flex-1 rounded-lg py-3 items-center ${
+              isSaving ? 'bg-orange-300' : 'bg-orange-500'
+            }`}
             onPress={handleSave}
             disabled={isSaving}
           >
-            <Text style={styles.saveButtonText}>
+            <Text className="text-white font-semibold text-base">
               {isSaving ? 'Saving...' : 'Save'}
             </Text>
           </TouchableOpacity>
@@ -323,128 +332,3 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  form: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  fieldContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#333',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  typeContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  typeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
-  },
-  typeButtonActive: {
-    backgroundColor: '#28a745',
-    borderColor: '#28a745',
-  },
-  typeButtonText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  typeButtonTextActive: {
-    color: '#fff',
-  },
-  tagInputContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  tagInput: {
-    flex: 1,
-  },
-  addTagButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  addTagButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: '#e0e0e0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  tagText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '600',
-  },
-  saveButton: {
-    backgroundColor: '#28a745',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
-  },
-});

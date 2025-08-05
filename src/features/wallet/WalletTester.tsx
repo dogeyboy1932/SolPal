@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Alert,
   Platform,
@@ -103,9 +102,9 @@ export const WalletTester: React.FC = () => {
 
   if (!connected) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Wallet Testing</Text>
-        <Text style={styles.notConnectedText}>
+      <View className="bg-amber-50 rounded-xl p-4 mx-4 shadow-sm border border-amber-200">
+        <Text className="text-xl font-semibold text-amber-900 mb-1">Wallet Testing</Text>
+        <Text className="text-center text-amber-800 text-base p-5">
           Connect your wallet to run tests
         </Text>
       </View>
@@ -113,113 +112,46 @@ export const WalletTester: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Wallet Testing</Text>
-      <Text style={styles.subtitle}>Test your Phantom wallet integration</Text>
+    <View className="bg-amber-50 rounded-xl p-4 mx-4 shadow-lg border border-amber-200">
+      <Text className="text-xl font-semibold text-amber-900 mb-1">Wallet Testing</Text>
+      <Text className="text-sm text-amber-700 mb-4">Test your Phantom wallet integration</Text>
       
-      <View style={styles.testSection}>
+      <View className="gap-3 mb-4">
         <TouchableOpacity
-          style={styles.testButton}
+          className="bg-orange-500 p-3.5 rounded-lg items-center"
           onPress={testDevnetConnection}
           disabled={testing}
         >
           {testing ? (
             <ActivityIndicator color="white" size="small" />
           ) : (
-            <Text style={styles.testButtonText}>Test Devnet Connection</Text>
+            <Text className="text-white text-base font-semibold">Test Devnet Connection</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.testButton}
+          className="bg-orange-500 p-3.5 rounded-lg items-center"
           onPress={testWalletConnection}
           disabled={testing}
         >
           {testing ? (
             <ActivityIndicator color="white" size="small" />
           ) : (
-            <Text style={styles.testButtonText}>Test Wallet Functions</Text>
+            <Text className="text-white text-base font-semibold">Test Wallet Functions</Text>
           )}
         </TouchableOpacity>
       </View>
 
-      <View style={styles.infoBox}>
-        <Text style={styles.infoTitle}>Testing Instructions:</Text>
-        <Text style={styles.infoText}>
+      <View className="bg-blue-50 p-3 rounded-lg border-l-4 border-l-blue-500">
+        <Text className="text-sm font-semibold text-blue-700 mb-2">Testing Instructions:</Text>
+        <Text className="text-sm text-amber-900 leading-5">
           {isWeb ? (
-            `1. Make sure you have Phantom browser extension installed{'\n'}2. Switch to Devnet in Phantom settings{'\n'}3. Get some devnet SOL from a faucet{'\n'}4. Run the tests above to verify integration`
+            `1. Make sure you have Phantom browser extension installed${'\n'}2. Switch to Devnet in Phantom settings${'\n'}3. Get some devnet SOL from a faucet${'\n'}4. Run the tests above to verify integration`
           ) : (
-            `1. Make sure you have Phantom wallet installed{'\n'}2. Switch to Devnet in Phantom settings{'\n'}3. Get some devnet SOL from a faucet{'\n'}4. Run the tests above to verify integration`
+            `1. Make sure you have Phantom wallet installed${'\n'}2. Switch to Devnet in Phantom settings${'\n'}3. Get some devnet SOL from a faucet${'\n'}4. Run the tests above to verify integration`
           )}
         </Text>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 16,
-  },
-  testSection: {
-    gap: 12,
-    marginBottom: 16,
-  },
-  testButton: {
-    backgroundColor: '#8b5cf6',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  testButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  infoBox: {
-    backgroundColor: '#f0f9ff',
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#0284c7',
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0284c7',
-    marginBottom: 8,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#374151',
-    lineHeight: 20,
-  },
-  notConnectedText: {
-    textAlign: 'center',
-    color: '#6b7280',
-    fontSize: 16,
-    padding: 20,
-  },
-});

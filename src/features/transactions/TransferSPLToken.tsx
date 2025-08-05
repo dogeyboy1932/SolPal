@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Alert,
   ScrollView,
@@ -145,8 +144,8 @@ export const TransferSPLToken: React.FC = () => {
 
   if (!connected) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.notConnectedText}>
+      <View className="bg-amber-50 rounded-xl p-4 mx-4 shadow-sm border border-amber-200">
+        <Text className="text-center text-amber-800 text-base p-5">
           Please connect your wallet to send tokens
         </Text>
       </View>
@@ -154,43 +153,46 @@ export const TransferSPLToken: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Send SPL Tokens</Text>
+    <View className="bg-neutral-light p-4 shadow-lg border border-amber-200 mt-2 h-50 rounded-md">
+      <Text className="text-xl font-semibold text-amber-900 mb-4">Send SPL Tokens</Text>
       
       {loadingTokens ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3b82f6" />
-          <Text style={styles.loadingText}>Loading your tokens...</Text>
+        <View className="items-center py-10">
+          <ActivityIndicator size="large" color="#E49B3F" />
+          <Text className="mt-3 text-amber-700 text-base">Loading your tokens...</Text>
         </View>
       ) : tokenAccounts.length === 0 ? (
-        <View style={styles.noTokensContainer}>
-          <Text style={styles.noTokensText}>No tokens found in your wallet</Text>
-          <TouchableOpacity onPress={loadTokenAccounts} style={styles.reloadButton}>
-            <Text style={styles.reloadButtonText}>Reload</Text>
+        <View className="items-center py-10">
+          <Text className="text-amber-700 text-base mb-4">No tokens found in your wallet</Text>
+          <TouchableOpacity onPress={loadTokenAccounts} className="bg-orange-500 px-5 py-2.5 rounded-lg">
+            <Text className="text-white font-medium">Reload</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={styles.form}>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Select Token</Text>
+        <View className="space-y-4">
+          
+          
+          <View className="mb-4">
+            <Text className="text-sm font-medium text-amber-900 mb-2">Select Token</Text>
             <ScrollView 
               horizontal 
-              style={styles.tokenSelector}
+              className="flex-grow-0"
               showsHorizontalScrollIndicator={false}
             >
               {tokenAccounts.map((token) => (
                 <TouchableOpacity
                   key={token.mint}
-                  style={[
-                    styles.tokenOption,
-                    selectedToken?.mint === token.mint && styles.selectedTokenOption,
-                  ]}
+                  className={`p-3 rounded-lg mr-3 border min-w-30 ${
+                    selectedToken?.mint === token.mint 
+                      ? 'bg-orange-100 border-orange-500' 
+                      : 'bg-white border-amber-200'
+                  }`}
                   onPress={() => setSelectedToken(token)}
                 >
-                  <Text style={styles.tokenMint}>
+                  <Text className="text-xs font-mono text-amber-900 mb-1">
                     {token.mint.slice(0, 8)}...{token.mint.slice(-8)}
                   </Text>
-                  <Text style={styles.tokenBalance}>
+                  <Text className="text-xs text-amber-700">
                     Balance: {token.balance}
                   </Text>
                 </TouchableOpacity>
@@ -198,45 +200,46 @@ export const TransferSPLToken: React.FC = () => {
             </ScrollView>
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Recipient Address</Text>
+          <View className="mb-4">
+            <Text className="text-sm font-medium text-amber-900 mb-2">Recipient Address</Text>
             <TextInput
-              style={styles.input}
+              className="border border-amber-200 rounded-lg p-3 text-base text-amber-900 bg-white"
               value={toAddress}
               onChangeText={setToAddress}
               placeholder="Enter Solana address"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#92400e"
               autoCapitalize="none"
               autoCorrect={false}
             />
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>
+          <View className="mb-4">
+            <Text className="text-sm font-medium text-amber-900 mb-2">
               Amount {selectedToken && `(Max: ${selectedToken.balance})`}
             </Text>
             <TextInput
-              style={styles.input}
+              className="border border-amber-200 rounded-lg p-3 text-base text-amber-900 bg-white"
               value={amount}
               onChangeText={setAmount}
               placeholder="0.00"
-              placeholderTextColor="#9ca3af"
+              placeholderTextColor="#92400e"
               keyboardType="decimal-pad"
             />
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (!selectedToken || !toAddress || !amount || loading) && styles.sendButtonDisabled,
-            ]}
+            className={`p-4 rounded-lg items-center mt-2 ${
+              (!selectedToken || !toAddress || !amount || loading) 
+                ? 'bg-gray-400' 
+                : 'bg-orange-500'
+            }`}
             onPress={handleTransfer}
             disabled={!selectedToken || !toAddress || !amount || loading}
           >
             {loading ? (
               <ActivityIndicator color="white" size="small" />
             ) : (
-              <Text style={styles.sendButtonText}>Send Tokens</Text>
+              <Text className="text-white text-base font-semibold">Send Tokens</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -244,121 +247,3 @@ export const TransferSPLToken: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 16,
-  },
-  loadingContainer: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  loadingText: {
-    marginTop: 12,
-    color: '#6b7280',
-    fontSize: 16,
-  },
-  noTokensContainer: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  noTokensText: {
-    color: '#6b7280',
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  reloadButton: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 6,
-  },
-  reloadButtonText: {
-    color: 'white',
-    fontWeight: '500',
-  },
-  form: {
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  tokenSelector: {
-    flexGrow: 0,
-  },
-  tokenOption: {
-    backgroundColor: '#f9fafb',
-    padding: 12,
-    borderRadius: 8,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    minWidth: 120,
-  },
-  selectedTokenOption: {
-    backgroundColor: '#eff6ff',
-    borderColor: '#3b82f6',
-  },
-  tokenMint: {
-    fontSize: 12,
-    fontFamily: 'monospace',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  tokenBalance: {
-    fontSize: 12,
-    color: '#6b7280',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#f9fafb',
-  },
-  sendButton: {
-    backgroundColor: '#8b5cf6',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  sendButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  notConnectedText: {
-    textAlign: 'center',
-    color: '#6b7280',
-    fontSize: 16,
-    padding: 20,
-  },
-});

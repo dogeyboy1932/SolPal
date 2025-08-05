@@ -14,15 +14,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Surface, Card, Avatar } from 'react-native-paper';
 
 // Components
-import AITransactionChat from '@/features/ai/AITransactionChat';
-import { ManualOperationsScreen } from './ManualOperationsScreen';
+import AITransactionChat from '@/screens/AIChatScreen';
+import { ManualOperationsScreen } from '../../src/screens/ManualOperationsScreen';
+import { SettingsScreen } from '../../src/screens/SettingsScreen';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
 import { PrivateKeyInput } from '@/features/wallet/PrivateKeyInput';
 
-type TabType = 'chat' | 'manual';
+type TabType = 'chat' | 'manual' | 'settings';
 
 export const HomeScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('chat');
+
+  // If settings is active, show the settings screen
+  if (activeTab === 'settings') {
+    return (
+      <SettingsScreen onBack={() => setActiveTab('chat')} />
+    );
+  }
 
   return (
     <View className="flex-1 bg-surface-primary ">
@@ -34,14 +42,16 @@ export const HomeScreen: React.FC = () => {
 
         {/* Warm AI Header with Balanced Gradient */}
         <LinearGradient
-          colors={['#2D2D2D', '#404040', '#B85C38']}
+          colors={['#b29b9bff', '#404040', '#B85C38']}
           className="border-b border-accent-amber/20"
         >
           <Surface className="bg-transparent mt-2" elevation={0}>
-            <View className="px-5 py-4 pb-6">
-              <View className="flex-row justify-between items-center mb-4">
+            
+            <View className="px-5 py-2 pb-3">
+              
+              <View className="flex-row justify-between items-center my-1">
                 <View className="flex-1">
-                  <Text className="text-3xl font-bold text-neutral-light mb-1 font-ios">
+                  <Text className="text-3xl font-bold text-neutral-light font-ios">
                     AI Solana Mobile
                   </Text>
                   <Text className="text-base text-accent-gold font-ios">
@@ -49,30 +59,43 @@ export const HomeScreen: React.FC = () => {
                   </Text>
                 </View>
                 
-                {/* AI Avatar */}
-                <Avatar.Icon 
-                  size={48} 
-                  icon="robot" 
-                  style={{ backgroundColor: '#E49B3F' }}
-                  color="#1A1A1A"
-                />
+                <View className="flex-row items-center gap-3">
+                  {/* Settings Button */}
+                  <TouchableOpacity
+                    className="w-10 h-10 rounded-full bg-accent-amber/20 items-center justify-center"
+                    onPress={() => setActiveTab('settings')}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="settings" size={20} color="#E49B3F" />
+                  </TouchableOpacity>
+                  
+                  {/* AI Avatar */}
+                  <Avatar.Icon 
+                    size={48} 
+                    icon="robot" 
+                    style={{ backgroundColor: '#E49B3F' }}
+                    color="#1A1A1A"
+                  />
+                </View>
               </View>
               
               {/* Wallet Connection & Private Key */}
-              <Card className="bg-surface-secondary border border-accent-amber/40 py-2">
-                <Card.Content className="p-4 space-y-4">
-                  {/* Wallet Connection Section */}
-                  <Text className="text-sm font-semibold text-neutral-light mb-2">
-                    Wallet Connection
-                  </Text>
-                  <WalletConnectButton />
-                  
+              <Card className="bg-surface-secondary border border-accent-amber/40 rounded-lg">
+                <Card.Content className="py-1 px-3 mb-2">
                   {/* Private Key Section */}
                   <PrivateKeyInput />
+                  
+                  {/* Wallet Connection Section */}
+                  <Text className="text-sm font-semibold text-neutral-light mb-1 pt-2 mt-4">
+                    Wallet Connection
+                  </Text>
+
+                  <WalletConnectButton />
 
                 </Card.Content>
               </Card>
             </View>
+
           </Surface>
         </LinearGradient>
 
@@ -92,7 +115,7 @@ export const HomeScreen: React.FC = () => {
         >
           <View className="flex-row bg-surface-secondary">
             <TouchableOpacity
-              className={`flex-1 p-4 ${activeTab === 'chat' ? 'bg-accent-amber/20' : ''}`}
+              className={`flex-1 p-2 ${activeTab === 'chat' ? 'bg-accent-amber/20' : ''}`}
               onPress={() => setActiveTab('chat')}
               activeOpacity={0.7}
             >
@@ -111,13 +134,13 @@ export const HomeScreen: React.FC = () => {
             </TouchableOpacity>
             
             <TouchableOpacity
-              className={`flex-1 p-4 ${activeTab === 'manual' ? 'bg-accent-amber/20' : ''}`}
+              className={`flex-1 p-2 ${activeTab === 'manual' ? 'bg-accent-amber/20' : ''}`}
               onPress={() => setActiveTab('manual')}
               activeOpacity={0.7}
             >
               <View className="items-center">
                 <Ionicons
-                  name="settings"
+                  name="hammer-outline"
                   size={24}
                   color={activeTab === 'manual' ? '#E49B3F' : '#8B7355'}
                 />

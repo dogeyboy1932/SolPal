@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -124,25 +123,25 @@ export const TransferSOL: React.FC = () => {
     }
   }, [toAddress, amount]);
 
-  if (!connected) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.notConnectedText}>
-          Please connect your wallet to send SOL
-        </Text>
-      </View>
-    );
-  }
+  // if (!connected) {
+  //   return (
+  //     <View className="p-4 bg-white rounded-xl border border-gray-300">
+  //       <Text className="text-gray-500 text-center">
+  //         Please connect your wallet to send SOL
+  //       </Text>
+  //     </View>
+  //   );
+  // }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Send SOL</Text>
+    <View className="p-4 bg-neutral-light border border-gray-300 rounded-md">
+      <Text className="text-xl font-bold text-gray-900 mb-4">Send SOL</Text>
       
-      <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Recipient Address</Text>
+      <View className="space-y-4">
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">Recipient Address</Text>
           <TextInput
-            style={styles.input}
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900"
             value={toAddress}
             onChangeText={setToAddress}
             placeholder="Enter Solana address"
@@ -152,10 +151,10 @@ export const TransferSOL: React.FC = () => {
           />
         </View>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Amount (SOL)</Text>
+        <View>
+          <Text className="text-sm font-medium text-gray-700 mb-2">Amount (SOL)</Text>
           <TextInput
-            style={styles.input}
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900"
             value={amount}
             onChangeText={setAmount}
             placeholder="0.00"
@@ -165,101 +164,29 @@ export const TransferSOL: React.FC = () => {
         </View>
 
         {estimatedFee !== null && (
-          <View style={styles.feeContainer}>
-            <Text style={styles.feeText}>
+          <View className="bg-blue-50 p-3 rounded-lg">
+            <Text className="text-sm text-blue-700">
               Estimated Fee: {estimatedFee.toFixed(6)} SOL
             </Text>
           </View>
         )}
 
         <TouchableOpacity
-          style={[
-            styles.sendButton,
-            (!toAddress || !amount || loading) && styles.sendButtonDisabled,
-          ]}
+          className={`py-3 px-4 rounded-lg items-center ${
+            (!toAddress || !amount || loading) 
+              ? 'bg-gray-400' 
+              : 'bg-blue-500'
+          }`}
           onPress={handleTransfer}
           disabled={!toAddress || !amount || loading}
         >
           {loading ? (
             <ActivityIndicator color="white" size="small" />
           ) : (
-            <Text style={styles.sendButtonText}>Send SOL</Text>
+            <Text className="text-white text-base font-semibold">Send SOL</Text>
           )}
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 16,
-  },
-  form: {
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#1f2937',
-    backgroundColor: '#f9fafb',
-  },
-  feeContainer: {
-    backgroundColor: '#f3f4f6',
-    padding: 12,
-    borderRadius: 8,
-  },
-  feeText: {
-    fontSize: 14,
-    color: '#6b7280',
-  },
-  sendButton: {
-    backgroundColor: '#3b82f6',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#9ca3af',
-  },
-  sendButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  notConnectedText: {
-    textAlign: 'center',
-    color: '#6b7280',
-    fontSize: 16,
-    padding: 20,
-  },
-});

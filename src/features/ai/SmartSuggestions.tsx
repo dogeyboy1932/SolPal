@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Node } from '../../types/nodes';
 import { generateNodeSpecificPrompts, generateSmartSuggestions } from '../../services/chat-prompts';
 
@@ -39,51 +39,49 @@ export const SmartSuggestionsPanel: React.FC<SmartSuggestionsProps> = ({
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>💡 Smart Suggestions</Text>
-        <Text style={styles.subtitle}>Based on your active nodes</Text>
+    <View className="bg-amber-50 py-3 border-t border-amber-200">
+      <View className="px-4 mb-3">
+        <Text className="text-base font-semibold text-amber-900 mb-1">💡 Smart Suggestions</Text>
+        <Text className="text-xs text-amber-700">Based on your active nodes</Text>
       </View>
 
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.suggestionsContainer}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
       >
         {suggestions.map((suggestion, index) => (
           <TouchableOpacity
             key={index}
-            style={[
-              styles.suggestionCard,
-              { borderLeftColor: CategoryColors[suggestion.category] }
-            ]}
+            className="w-45 bg-white rounded-xl p-3 shadow-sm border-l-4"
+            style={{ borderLeftColor: CategoryColors[suggestion.category] }}
             onPress={() => onSuggestionPress(suggestion.action)}
             activeOpacity={0.7}
           >
-            <View style={styles.suggestionHeader}>
-              <Text style={styles.suggestionIcon}>
+            <View className="flex-row justify-between items-center mb-2">
+              <Text className="text-lg">
                 {CategoryIcons[suggestion.category]}
               </Text>
-              <View style={[
-                styles.categoryBadge,
-                { backgroundColor: CategoryColors[suggestion.category] }
-              ]}>
-                <Text style={styles.categoryText}>
+              <View 
+                className="px-1.5 py-0.5 rounded-lg"
+                style={{ backgroundColor: CategoryColors[suggestion.category] }}
+              >
+                <Text className="text-xs text-white font-semibold uppercase">
                   {suggestion.category}
                 </Text>
               </View>
             </View>
             
-            <Text style={styles.suggestionTitle} numberOfLines={2}>
+            <Text className="text-sm font-semibold text-amber-900 mb-1 leading-4" numberOfLines={2}>
               {suggestion.title}
             </Text>
             
-            <Text style={styles.suggestionDescription} numberOfLines={2}>
+            <Text className="text-xs text-amber-700 mb-2 leading-4" numberOfLines={2}>
               {suggestion.description}
             </Text>
             
-            <View style={styles.actionPreview}>
-              <Text style={styles.actionText} numberOfLines={1}>
+            <View className="bg-amber-100 p-1.5 rounded">
+              <Text className="text-xs text-orange-600 italic" numberOfLines={1}>
                 "{suggestion.action}"
               </Text>
             </View>
@@ -111,19 +109,19 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   const quickPrompts = prompts.slice(0, 4); // Show only first 4 for quick actions
 
   return (
-    <View style={styles.quickActionsContainer}>
-      <Text style={styles.quickActionsTitle}>
+    <View className="p-4 bg-amber-50 border-t border-amber-200">
+      <Text className="text-sm font-semibold text-amber-900 mb-3">
         Quick actions for {selectedNode.name}:
       </Text>
       
-      <View style={styles.quickActionsGrid}>
+      <View className="flex-row flex-wrap gap-2">
         {quickPrompts.map((prompt, index) => (
           <TouchableOpacity
             key={index}
-            style={styles.quickActionButton}
+            className="flex-1 min-w-48% bg-white p-3 rounded-lg border border-amber-200"
             onPress={() => onActionPress(prompt)}
           >
-            <Text style={styles.quickActionText} numberOfLines={2}>
+            <Text className="text-xs text-amber-900 text-center leading-4" numberOfLines={2}>
               {prompt}
             </Text>
           </TouchableOpacity>
@@ -188,168 +186,21 @@ export const ConversationSuggestions: React.FC<ConversationSuggestionsProps> = (
   }
 
   return (
-    <View style={styles.conversationSuggestionsContainer}>
-      <Text style={styles.conversationSuggestionsTitle}>💬 Continue the conversation:</Text>
+    <View className="p-4 bg-blue-50 border-t border-blue-200">
+      <Text className="text-sm font-semibold text-amber-900 mb-3">💬 Continue the conversation:</Text>
       
       {suggestions.map((suggestion, index) => (
         <TouchableOpacity
           key={index}
-          style={styles.conversationSuggestionButton}
+          className="flex-row justify-between items-center bg-white p-3 rounded-lg mb-2 border-l-3 border-orange-500"
           onPress={() => onSuggestionPress(suggestion)}
         >
-          <Text style={styles.conversationSuggestionText}>
+          <Text className="flex-1 text-sm text-amber-900">
             {suggestion}
           </Text>
-          <Text style={styles.conversationSuggestionArrow}>→</Text>
+          <Text className="text-sm text-orange-500 font-bold">→</Text>
         </TouchableOpacity>
       ))}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#f8f9fa',
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  header: {
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#666',
-  },
-  suggestionsContainer: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  suggestionCard: {
-    width: 180,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
-    borderLeftWidth: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  suggestionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  suggestionIcon: {
-    fontSize: 20,
-  },
-  categoryBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  categoryText: {
-    fontSize: 10,
-    color: '#fff',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  suggestionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-    lineHeight: 18,
-  },
-  suggestionDescription: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-    lineHeight: 16,
-  },
-  actionPreview: {
-    backgroundColor: '#f5f5f5',
-    padding: 6,
-    borderRadius: 6,
-  },
-  actionText: {
-    fontSize: 11,
-    color: '#007AFF',
-    fontStyle: 'italic',
-  },
-  quickActionsContainer: {
-    padding: 16,
-    backgroundColor: '#f8f9fa',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  quickActionsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  quickActionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  quickActionButton: {
-    flex: 1,
-    minWidth: '48%',
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  quickActionText: {
-    fontSize: 12,
-    color: '#333',
-    textAlign: 'center',
-    lineHeight: 16,
-  },
-  conversationSuggestionsContainer: {
-    padding: 16,
-    backgroundColor: '#f0f8ff',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  conversationSuggestionsTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  conversationSuggestionButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: '#007AFF',
-  },
-  conversationSuggestionText: {
-    flex: 1,
-    fontSize: 13,
-    color: '#333',
-  },
-  conversationSuggestionArrow: {
-    fontSize: 14,
-    color: '#007AFF',
-    fontWeight: 'bold',
-  },
-});

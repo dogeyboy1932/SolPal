@@ -20,16 +20,17 @@ import { TransferSOL } from '@/features/transactions/TransferSOL';
 import { TransferSPLToken } from '@/features/transactions/TransferSPLToken';
 import { TransactionTemplates } from '@/features/transactions/TransactionTemplates';
 import { WalletOperations } from '@/features/wallet/WalletOperations';
-import { TransactionBuilder } from '@/features/transactions/TransactionBuilder';
-import { AdvancedTransactionFeatures } from '@/features/transactions/AdvancedTransactionFeatures';
-import { BackupManualControls } from '@/features/system/BackupManualControls';
-import { AIConnectionStatus } from '@/features/ai/AIConnectionStatus';
-import { MCPServerManagement } from '@/features/ai/MCPServerManagement';
-import { AIConnectionManager } from '@/features/ai/AIConnectionManager';
-import { ManualNodeManagement } from '@/features/nodes/ManualNodeManagement';
-import { NodeAccessControl } from '@/features/nodes/NodeAccessControl';
+
+// import { TransactionBuilder } from '@/features/transactions/TransactionBuilder';
+// import { AdvancedTransactionFeatures } from '@/features/transactions/AdvancedTransactionFeatures';
+// import { BackupManualControls } from '@/features/system/BackupManualControls';
+// import { AIConnectionStatus } from '@/features/ai/AIConnectionStatus';
+// import { MCPServerManagement } from '@/features/ai/MCPServerManagement';
+// import { AIConnectionManager } from '@/features/ai/AIConnectionManager';
+// import { ManualNodeManagement } from '@/features/nodes/ManualNodeManagement';
+// import { NodeAccessControl } from '@/features/nodes/NodeAccessControl';
 // import { SmartTransactionFeatures } from '@/features/ai/SmartTransactionFeatures';
-import { E2ETestRunner } from '@/features/system/E2ETestRunner';
+// import { E2ETestRunner } from '@/features/system/E2ETestRunner';
 
 export const ManualOperationsScreen: React.FC = () => {
   const { connected, connecting, publicKey, disconnect } = useWallet();
@@ -66,21 +67,16 @@ export const ManualOperationsScreen: React.FC = () => {
     }
   };
 
-  const onRefresh = React.useCallback(async () => {
-    setRefreshing(true);
-    // Refresh data
-    setTimeout(() => setRefreshing(false), 1000);
-  }, []);
 
   const renderSectionContent = () => {
     if (!connected || !publicKey) {
       return (
-        <View className="flex-1 justify-center items-center px-10 py-15">
-          <View className="w-20 h-20 rounded-full bg-gray-100 items-center justify-center mb-6">
-            <Ionicons name="wallet-outline" size={48} color="#8E8E93" />
+        <View className="flex-1 justify-center items-center bg-surface-secondary pb-6 px-3">
+          <View className="w-20 h-20 rounded-full bg-surface-secondary items-center justify-center">
+            <Ionicons name="wallet-outline" size={48} color="#E49B3F" />
           </View>
-          <Text className="text-2xl font-bold text-gray-900 mb-3 text-center">Wallet Not Connected</Text>
-          <Text className="text-base text-gray-500 text-center leading-6 mb-8">
+          <Text className="text-2xl font-bold text-neutral-light mb-3 text-center">Wallet Not Connected</Text>
+          <Text className="text-base text-neutral-medium text-center leading-6 mb-8">
             Connect your wallet to access manual Solana operations
           </Text>
           <View className="self-stretch">
@@ -90,173 +86,114 @@ export const ManualOperationsScreen: React.FC = () => {
       );
     }
 
+
     switch (activeSection) {
       case 'balance':
         return (
-          <View className="p-5">
+          <View className="px-3 py-1">
             <WalletBalance />
           </View>
         );
       
       case 'send':
         return (
-          <View className="p-5">
-            <View className="gap-5">
-              <Text className="text-lg font-semibold text-gray-900 mb-4 mt-5">Send SOL</Text>
-              <TransferSOL />
-              
-              <Text className="text-lg font-semibold text-gray-900 mb-4 mt-5">Send SPL Token</Text>
-              <TransferSPLToken />
-            </View>
+          <View className="px-3 py-3">
+            <TransferSOL />
+            <TransferSPLToken />
           </View>
         );
       
       case 'history':
         return (
-          <View className="p-5">
+          <View className="px-3 py-1">
             <TransactionHistory />
           </View>
         );
       
       case 'templates':
         return (
-          <View className="p-5">
+          <View className="px-3 py-1">
             <TransactionTemplates />
           </View>
         );
       
       case 'operations':
         return (
-          <View className="p-5">
+          <View className="px-3 py-1">
             <WalletOperations />
           </View>
         );
-      
-      case 'builder':
-        return (
-          <View className="p-5">
-            <TransactionBuilder />
-          </View>
-        );
-      
-      case 'advanced':
-        return (
-          <View className="p-5">
-            <AdvancedTransactionFeatures />
-          </View>
-        );
-      
-      case 'backup':
-        return (
-          <View className="p-5">
-            <BackupManualControls />
-          </View>
-        );
-      
-      case 'ai_status':
-        return (
-          <View className="p-5">
-            <AIConnectionStatus />
-            <AIConnectionManager />
-          </View>
-        );
-      
-      case 'mcp':
-        return (
-          <View className="p-5">
-            <MCPServerManagement />
-          </View>
-        );
-      
-      case 'nodes':
-        return (
-          <View className="flex-1">
-            <ManualNodeManagement />
-          </View>
-        );
-      
-      case 'node_access':
-        return <NodeAccessControl />;
-      
-      // case 'smart_ai':
-      //   return (
-      //     <View className="flex-1">
-      //       <SmartTransactionFeatures />
-      //     </View>
-      //   );
-      
-      case 'e2e_test':
-        return (
-          <View className="flex-1">
-            <E2ETestRunner />
-          </View>
-        );
-      
+
       default:
         return null;
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      {/* Status Bar */}
-      <LinearGradient
-        colors={['#FFFFFF', '#F8F9FA']}
-        className="px-5 py-3 border-b border-gray-200"
+    <View className="flex-1" style={{backgroundColor: '#F9EEE1'}}>
+      {/* Content */}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row items-center justify-between mb-2">
-          <View className="flex-row items-center flex-1">
-            <View className={`w-2 h-2 rounded-full mr-2 ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
-            <Text className="text-sm text-gray-900 font-medium flex-1">
-              {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
-            </Text>
-          </View>
-          {connected && (
+        {renderSectionContent()}
+      </ScrollView>
+
+      {/* Section Navigation */}
+      <ScrollView
+        horizontal={true}
+        className="bg-neutral-light border-t border-warm-tertiary flex-grow-0 py-1"
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 8, alignItems: 'center', flexDirection: 'row' }}
+        nestedScrollEnabled={true}
+        directionalLockEnabled={false}
+        pagingEnabled={false}
+        decelerationRate="fast"
+      >
+        {[
+          { key: 'balance', icon: 'wallet', title: 'Balance' },
+          { key: 'send', icon: 'send', title: 'Send' },
+          { key: 'history', icon: 'time', title: 'History' },
+          { key: 'templates', icon: 'document-text', title: 'Templates' },
+          { key: 'operations', icon: 'settings', title: 'Operations' },
+        ].map((section, index) => (
+          <React.Fragment key={section.key}>
             <TouchableOpacity
-              className="bg-red-500 px-3 py-1.5 rounded ml-2"
-              onPress={() => {
-                console.log('Wallet disconnect button pressed');
-                try {
-                  showAlert(
-                    'Disconnect Wallet',
-                    'Are you sure you want to disconnect your wallet?',
-                    [
-                      { 
-                        text: 'Cancel', 
-                        style: 'cancel',
-                        onPress: () => console.log('Wallet disconnect cancelled')
-                      },
-                      { 
-                        text: 'Disconnect', 
-                        style: 'destructive', 
-                        onPress: async () => {
-                          console.log('Wallet disconnect confirmed');
-                          try {
-                            if (typeof disconnect === 'function') {
-                              await disconnect();
-                              console.log('Wallet disconnected successfully');
-                            } else {
-                              console.error('Disconnect function is not available');
-                            }
-                          } catch (error) {
-                            console.error('Error disconnecting wallet:', error);
-                            showAlert('Error', 'Failed to disconnect wallet', [{ text: 'OK' }]);
-                          }
-                        }
-                      }
-                    ]
-                  );
-                } catch (error) {
-                  console.error('Error showing alert:', error);
-                }
-              }}
+              className={`px-1 py-2 items-center justify-center min-w-25 border-b-2 flex-row  ${
+                activeSection === section.key ? 'border-orange-400' : 'border-transparent'
+              }`}
+              onPress={() => setActiveSection(section.key as any)}
             >
-              <Text className="text-white text-xs font-semibold">Disconnect</Text>
+              <Ionicons 
+                name={section.icon as any} 
+                size={16} 
+                color={activeSection === section.key ? '#E49B3F' : '#8B5A3C'} 
+              />
+              <Text className={`ml-0.5 text-xs font-medium ${
+                activeSection === section.key ? 'text-orange-500 font-semibold' : 'text-amber-700'
+              }`}>
+                {section.title}
+              </Text>
             </TouchableOpacity>
-          )}
-        </View>
-        
-        <View className="flex-row items-center justify-between mb-2">
+
+            {index < 4 && (
+              <View className="w-1 h-1 bg-amber-600 rounded-full mx-1" />
+            )}
+          </React.Fragment>
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
+
+
+
+
+
+
+
+        {/* <View className="flex-row items-center justify-between">
           <View className="flex-row items-center flex-1">
             <View className={`w-2 h-2 rounded-full mr-2 ${liveConnected ? 'bg-green-500' : 'bg-red-500'}`} />
             <Text className="text-sm text-gray-900 font-medium flex-1">
@@ -306,77 +243,83 @@ export const ManualOperationsScreen: React.FC = () => {
               <Text className="text-white text-xs font-semibold">Disconnect</Text>
             </TouchableOpacity>
           )}
+        </View> */}
+
+{/* Status Bar */}
+      {/* <LinearGradient
+        colors={['#C4A484', '#e7bd8aff']}
+        className="px-2 py-1 border-b border-amber-800"
+      >
+        <View className="flex-row items-center justify-between my-1">
+          <View className="flex-row items-center flex-1">
+            <View className={`w-2 h-2 rounded-full mr-2 border border-black ${connected ? 'bg-green-500' : 'bg-red-500'}`} />
+            <Text className="text-sm text-gray-900 font-medium flex-1">
+              Wallet {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
+            </Text>
+
+            {connected && publicKey && (
+            <Text className="text-xs font-mono text-center ">
+              {`${publicKey.toString().slice(0, 8)}...${publicKey.toString().slice(-8)}`}
+            </Text>
+          )}
+          </View>
+          
+          {connected && (
+            <TouchableOpacity
+              className="bg-red-500 px-3 py-1.5 rounded ml-2"
+              onPress={() => {
+                console.log('Wallet disconnect button pressed');
+                try {
+                  showAlert(
+                    'Disconnect Wallet',
+                    'Are you sure you want to disconnect your wallet?',
+                    [
+                      { 
+                        text: 'Cancel', 
+                        style: 'cancel',
+                        onPress: () => console.log('Wallet disconnect cancelled')
+                      },
+                      { 
+                        text: 'Disconnect', 
+                        style: 'destructive', 
+                        onPress: async () => {
+                          console.log('Wallet disconnect confirmed');
+                          try {
+                            if (typeof disconnect === 'function') {
+                              await disconnect();
+                              console.log('Wallet disconnected successfully');
+                            } else {
+                              console.error('Disconnect function is not available');
+                            }
+                          } catch (error) {
+                            console.error('Error disconnecting wallet:', error);
+                            showAlert('Error', 'Failed to disconnect wallet', [{ text: 'OK' }]);
+                          }
+                        }
+                      }
+                    ]
+                  );
+                } catch (error) {
+                  console.error('Error showing alert:', error);
+                }
+              }}
+            >
+              <Text className="text-white text-xs font-semibold">Disconnect</Text>
+            </TouchableOpacity>
+          )}
         </View>
         
-        {connected && publicKey && (
-          <Text className="text-xs text-gray-500 font-mono text-center mt-1">
-            {`${publicKey.toString().slice(0, 8)}...${publicKey.toString().slice(-8)}`}
-          </Text>
-        )}
-      </LinearGradient>
+      </LinearGradient> */}        
 
-      {/* Content */}
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {renderSectionContent()}
-      </ScrollView>
+// { key: 'nodes', icon: 'globe', title: 'Nodes' },
+// { key: 'mcp', icon: 'link', title: 'MCP' },
+// { key: 'builder', icon: 'construct', title: 'Builder' },
+// { key: 'ai_status', icon: 'sparkles', title: 'AI Status' },
+// { key: 'e2e_test', icon: 'flask', title: 'E2E Test' },
 
-      {/* Section Navigation */}
-      <View className="bg-white border-t border-gray-200 pb-8 max-h-20">
-        <ScrollView 
-          horizontal={true}
-          className="bg-white flex-grow-0 h-15"
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 8, alignItems: 'center', flexDirection: 'row' }}
-          nestedScrollEnabled={true}
-          directionalLockEnabled={false}
-          pagingEnabled={false}
-          decelerationRate="fast"
-        >
-          {[
-            { key: 'balance', icon: 'wallet', title: 'Balance' },
-            { key: 'send', icon: 'send', title: 'Send' },
-            { key: 'history', icon: 'time', title: 'History' },
-            { key: 'templates', icon: 'document-text', title: 'Templates' },
-            { key: 'nodes', icon: 'globe', title: 'Nodes' },
-            { key: 'node_access', icon: 'lock-closed', title: 'Access' },
-            { key: 'operations', icon: 'settings', title: 'Operations' },
-            { key: 'builder', icon: 'construct', title: 'Builder' },
-            { key: 'advanced', icon: 'flash', title: 'Advanced' },
-            { key: 'backup', icon: 'shield-checkmark', title: 'Backup' },
-            { key: 'ai_status', icon: 'sparkles', title: 'AI Status' },
-            
-            // { key: 'smart_ai', icon: 'brain', title: 'Smart AI' },
-            { key: 'mcp', icon: 'link', title: 'MCP' },
-            { key: 'e2e_test', icon: 'flask', title: 'E2E Test' },
-          ].map((section) => (
-            <TouchableOpacity
-              key={section.key}
-              className={`px-4 py-3 items-center justify-center min-w-25 border-b-2 flex-row gap-1.5 mx-0.5 ${
-                activeSection === section.key ? 'border-blue-500' : 'border-transparent'
-              }`}
-              onPress={() => setActiveSection(section.key as any)}
-            >
-              <Ionicons 
-                name={section.icon as any} 
-                size={16} 
-                color={activeSection === section.key ? '#007AFF' : '#8E8E93'} 
-              />
-              <Text className={`text-xs font-medium ${
-                activeSection === section.key ? 'text-blue-500 font-semibold' : 'text-gray-500'
-              }`}>
-                {section.title}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    </SafeAreaView>
-  );
-};
+
+// const onRefresh = React.useCallback(async () => {
+  //   setRefreshing(true);
+  //   // Refresh data
+  //   setTimeout(() => setRefreshing(false), 1000);
+  // }, []);

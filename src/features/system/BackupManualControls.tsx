@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useWallet } from '@/contexts/WalletContext';
-import Toast from 'react-native-toast-message';
 
 interface BackupControl {
   id: string;
@@ -76,41 +75,25 @@ export const BackupManualControls: React.FC = () => {
       switch (action) {
         case 'disconnect':
           setAiConnected(false);
-          Toast.show({
-            type: 'success',
-            text1: 'AI Disconnected',
-            text2: 'Switched to manual mode',
-          });
+          Alert.alert('AI Disconnected', 'Switched to manual mode');
           setManualMode(true);
           break;
         case 'connect':
           setAiConnected(true);
-          Toast.show({
-            type: 'success',
-            text1: 'AI Reconnected',
-            text2: 'AI features restored',
-          });
+          Alert.alert('AI Reconnected', 'AI features restored');
           setManualMode(false);
           break;
         case 'reset':
           setAiConnected(false);
           setTimeout(() => {
             setAiConnected(true);
-            Toast.show({
-              type: 'success',
-              text1: 'AI Reset Complete',
-              text2: 'AI connection refreshed',
-            });
+            Alert.alert('AI Reset Complete', 'AI connection refreshed');
           }, 1000);
           break;
       }
     } catch (error) {
       console.error('AI control error:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'AI Control Failed',
-        text2: error instanceof Error ? error.message : 'Unknown error',
-      });
+      Alert.alert('AI Control Failed', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(null);
     }
@@ -122,28 +105,16 @@ export const BackupManualControls: React.FC = () => {
       switch (action) {
         case 'disconnect':
           await disconnectWallet();
-          Toast.show({
-            type: 'success',
-            text1: 'Wallet Disconnected',
-            text2: 'Manual reconnection required',
-          });
+          Alert.alert('Wallet Disconnected', 'Manual reconnection required');
           break;
         case 'connect':
           await connectWallet();
-          Toast.show({
-            type: 'success',
-            text1: 'Wallet Connected',
-            text2: 'Wallet features restored',
-          });
+          Alert.alert('Wallet Connected', 'Wallet features restored');
           break;
       }
     } catch (error) {
       console.error('Wallet control error:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Wallet Control Failed',
-        text2: error instanceof Error ? error.message : 'Unknown error',
-      });
+      Alert.alert('Wallet Control Failed', error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(null);
     }
@@ -161,11 +132,7 @@ export const BackupManualControls: React.FC = () => {
               text: 'Clear',
               style: 'destructive',
               onPress: () => {
-                Toast.show({
-                  type: 'success',
-                  text1: 'Active Node Cleared',
-                  text2: 'No node context active',
-                });
+                Alert.alert('Active Node Cleared', 'No node context active');
               }
             }
           ]
@@ -182,11 +149,7 @@ export const BackupManualControls: React.FC = () => {
               style: 'destructive',
               onPress: () => {
                 setNodeCount(0);
-                Toast.show({
-                  type: 'success',
-                  text1: 'All Nodes Cleared',
-                  text2: 'Node system reset',
-                });
+                Alert.alert('All Nodes Cleared', 'Node system reset');
               }
             }
           ]
@@ -319,54 +282,58 @@ export const BackupManualControls: React.FC = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
-      <Text className="text-2xl font-bold text-gray-800 mb-2">Backup & Manual Controls</Text>
-      <Text className="text-base text-gray-600 mb-6">
-        Manual override controls for all AI-powered features
-      </Text>
-
-      <View className="bg-white rounded-xl p-4 mb-5 border border-gray-200">
-        <View className="flex-row justify-between items-center mb-2">
-          <Text className="text-lg font-semibold text-gray-800">Manual Mode Override</Text>
-          <Switch
-            value={manualMode}
-            onValueChange={setManualMode}
-          />
-        </View>
-        <Text className="text-sm text-gray-600 leading-5">
-          {manualMode 
-            ? 'Manual mode active - AI features disabled' 
-            : 'AI mode active - automatic features enabled'
-          }
+    <View className="flex-1">
+      <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+        <Text className="text-xl font-bold text-gray-800 mb-2">Manual Mode Override</Text>
+        <Text className="text-sm text-gray-600 mb-4">
+          Manual override controls for all AI-powered features
         </Text>
-      </View>
 
-      <View className="bg-white rounded-xl p-4 mb-5 border border-gray-200">
-        <Text className="text-lg font-semibold text-gray-800 mb-4">System Status</Text>
-        <View className="flex-row justify-around">
-          <View className="items-center">
-            <Text className="text-xs text-gray-600 mb-1">AI</Text>
-            <View className={`w-3 h-3 rounded-full ${aiConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-200">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-base font-semibold text-gray-800">Manual Mode Override</Text>
+            <Switch
+              value={manualMode}
+              onValueChange={setManualMode}
+            />
           </View>
-          <View className="items-center">
-            <Text className="text-xs text-gray-600 mb-1">Wallet</Text>
-            <View className={`w-3 h-3 rounded-full ${walletConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-          </View>
-          <View className="items-center">
-            <Text className="text-xs text-gray-600 mb-1">Nodes</Text>
-            <View className={`w-3 h-3 rounded-full ${nodeCount > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
-          </View>
-          <View className="items-center">
-            <Text className="text-xs text-gray-600 mb-1">MCP</Text>
-            <View className={`w-3 h-3 rounded-full ${mcpServersActive > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+          <Text className="text-sm text-gray-600 leading-5">
+            {manualMode 
+              ? 'Manual mode active - AI features disabled' 
+              : 'AI mode active - automatic features enabled'
+            }
+          </Text>
+        </View>
+
+        <View className="bg-white rounded-xl p-4 mb-4 border border-gray-200">
+          <Text className="text-base font-semibold text-gray-800 mb-4">System Status</Text>
+          <View className="flex-row justify-around">
+            <View className="items-center">
+              <Text className="text-xs text-gray-600 mb-1">AI</Text>
+              <View className={`w-3 h-3 rounded-full ${aiConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            </View>
+            <View className="items-center">
+              <Text className="text-xs text-gray-600 mb-1">Wallet</Text>
+              <View className={`w-3 h-3 rounded-full ${walletConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+            </View>
+            <View className="items-center">
+              <Text className="text-xs text-gray-600 mb-1">Nodes</Text>
+              <View className={`w-3 h-3 rounded-full ${nodeCount > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+            </View>
+            <View className="items-center">
+              <Text className="text-xs text-gray-600 mb-1">MCP</Text>
+              <View className={`w-3 h-3 rounded-full ${mcpServersActive > 0 ? 'bg-green-500' : 'bg-red-500'}`} />
+            </View>
           </View>
         </View>
       </View>
 
-      <Text className="text-lg font-semibold text-gray-800 mb-4">Component Controls</Text>
-      {backupControls.map(renderControlCard)}
+      <View className="bg-white rounded-xl p-4 mb-4 shadow-sm">
+        <Text className="text-lg font-semibold text-gray-800 mb-4">Component Controls</Text>
+        {backupControls.map(renderControlCard)}
+      </View>
 
-      <View className="bg-yellow-50 rounded-xl p-4 mt-5 border border-yellow-200">
+      <View className="bg-yellow-50 rounded-xl p-4 border border-yellow-200 shadow-sm">
         <Text className="text-lg font-semibold text-yellow-800 mb-2">🚨 Emergency Controls</Text>
         <Text className="text-sm text-yellow-800 mb-4 leading-5">
           Use these controls if the app becomes unresponsive
@@ -391,11 +358,7 @@ export const BackupManualControls: React.FC = () => {
                       setNodeCount(0);
                       setManualMode(true);
                       
-                      Toast.show({
-                        type: 'success',
-                        text1: 'System Reset Complete',
-                        text2: 'All services disconnected',
-                      });
+                      Alert.alert('System Reset Complete', 'All services disconnected');
                     } catch (error) {
                       console.error('Emergency reset error:', error);
                     } finally {
@@ -415,6 +378,6 @@ export const BackupManualControls: React.FC = () => {
           )}
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };

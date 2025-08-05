@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  StyleSheet,
+  Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useWallet } from '@/contexts/WalletContext';
@@ -18,7 +19,7 @@ export const PrivateKeyInput: React.FC = () => {
   const { connectWithPrivateKey, connecting, connected } = useWallet();
   const [privateKey, setPrivateKey] = useState('3Pv9tZo1W9LZp4RsJLPJpKunuMoBEB7S35vMq7GXKNRswJ2CTPPJSE95oiHf27Trx2zCxvVJ7sWid9HX54TJW73H');
   const [showPrivateKey, setShowPrivateKey] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const validatePrivateKey = (key: string): boolean => {
     try {
@@ -64,7 +65,7 @@ export const PrivateKeyInput: React.FC = () => {
 
     try {
       await connectWithPrivateKey(privateKey.trim());
-    //   setPrivateKey(''); // Clear the private key from state for security
+      setShowModal(false); // Close modal on successful connection
     } catch (error) {
       console.error('Private key connection failed:', error);
     }
@@ -99,255 +100,155 @@ export const PrivateKeyInput: React.FC = () => {
   }
 
   return (
-    <View className="border-t border-accent-amber/30 pt-2 mt-4">
-      <Text className="text-sm font-semibold text-neutral-light mb-2">
+    <View className="border-t border-accent-amber/30">
+      <Text className="text-sm font-semibold text-neutral-light mb-1">
         Development Access
       </Text>
-    
-    <View style={styles.container} >
       
-      
-      {/* Collapsible Header */}
+      {/* Simple Button to Open Modal */}
       <TouchableOpacity 
-        style={styles.header}
-        onPress={() => setIsExpanded(!isExpanded)}
+        className="px-4 py-1.5 bg-white rounded-xl mx-4 shadow-md"
+        onPress={() => setShowModal(true)}
         activeOpacity={0.7}
       >
-        <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
+        <View className="flex-row justify-between items-center">
+          <View className="flex-row items-center gap-2">
             <Ionicons name="key" size={20} color="#007AFF" />
-            <Text style={styles.headerTitle}>Private Key Connect</Text>
+            <Text className="text-base font-semibold text-gray-900">
+              Private Key Connect
+            </Text>
           </View>
           <Ionicons 
-            name={isExpanded ? "chevron-up" : "chevron-down"} 
+            name="chevron-forward" 
             size={20} 
             color="#8E8E93" 
           />
         </View>
       </TouchableOpacity>
+      
 
-      {/* Expandable Content */}
-      {isExpanded && (
-        <View style={styles.content}>
-          <Text style={styles.description}>
-            Enter your Solana private key for direct transaction signing (devnet only)
-          </Text>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>
-              Private Key (Base58/Base64)
+      {/* Modal */}
+      <Modal
+        visible={showModal}
+        // animationType="slide"
+        // presentationStyle="pageSheet"
+      >
+        <SafeAreaView className="flex-1 bg-surface-primary">
+          <View className="flex-row justify-between items-center px-5 py-4 bg-surface-secondary border-b border-accent-amber/20">
+            <Text className="text-xl font-bold text-neutral-light">
+              Private Key Connect
             </Text>
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={styles.textInput}
-                value={privateKey}
-                onChangeText={setPrivateKey}
-                placeholder="Enter your private key..."
-                placeholderTextColor="#C7C7CC"
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                secureTextEntry={!showPrivateKey}
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity
-                style={styles.showHideButton}
-                onPress={() => setShowPrivateKey(!showPrivateKey)}
-              >
-                <Ionicons 
-                  name={showPrivateKey ? "eye-off" : "eye"} 
-                  size={20} 
-                  color="#8E8E93" 
+            <TouchableOpacity onPress={() => setShowModal(false)}>
+              <Text className="text-base text-accent-gold font-semibold">
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex-1 p-5">
+            <Text className="text-sm text-neutral-medium mb-4 leading-5">
+              Enter your Solana private key for direct transaction signing (devnet only)
+            </Text>
+
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-neutral-light mb-2">
+                Private Key (Base58/Base64)
+              </Text>
+              <View className="relative">
+                <TextInput
+                  className="border border-accent-amber/40 rounded-xl px-4 py-3 pr-12 text-sm bg-surface-secondary text-neutral-light min-h-20"
+                  value={privateKey}
+                  onChangeText={setPrivateKey}
+                  placeholder="Enter your private key..."
+                  placeholderTextColor="#8B7355"
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                  secureTextEntry={!showPrivateKey}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                 />
+                <TouchableOpacity
+                  className="absolute right-3 top-3 p-1"
+                  onPress={() => setShowPrivateKey(!showPrivateKey)}
+                >
+                  <Ionicons 
+                    name={showPrivateKey ? "eye-off" : "eye"} 
+                    size={20} 
+                    color="#8B7355" 
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View className="flex-row gap-3 mb-4">
+              <TouchableOpacity
+                onPress={generateTestWallet}
+                className="flex-1 rounded-xl shadow-sm"
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={['#E49B3F', '#D97539']}
+                  className="py-3 px-4 rounded-xl flex-row items-center justify-center gap-1.5 min-h-12"
+                >
+                  <>
+                    <Ionicons name="add-circle" size={18} color="white" />
+                    <Text className="text-white text-base font-semibold">Generate</Text>
+                  </>
+                </LinearGradient>
+              </TouchableOpacity>
+
+
+              <TouchableOpacity
+                onPress={handleConnect}
+                disabled={connecting || !privateKey.trim()}
+                className="flex-1 rounded-xl shadow-sm"
+                style={{
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 2,
+                }}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={
+                    (!privateKey.trim() || connecting) 
+                      ? ['#8B7355', '#8B7355'] 
+                      : ['#D97539', '#B85C38']
+                  }
+                  className="py-3 px-4 rounded-xl flex-row items-center justify-center gap-1.5 min-h-12"
+                >
+                  {connecting ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <>
+                      <Ionicons name="log-in" size={18} color="white" />
+                      <Text className="text-white text-base font-semibold">Connect</Text>
+                    </>
+                  )}
+                </LinearGradient>
               </TouchableOpacity>
             </View>
-          </View>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={handleConnect}
-              disabled={connecting || !privateKey.trim()}
-              style={[
-                styles.button,
-                (!privateKey.trim() || connecting) && styles.buttonDisabled
-              ]}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={
-                  (!privateKey.trim() || connecting) 
-                    ? ['#E5E5EA', '#E5E5EA'] 
-                    : ['#007AFF', '#0056CC']
-                }
-                style={styles.gradientButton}
-              >
-                {connecting ? (
-                  <ActivityIndicator color="white" size="small" />
-                ) : (
-                  <>
-                    <Ionicons name="log-in" size={18} color="white" />
-                    <Text style={styles.buttonText}>Connect</Text>
-                  </>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={generateTestWallet}
-              style={styles.button}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={['#34C759', '#30D158']}
-                style={styles.gradientButton}
-              >
-                <Ionicons name="add-circle" size={18} color="white" />
-                <Text style={styles.buttonText}>Generate</Text>
-              </LinearGradient>
-            </TouchableOpacity>
+            <View className="bg-yellow-50 rounded-xl p-3 flex-row items-start gap-2 border border-yellow-200">
+              <Ionicons name="warning" size={16} color="#FF9500" />
+              <Text className="flex-1 text-xs text-yellow-800 leading-4">
+                <Text className="font-semibold">Security Warning:</Text> Only use this for testing on devnet. 
+                Never enter mainnet private keys.
+              </Text>
+            </View>
           </View>
-
-          <View style={styles.warningContainer}>
-            <Ionicons name="warning" size={16} color="#FF9500" />
-            <Text style={styles.warningText}>
-              <Text style={styles.warningBold}>Security Warning:</Text> Only use this for testing on devnet. 
-              Never enter mainnet private keys.
-            </Text>
-          </View>
-        </View>
-      )}
-    </View>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1C1C1E',
-  },
-  content: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  description: {
-    fontSize: 14,
-    color: '#8E8E93',
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#1C1C1E',
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    position: 'relative',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#E5E5EA',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingRight: 48,
-    fontSize: 14,
-    backgroundColor: '#F2F2F7',
-    color: '#1C1C1E',
-    minHeight: 80,
-  },
-  showHideButton: {
-    position: 'absolute',
-    right: 12,
-    top: 12,
-    padding: 4,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  button: {
-    flex: 1,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  buttonDisabled: {
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  gradientButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  warningContainer: {
-    backgroundColor: '#FFF3CD',
-    borderRadius: 12,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#FFE69C',
-  },
-  warningText: {
-    flex: 1,
-    fontSize: 12,
-    color: '#8B6914',
-    lineHeight: 16,
-  },
-  warningBold: {
-    fontWeight: '600',
-  },
-});

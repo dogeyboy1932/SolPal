@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   Text,
   Animated,
-  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -60,26 +59,33 @@ export const VoiceControls: React.FC<VoiceControlsProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-row items-center gap-2">
       {/* Voice Status */}
       {voiceEnabled && (
-        <View style={styles.statusContainer}>
-          <Text style={[styles.statusText, isListening ? styles.listeningText : styles.readyText]}>
+        <View className="mr-3">
+          <Text className={`text-xs font-medium ${isListening ? 'text-red-500' : 'text-orange-500'}`}>
             {isListening ? 'Listening...' : 'Voice Ready'}
           </Text>
         </View>
       )}
 
       {/* Microphone Button */}
-      <Animated.View style={[styles.micButton, { transform: [{ scale: pulseAnim }] }]}>
+      <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
         <TouchableOpacity
           onPress={handleMicPress}
-          style={styles.micTouchable}
+          className="rounded-full"
           disabled={!voiceEnabled}
         >
           <LinearGradient
-            colors={isListening ? ['#FF3B30', '#FF6B6B'] : ['#007AFF', '#0056CC']}
-            style={styles.micGradient}
+            colors={isListening ? ['#FF3B30', '#FF6B6B'] : ['#E49B3F', '#CD853F']}
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
           >
             <Ionicons 
               name={isListening ? 'stop' : 'mic'} 
@@ -93,65 +99,12 @@ export const VoiceControls: React.FC<VoiceControlsProps> = ({
       {/* Voice Toggle */}
       <TouchableOpacity
         onPress={onToggleVoice}
-        style={styles.toggleButton}
+        className="bg-amber-100 px-3 py-1.5 rounded-2xl ml-3"
       >
-        <Text style={styles.toggleText}>
+        <Text className="text-xs text-orange-500 font-medium">
           {voiceEnabled ? 'Disable Voice' : 'Enable Voice'}
         </Text>
       </TouchableOpacity>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusContainer: {
-    marginRight: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  listeningText: {
-    color: '#FF3B30',
-  },
-  readyText: {
-    color: '#007AFF',
-  },
-  micButton: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  micTouchable: {
-    borderRadius: 20,
-  },
-  micGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  toggleButton: {
-    backgroundColor: '#F2F2F7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginLeft: 12,
-  },
-  toggleText: {
-    fontSize: 12,
-    color: '#007AFF',
-    fontWeight: '500',
-  },
-});

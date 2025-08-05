@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   Animated,
 } from 'react-native';
@@ -112,54 +111,55 @@ export const AIConnectionStatus: React.FC<AIConnectionStatusProps> = ({
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.statusHeader}>
-        <Animated.View style={[
-          styles.statusIndicator,
-          { backgroundColor: statusInfo.color },
-          status === 'connecting' && { transform: [{ scale: pulse }] }
-        ]} />
+    <View className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 shadow-sm">
+      <View className="flex-row items-center mb-3">
+        <Animated.View 
+          className="w-3 h-3 rounded-full mr-3"
+          style={[
+            { backgroundColor: statusInfo.color },
+            status === 'connecting' && { transform: [{ scale: pulse }] }
+          ]} 
+        />
         
-        <View style={styles.statusInfo}>
-          <Text style={styles.statusText}>{statusInfo.text}</Text>
-          <Text style={styles.statusDescription}>{statusInfo.description}</Text>
+        <View className="flex-1">
+          <Text className="text-base font-semibold text-amber-900">{statusInfo.text}</Text>
+          <Text className="text-sm text-amber-700">{statusInfo.description}</Text>
         </View>
 
         <TouchableOpacity
-          style={styles.detailsButton}
+          className="w-6 h-6 rounded-full bg-amber-100 items-center justify-center"
           onPress={onViewDetails}
         >
-          <Text style={styles.detailsButtonText}>ⓘ</Text>
+          <Text className="text-sm text-amber-600">ⓘ</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.statusDetails}>
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Status:</Text>
-          <Text style={[styles.detailValue, { color: statusInfo.color }]}>
+      <View className="bg-amber-100 rounded-lg p-3 mb-4">
+        <View className="flex-row justify-between mb-1.5">
+          <Text className="text-sm text-amber-700 font-medium">Status:</Text>
+          <Text className="text-sm font-medium" style={{ color: statusInfo.color }}>
             {statusInfo.icon} {statusInfo.text}
           </Text>
         </View>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Last Activity:</Text>
-          <Text style={styles.detailValue}>{formatLastActivity()}</Text>
+        <View className="flex-row justify-between mb-1.5">
+          <Text className="text-sm text-amber-700 font-medium">Last Activity:</Text>
+          <Text className="text-sm text-amber-800 font-medium">{formatLastActivity()}</Text>
         </View>
 
-        <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>Mode:</Text>
-          <Text style={styles.detailValue}>
+        <View className="flex-row justify-between">
+          <Text className="text-sm text-amber-700 font-medium">Mode:</Text>
+          <Text className="text-sm text-amber-800 font-medium">
             {status === 'connected' ? 'AI-Powered' : 'Manual Control'}
           </Text>
         </View>
       </View>
 
-      <View style={styles.actionButtons}>
+      <View className="flex-row gap-3 mb-4">
         <TouchableOpacity
-          style={[
-            styles.connectionButton,
-            status === 'connected' ? styles.disconnectButton : styles.connectButton
-          ]}
+          className={`flex-1 rounded-lg p-3 items-center ${
+            status === 'connected' ? 'bg-red-500' : 'bg-orange-500'
+          }`}
           onPress={() => {
             setStatus(status === 'connected' ? 'disconnected' : 'connecting');
             setTimeout(() => {
@@ -168,40 +168,40 @@ export const AIConnectionStatus: React.FC<AIConnectionStatusProps> = ({
             onToggleConnection?.();
           }}
         >
-          <Text style={styles.connectionButtonText}>
+          <Text className="text-white text-base font-semibold">
             {status === 'connected' ? 'Disconnect AI' : 'Connect AI'}
           </Text>
         </TouchableOpacity>
 
         {status === 'error' && (
           <TouchableOpacity
-            style={styles.retryButton}
+            className="flex-1 bg-yellow-500 rounded-lg p-3 items-center"
             onPress={() => {
               setStatus('connecting');
               setTimeout(() => setStatus('connected'), 2000);
             }}
           >
-            <Text style={styles.retryButtonText}>Retry Connection</Text>
+            <Text className="text-white text-base font-semibold">Retry Connection</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {status === 'connected' && (
-        <View style={styles.aiCapabilities}>
-          <Text style={styles.capabilitiesTitle}>Available AI Features:</Text>
-          <View style={styles.capabilitiesList}>
-            <Text style={styles.capabilityItem}>✓ Smart transaction suggestions</Text>
-            <Text style={styles.capabilityItem}>✓ Node-based context understanding</Text>
-            <Text style={styles.capabilityItem}>✓ Natural language processing</Text>
-            <Text style={styles.capabilityItem}>✓ Automatic transaction validation</Text>
+        <View className="bg-green-100 rounded-lg p-3">
+          <Text className="text-base font-semibold text-green-800 mb-2">Available AI Features:</Text>
+          <View className="gap-1">
+            <Text className="text-sm text-green-700 leading-5">✓ Smart transaction suggestions</Text>
+            <Text className="text-sm text-green-700 leading-5">✓ Node-based context understanding</Text>
+            <Text className="text-sm text-green-700 leading-5">✓ Natural language processing</Text>
+            <Text className="text-sm text-green-700 leading-5">✓ Automatic transaction validation</Text>
           </View>
         </View>
       )}
 
       {status === 'disconnected' && (
-        <View style={styles.manualModeInfo}>
-          <Text style={styles.manualModeTitle}>Manual Mode Active</Text>
-          <Text style={styles.manualModeDescription}>
+        <View className="bg-gray-100 rounded-lg p-3">
+          <Text className="text-base font-semibold text-gray-700 mb-2">Manual Mode Active</Text>
+          <Text className="text-sm text-gray-600 leading-5">
             All features are available through manual controls. Connect AI for enhanced automation and smart suggestions.
           </Text>
         </View>
@@ -209,140 +209,3 @@ export const AIConnectionStatus: React.FC<AIConnectionStatusProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    marginBottom: 16,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  statusInfo: {
-    flex: 1,
-  },
-  statusText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
-  },
-  statusDescription: {
-    fontSize: 14,
-    color: '#666',
-  },
-  detailsButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  detailsButtonText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  statusDetails: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
-  },
-  detailLabel: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  detailValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  connectionButton: {
-    flex: 1,
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-  },
-  connectButton: {
-    backgroundColor: '#007AFF',
-  },
-  disconnectButton: {
-    backgroundColor: '#dc3545',
-  },
-  connectionButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  retryButton: {
-    flex: 1,
-    backgroundColor: '#ffc107',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  aiCapabilities: {
-    backgroundColor: '#e8f5e8',
-    borderRadius: 8,
-    padding: 12,
-  },
-  capabilitiesTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#28a745',
-    marginBottom: 8,
-  },
-  capabilitiesList: {
-    gap: 4,
-  },
-  capabilityItem: {
-    fontSize: 14,
-    color: '#155724',
-    lineHeight: 20,
-  },
-  manualModeInfo: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    padding: 12,
-  },
-  manualModeTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#495057',
-    marginBottom: 8,
-  },
-  manualModeDescription: {
-    fontSize: 14,
-    color: '#6c757d',
-    lineHeight: 20,
-  },
-});

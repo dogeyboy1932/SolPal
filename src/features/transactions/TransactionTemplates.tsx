@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   TextInput,
   Alert,
@@ -188,8 +187,8 @@ export const TransactionTemplates: React.FC = () => {
 
   if (!connected) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.notConnectedText}>
+      <View className="bg-amber-50 rounded-xl p-4 mx-4 shadow-sm border border-gray-200">
+        <Text className="text-center text-amber-800 text-base p-5">
           Please connect your wallet to use transaction templates
         </Text>
       </View>
@@ -197,29 +196,29 @@ export const TransactionTemplates: React.FC = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Transaction Templates</Text>
-      <Text style={styles.subtitle}>
+    <View className="bg-white rounded-xl p-4 shadow-lg border border-gray-200 h-full">
+      <Text className="text-xl font-semibold text-amber-900 mb-1">Transaction Templates</Text>
+      <Text className="text-sm text-amber-700 mb-4">
         Quick access to common transaction patterns
       </Text>
 
       {!selectedTemplate ? (
-        <ScrollView style={styles.templatesList} showsVerticalScrollIndicator={false}>
+        <ScrollView className="" showsVerticalScrollIndicator={false}>
           {PREDEFINED_TEMPLATES.map((template) => (
             <TouchableOpacity
               key={template.id}
-              style={styles.templateCard}
+              className="border border-gray-200 rounded-lg p-4 mb-3"
               onPress={() => selectTemplate(template)}
             >
-              <View style={styles.templateHeader}>
-                <Text style={styles.templateName}>{template.name}</Text>
-                <View style={[styles.typeBadge, { backgroundColor: getTypeColor(template.type) }]}>
-                  <Text style={styles.typeText}>{template.type.replace('_', ' ').toUpperCase()}</Text>
+              <View className="flex-row justify-between items-center mb-2">
+                <Text className="text-base font-semibold text-amber-900 flex-1">{template.name}</Text>
+                <View className="px-2 py-1 rounded-xl ml-2" style={{ backgroundColor: getTypeColor(template.type) }}>
+                  <Text className="text-xs text-white font-semibold">{template.type.replace('_', ' ').toUpperCase()}</Text>
                 </View>
               </View>
-              <Text style={styles.templateDescription}>{template.description}</Text>
+              <Text className="text-sm text-amber-700 mb-1">{template.description}</Text>
               {template.defaultAmount && (
-                <Text style={styles.templateDetails}>
+                <Text className="text-xs text-amber-600 italic">
                   Default Amount: {template.defaultAmount} {template.type === 'transfer_spl' ? 'tokens' : 'SOL'}
                 </Text>
               )}
@@ -227,77 +226,76 @@ export const TransactionTemplates: React.FC = () => {
           ))}
         </ScrollView>
       ) : (
-        <View style={styles.executionContainer}>
-          <View style={styles.selectedTemplateHeader}>
-            <Text style={styles.selectedTemplateName}>{selectedTemplate.name}</Text>
-            <TouchableOpacity onPress={clearTemplate} style={styles.clearButton}>
-              <Text style={styles.clearButtonText}>✕</Text>
+        <View className="flex-1">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-lg font-semibold text-amber-900 flex-1">{selectedTemplate.name}</Text>
+            <TouchableOpacity className="p-1" onPress={clearTemplate}>
+              <Text className="text-lg text-amber-600">✕</Text>
             </TouchableOpacity>
           </View>
           
-          <Text style={styles.selectedTemplateDescription}>
+          <Text className="text-sm text-amber-700 mb-5">
             {selectedTemplate.description}
           </Text>
 
-          <View style={styles.inputContainer}>
+          <View className="mb-5">
             {(selectedTemplate.type === 'transfer_sol' || selectedTemplate.type === 'transfer_spl') && (
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Recipient Address</Text>
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-amber-900 mb-1.5">Recipient Address</Text>
                 <TextInput
-                  style={styles.textInput}
+                  className="border border-gray-200 rounded-lg p-3 text-base bg-white text-amber-900"
                   value={recipient}
                   onChangeText={setRecipient}
                   placeholder="Enter recipient's public key"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor="#92400e"
                 />
               </View>
             )}
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>
+            <View className="mb-4">
+              <Text className="text-sm font-medium text-amber-900 mb-1.5">
                 Amount {selectedTemplate.type === 'transfer_spl' ? '(tokens)' : '(SOL)'}
               </Text>
               <TextInput
-                style={styles.textInput}
+                className="border border-gray-200 rounded-lg p-3 text-base bg-white text-amber-900"
                 value={amount}
                 onChangeText={setAmount}
                 placeholder="0.0"
                 keyboardType="numeric"
-                placeholderTextColor="#6b7280"
+                placeholderTextColor="#92400e"
               />
             </View>
 
             {selectedTemplate.type === 'transfer_spl' && (
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Token Mint Address</Text>
+              <View className="mb-4">
+                <Text className="text-sm font-medium text-amber-900 mb-1.5">Token Mint Address</Text>
                 <TextInput
-                  style={styles.textInput}
+                  className="border border-gray-200 rounded-lg p-3 text-base bg-white text-amber-900"
                   value={mintAddress}
                   onChangeText={setMintAddress}
                   placeholder="Enter token mint address"
-                  placeholderTextColor="#6b7280"
+                  placeholderTextColor="#92400e"
                 />
               </View>
             )}
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.executeButton,
-              (executing || validateTemplate()) && styles.disabledButton
-            ]}
+            className={`rounded-lg p-4 items-center mb-3 ${
+              (executing || validateTemplate()) ? 'bg-gray-400' : 'bg-orange-500'
+            }`}
             onPress={executeTemplate}
             disabled={executing || !!validateTemplate()}
           >
             {executing ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text style={styles.executeButtonText}>Execute Template</Text>
+              <Text className="text-white text-base font-semibold">Execute Template</Text>
             )}
           </TouchableOpacity>
 
           {validateTemplate() && (
-            <Text style={styles.validationError}>{validateTemplate()}</Text>
+            <Text className="text-red-500 text-sm text-center">{validateTemplate()}</Text>
           )}
         </View>
       )}
@@ -308,157 +306,12 @@ export const TransactionTemplates: React.FC = () => {
 const getTypeColor = (type: string): string => {
   switch (type) {
     case 'transfer_sol':
-      return '#3b82f6';
+      return '#E49B3F';
     case 'transfer_spl':
       return '#10b981';
     case 'airdrop':
       return '#f59e0b';
     default:
-      return '#6b7280';
+      return '#92400e';
   }
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    margin: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 16,
-  },
-  templatesList: {
-    maxHeight: 400,
-  },
-  templateCard: {
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-  },
-  templateHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  templateName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    flex: 1,
-  },
-  typeBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  typeText: {
-    fontSize: 10,
-    color: 'white',
-    fontWeight: '600',
-  },
-  templateDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 4,
-  },
-  templateDetails: {
-    fontSize: 12,
-    color: '#374151',
-    fontStyle: 'italic',
-  },
-  executionContainer: {
-    flex: 1,
-  },
-  selectedTemplateHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  selectedTemplateName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1f2937',
-    flex: 1,
-  },
-  clearButton: {
-    padding: 4,
-  },
-  clearButtonText: {
-    fontSize: 18,
-    color: '#6b7280',
-  },
-  selectedTemplateDescription: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 20,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 6,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#f9fafb',
-    color: '#374151',
-  },
-  executeButton: {
-    backgroundColor: '#3b82f6',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  disabledButton: {
-    backgroundColor: '#9ca3af',
-  },
-  executeButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  validationError: {
-    color: '#ef4444',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  notConnectedText: {
-    textAlign: 'center',
-    color: '#6b7280',
-    fontSize: 16,
-    padding: 20,
-  },
-});

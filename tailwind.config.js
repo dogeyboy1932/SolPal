@@ -20,6 +20,7 @@ module.exports = {
         },
         neutral: {
           light: '#FDF7F0',
+          gentle: '#F9EEE1',
           warm: '#F5E6D3',
           medium: '#E8D5B7',
           muted: '#D4B896',

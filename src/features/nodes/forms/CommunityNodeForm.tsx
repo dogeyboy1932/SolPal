@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
 import { CommunityNode, CreateCommunityNodeData, UpdateCommunityNodeData } from '../../../types/nodes';
 import { useNodes } from '../../../contexts/NodeContext';
 
@@ -88,17 +88,17 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
   };
 
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-      <View style={styles.form}>
-        <Text style={styles.title}>
+    <ScrollView className="flex-1 bg-amber-50" keyboardShouldPersistTaps="handled">
+      <View className="p-4">
+        <Text className="text-2xl font-bold text-amber-900 mb-6 text-center">
           {isEditing ? 'Edit Community' : 'Create Community'}
         </Text>
 
         {/* Name Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Community Name *</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Community Name *</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.name}
             onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
             placeholder="Enter community name"
@@ -107,36 +107,39 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
         </View>
 
         {/* Description Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Description</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Description</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900 h-20"
             value={formData.description}
             onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
             placeholder="Community description"
             placeholderTextColor="#999"
             multiline
             numberOfLines={3}
+            textAlignVertical="top"
           />
         </View>
 
         {/* Community Type Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Community Type</Text>
-          <View style={styles.typeContainer}>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Community Type</Text>
+          <View className="flex-row flex-wrap gap-2">
             {communityTypeOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
-                style={[
-                  styles.typeButton,
-                  formData.communityType === option.value && styles.typeButtonActive
-                ]}
+                className={`px-4 py-2 rounded-full border ${
+                  formData.communityType === option.value
+                    ? 'bg-orange-500 border-orange-600'
+                    : 'bg-white border-amber-300'
+                }`}
                 onPress={() => setFormData(prev => ({ ...prev, communityType: option.value }))}
               >
-                <Text style={[
-                  styles.typeButtonText,
-                  formData.communityType === option.value && styles.typeButtonTextActive
-                ]}>
+                <Text className={`text-sm font-medium ${
+                  formData.communityType === option.value
+                    ? 'text-white'
+                    : 'text-amber-800'
+                }`}>
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -145,42 +148,43 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
         </View>
 
         {/* Public/Private Toggle */}
-        <View style={styles.fieldContainer}>
-          <View style={styles.switchContainer}>
-            <Text style={styles.label}>Public Community</Text>
+        <View className="mb-4">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-base font-semibold text-amber-800">Public Community</Text>
             <Switch
               value={formData.isPublic}
               onValueChange={(value) => setFormData(prev => ({ ...prev, isPublic: value }))}
-              trackColor={{ false: '#ddd', true: '#007AFF' }}
+              trackColor={{ false: '#ddd', true: '#E49B3F' }}
               thumbColor={formData.isPublic ? '#fff' : '#f4f3f4'}
             />
           </View>
-          <Text style={styles.helpText}>
+          <Text className="text-sm text-amber-600">
             {formData.isPublic ? 'Anyone can join this community' : 'Invite-only community'}
           </Text>
         </View>
 
         {/* Join Requirements Field */}
         {!formData.isPublic && (
-          <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Join Requirements</Text>
+          <View className="mb-4">
+            <Text className="text-base font-semibold text-amber-800 mb-2">Join Requirements</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
+              className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900 h-20"
               value={formData.joinRequirements}
               onChangeText={(text) => setFormData(prev => ({ ...prev, joinRequirements: text }))}
               placeholder="Requirements to join this community"
               placeholderTextColor="#999"
               multiline
               numberOfLines={3}
+              textAlignVertical="top"
             />
           </View>
         )}
 
         {/* Governance Token Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Governance Token</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Governance Token</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.governanceToken}
             onChangeText={(text) => setFormData(prev => ({ ...prev, governanceToken: text }))}
             placeholder="Token mint address"
@@ -190,10 +194,10 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
         </View>
 
         {/* NFT Collection Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>NFT Collection</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">NFT Collection</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.nftCollection}
             onChangeText={(text) => setFormData(prev => ({ ...prev, nftCollection: text }))}
             placeholder="NFT collection address"
@@ -203,10 +207,10 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
         </View>
 
         {/* Website Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Website</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Website</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.website}
             onChangeText={(text) => setFormData(prev => ({ ...prev, website: text }))}
             placeholder="https://example.com"
@@ -217,10 +221,10 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
         </View>
 
         {/* Discord Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Discord</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Discord</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.discord}
             onChangeText={(text) => setFormData(prev => ({ ...prev, discord: text }))}
             placeholder="Discord server invite or URL"
@@ -230,10 +234,10 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
         </View>
 
         {/* Twitter Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Twitter</Text>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Twitter</Text>
           <TextInput
-            style={styles.input}
+            className="bg-white border border-amber-300 rounded-lg px-3 py-3 text-amber-900"
             value={formData.twitter}
             onChangeText={(text) => setFormData(prev => ({ ...prev, twitter: text }))}
             placeholder="@username or URL"
@@ -243,49 +247,54 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
         </View>
 
         {/* Tags Field */}
-        <View style={styles.fieldContainer}>
-          <Text style={styles.label}>Tags</Text>
-          <View style={styles.tagInputContainer}>
+        <View className="mb-4">
+          <Text className="text-base font-semibold text-amber-800 mb-2">Tags</Text>
+          <View className="flex-row gap-2 mb-2">
             <TextInput
-              style={[styles.input, styles.tagInput]}
+              className="flex-1 bg-white border border-amber-300 rounded-lg px-3 py-2 text-amber-900"
               value={newTag}
               onChangeText={setNewTag}
               placeholder="Add tag"
               placeholderTextColor="#999"
               onSubmitEditing={addTag}
             />
-            <TouchableOpacity style={styles.addTagButton} onPress={addTag}>
-              <Text style={styles.addTagButtonText}>Add</Text>
+            <TouchableOpacity 
+              className="bg-orange-500 px-4 py-2 rounded-lg justify-center" 
+              onPress={addTag}
+            >
+              <Text className="text-white font-medium">Add</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.tagsContainer}>
+          <View className="flex-row flex-wrap gap-2">
             {formData.tags?.map((tag, index) => (
               <TouchableOpacity
                 key={index}
-                style={styles.tag}
+                className="bg-amber-100 border border-amber-300 rounded-full px-3 py-1"
                 onPress={() => removeTag(tag)}
               >
-                <Text style={styles.tagText}>{tag} ×</Text>
+                <Text className="text-amber-800 text-sm">{tag} ×</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
         {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
+        <View className="flex-row gap-3 mt-6">
           <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
+            className="flex-1 bg-gray-100 border border-gray-300 rounded-lg py-3 items-center"
             onPress={onCancel}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text className="text-gray-700 font-semibold text-base">Cancel</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, styles.saveButton]}
+            className={`flex-1 rounded-lg py-3 items-center ${
+              isSaving ? 'bg-orange-300' : 'bg-orange-500'
+            }`}
             onPress={handleSave}
             disabled={isSaving}
           >
-            <Text style={styles.saveButtonText}>
+            <Text className="text-white font-semibold text-base">
               {isSaving ? 'Saving...' : 'Save'}
             </Text>
           </TouchableOpacity>
@@ -294,138 +303,3 @@ export const CommunityNodeForm: React.FC<CommunityNodeFormProps> = ({
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  form: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  fieldContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#333',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  typeContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  typeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
-  },
-  typeButtonActive: {
-    backgroundColor: '#9c27b0',
-    borderColor: '#9c27b0',
-  },
-  typeButtonText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  typeButtonTextActive: {
-    color: '#fff',
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  helpText: {
-    fontSize: 12,
-    color: '#666',
-    fontStyle: 'italic',
-  },
-  tagInputContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
-  },
-  tagInput: {
-    flex: 1,
-  },
-  addTagButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 16,
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  addTagButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: '#e0e0e0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  tagText: {
-    fontSize: 14,
-    color: '#333',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 20,
-  },
-  button: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '600',
-  },
-  saveButton: {
-    backgroundColor: '#9c27b0',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '600',
-  },
-});

@@ -182,44 +182,35 @@ export const E2ETestRunner: React.FC = () => {
   };
 
   return (
-    <View className="flex-1 bg-white p-4">
-      <View className="mb-6">
-        <Text className="text-2xl font-bold text-gray-900 mb-2">
-          E2E AI-Solana Testing
-        </Text>
-        <Text className="text-gray-600">
-          Test all AI-powered Solana operations end-to-end
-        </Text>
-      </View>
-
+    <View className="flex-1">
       {/* Prerequisites Check */}
-      <View className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <Text className="text-lg font-semibold mb-3">Prerequisites</Text>
+      <View className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <Text className="text-base font-semibold mb-3 text-blue-900">Prerequisites Check</Text>
         <View className="space-y-2">
           <View className="flex-row items-center">
             <Text className={`mr-2 ${liveConnected ? 'text-green-600' : 'text-red-600'}`}>
               {liveConnected ? '✅' : '❌'}
             </Text>
-            <Text>AI Connected ({tools.length} tools available)</Text>
+            <Text className="text-sm">AI Connected ({tools.length} tools available)</Text>
           </View>
           <View className="flex-row items-center">
             <Text className={`mr-2 ${connected ? 'text-green-600' : 'text-red-600'}`}>
               {connected ? '✅' : '❌'}
             </Text>
-            <Text>Wallet Connected</Text>
+            <Text className="text-sm">Wallet Connected</Text>
           </View>
           <View className="flex-row items-center">
             <Text className={`mr-2 ${nodes.length > 0 ? 'text-green-600' : 'text-yellow-600'}`}>
               {nodes.length > 0 ? '✅' : '⚠️'}
             </Text>
-            <Text>Nodes Available ({nodes.length})</Text>
+            <Text className="text-sm">Nodes Available ({nodes.length})</Text>
           </View>
         </View>
       </View>
 
       {/* Category Selection */}
       <View className="mb-4">
-        <Text className="text-lg font-semibold mb-2">Test Category</Text>
+        <Text className="text-base font-semibold mb-3 text-gray-900">Test Categories</Text>
         <View className="flex-row space-x-2">
           {(['basic', 'advanced', 'error'] as const).map((category) => (
             <TouchableOpacity
@@ -231,7 +222,7 @@ export const E2ETestRunner: React.FC = () => {
                   : 'bg-white border-gray-300'
               }`}
             >
-              <Text className={`capitalize ${
+              <Text className={`capitalize text-sm font-medium ${
                 currentCategory === category ? 'text-white' : 'text-gray-700'
               }`}>
                 {category} ({getPassedCount(category)}/{getTotalCount(category)})
@@ -263,13 +254,13 @@ export const E2ETestRunner: React.FC = () => {
           .map((testCase) => {
             const result = testResults[testCase.id];
             return (
-              <View key={testCase.id} className="mb-4 p-4 border border-gray-200 rounded-lg">
+              <View key={testCase.id} className="mb-4 p-4 border border-gray-200 rounded-lg bg-white">
                 <View className="flex-row items-center justify-between mb-2">
                   <View className="flex-row items-center flex-1">
                     <Text className="text-lg mr-2">
                       {getStatusIcon(result?.status || 'pending')}
                     </Text>
-                    <Text className="text-lg font-semibold flex-1">
+                    <Text className="text-base font-semibold flex-1">
                       {testCase.name}
                     </Text>
                   </View>
@@ -290,7 +281,7 @@ export const E2ETestRunner: React.FC = () => {
                   </TouchableOpacity>
                 </View>
 
-                <Text className="text-gray-600 mb-2">{testCase.description}</Text>
+                <Text className="text-gray-600 mb-2 text-sm">{testCase.description}</Text>
                 <Text className="text-sm text-gray-500 mb-2">
                   Test: "{testCase.testMessage}"
                 </Text>
@@ -300,7 +291,7 @@ export const E2ETestRunner: React.FC = () => {
 
                 {result && (
                   <View className="mt-2 p-2 bg-gray-50 rounded">
-                    <Text className={`font-semibold`} style={{ color: getStatusColor(result.status) }}>
+                    <Text className={`font-semibold text-sm`} style={{ color: getStatusColor(result.status) }}>
                       Status: {result.status.toUpperCase()}
                     </Text>
                     {result.message && (

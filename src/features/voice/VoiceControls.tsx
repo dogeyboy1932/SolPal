@@ -4,7 +4,6 @@ import {
   TouchableOpacity,
   Text,
   Animated,
-  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,32 +54,23 @@ export const VoiceControls: React.FC<VoiceControlsProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View className="items-center py-2 ml-2">
       {/* Microphone Button */}
-      <Animated.View style={[styles.micButton, { transform: [{ scale: pulseAnim }] }]}>
-        {/* <TouchableOpacity
-          onPress={handleMicPress}
-          style={styles.micTouchable}
-        >
-          <LinearGradient
-            colors={isListening ? ['#FF3B30', '#FF6B6B'] : ['#007AFF', '#0056CC']}
-            style={styles.micGradient}
-          >
-            <Ionicons 
-              name={isListening ? 'stop' : 'mic'} 
-              size={24} 
-              color="white" 
-            />
-          </LinearGradient>
-        </TouchableOpacity> */}
+      <Animated.View className="items-center justify-center" style={{ transform: [{ scale: pulseAnim }] }}>
         <TouchableOpacity
           onPress={handleMicPress}
-          style={styles.micTouchable}
-          // disabled={!voiceEnabled}
+          className="w-6 h-6 rounded-full justify-center items-center shadow-md"
+          style={{
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5,
+          }}
         >
           <LinearGradient
             colors={isListening ? ['#FF3B30', '#FF6B6B'] : ['#007AFF', '#0056CC']}
-            style={styles.micGradient}
+            className="w-10 h-10 rounded-full justify-center items-center"
           >
             <Ionicons 
               name={isListening ? 'stop' : 'mic'} 
@@ -93,82 +83,3 @@ export const VoiceControls: React.FC<VoiceControlsProps> = ({
     </View>
   );
 };
-
-
-// turn (
-//     <View style={styles.container}>
-//       {/* Voice Status */}
-//       {voiceEnabled && (
-//         <View style={styles.statusContainer}>
-//           <Text style={[styles.statusText, isListening ? styles.listeningText : styles.readyText]}>
-//             {isListening ? 'Listening...' : 'Voice Ready'}
-//           </Text>
-//         </View>
-//       )}
-
-//       {/* Microphone Button */}
-//       <Animated.View style={[styles.micButton, { transform: [{ scale: pulseAnim }] }]}>
-        // <TouchableOpacity
-        //   onPress={handleMicPress}
-        //   style={styles.micTouchable}
-        //   disabled={!voiceEnabled}
-        // >
-        //   <LinearGradient
-        //     colors={isListening ? ['#FF3B30', '#FF6B6B'] : ['#007AFF', '#0056CC']}
-        //     style={styles.micGradient}
-        //   >
-        //     <Ionicons 
-        //       name={isListening ? 'stop' : 'mic'} 
-        //       size={24} 
-        //       color="white" 
-        //     />
-        //   </LinearGradient>
-        // </TouchableOpacity>
-
-
-//         {/* Voice Toggle */}
-//         <TouchableOpacity
-//           onPress={onToggleVoice}
-//           style={styles.toggleButton}
-//         >
-//           <Text style={styles.toggleText}>
-//             {voiceEnabled ? 'Disable Voice' : 'Enable Voice'}
-//           </Text>
-//         </TouchableOpacity>
-
-        
-//       </Animated.View>
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    paddingVertical: 8,
-    marginLeft: 8,
-  },
-  micButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  micTouchable: {
-    width: 25,
-    height: 25,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  micGradient: {
-    width: 40,
-    height: 40,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

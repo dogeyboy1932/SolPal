@@ -25,7 +25,7 @@ export const WalletConnectButton: React.FC = () => {
 
   if (connected && publicKey) {
     return (
-      <View className="bg-accent-amber/20 border border-accent-gold/40 rounded-xl p-2">
+      <View className="bg-accent-amber/20 border border-accent-gold/40 rounded-lg p-2">
         <View className="flex-row items-center justify-between">
           <View className="flex-1 mr-2">
             <View className="flex-row items-center mb-1">
@@ -59,7 +59,7 @@ export const WalletConnectButton: React.FC = () => {
 
   return (
     <TouchableOpacity
-      className="bg-warm-primary rounded-xl px-4 py-2 flex-row items-center justify-center mx-4"
+      className="bg-warm-primary rounded-xl px-4 py-1.5 flex-row items-center justify-center mx-4"
       onPress={handlePress}
       disabled={connecting}
       activeOpacity={0.8}

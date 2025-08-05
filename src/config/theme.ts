@@ -15,6 +15,7 @@ export const warmAIColors = {
   // Neutral Creams
   neutral: {
     light: '#FDF7F0', // Soft cream
+    gentle: '#F9EEE1', // Between light and warm
     warm: '#F5E6D3', // Warm cream
     medium: '#E8D5B7', // Medium cream
     muted: '#D4B896', // Muted cream
