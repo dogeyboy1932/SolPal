@@ -54,3 +54,5 @@ coverage/
 /mcpb-latent
 /.archive
 /.docs
+/.idea
+/android
