@@ -29,7 +29,13 @@ export interface EventNode extends BaseNode {
   date: Date;
   endDate?: Date;
   location?: string;
-  eventType: 'conference' | 'meetup' | 'party' | 'business' | 'social' | 'other';
+  eventType:
+    | 'conference'
+    | 'meetup'
+    | 'party'
+    | 'business'
+    | 'social'
+    | 'other';
   attendees?: string[]; // Array of person node IDs
   organizer?: string; // Person node ID or external organizer name
   ticketPrice?: number;
@@ -41,7 +47,14 @@ export interface EventNode extends BaseNode {
 
 export interface CommunityNode extends BaseNode {
   type: 'community';
-  communityType: 'dao' | 'nft' | 'social' | 'gaming' | 'defi' | 'business' | 'other';
+  communityType:
+    | 'dao'
+    | 'nft'
+    | 'social'
+    | 'gaming'
+    | 'defi'
+    | 'business'
+    | 'other';
   members?: string[]; // Array of person node IDs
   memberCount?: number;
   isPublic: boolean;
@@ -113,9 +126,8 @@ export interface NodeFilters {
 
 // Node context for AI interactions
 export interface NodeContext {
-  activeNodes: Node[];
   selectedNode?: Node;
-  recentlyUsedNodes: Node[];
+  recentlyUsedNodes?: Node[];
 }
 
 // AI prompt context interface

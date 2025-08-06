@@ -20,30 +20,33 @@ import { useWallet } from '../contexts/WalletContext';
 import { useNodes } from '../contexts/NodeContext';
 import { useGemini } from '../features/ai/GeminiContext';
 import { VoiceControls } from '../features/voice/VoiceControls';
-import { 
-  Node, 
-  NodeType, 
-  PersonNode, 
-  EventNode, 
-  CommunityNode
+import {
+  Node,
+  NodeType,
+  PersonNode,
+  EventNode,
+  CommunityNode,
 } from '../types/nodes';
 import { PersonNodeForm } from '../features/nodes/forms/PersonNodeForm';
 import { EventNodeForm } from '../features/nodes/forms/EventNodeForm';
 import { CommunityNodeForm } from '../features/nodes/forms/CommunityNodeForm';
-import { SmartSuggestionsPanel, ConversationSuggestions } from '../features/ai/SmartSuggestions';
+import {
+  SmartSuggestionsPanel,
+  ConversationSuggestions,
+} from '../features/ai/SmartSuggestions';
 import { MCPServerManagement } from '../features/ai/MCPServerManagement';
 import { ManualNodeManagement } from '@/features/nodes/NodeManagement';
 
 const NodeTypeColors = {
   person: '#D97539', // warm-primary
-  event: '#E49B3F',  // accent-gold
-  community: '#B85C38' // warm-secondary
+  event: '#E49B3F', // accent-gold
+  community: '#B85C38', // warm-secondary
 };
 
 const NodeTypeIcons = {
   person: '👤',
   event: '📅',
-  community: '🏛️'
+  community: '🏛️',
 };
 
 interface Message {
@@ -56,11 +59,11 @@ interface Message {
 
 export default function AITransactionChat() {
   const { connected, publicKey, disconnect: disconnectWallet } = useWallet();
-  const { 
-    sendMessage, 
-    messages, 
-    liveConnected, 
-    setApiKey, 
+  const {
+    sendMessage,
+    messages,
+    liveConnected,
+    setApiKey,
     liveConnect,
     liveDisconnect,
     isListening,
@@ -71,30 +74,32 @@ export default function AITransactionChat() {
 
   const {
     nodes,
-    activeNodes,
     selectedNode,
     selectNode,
-    addToActiveNodes,
-    removeFromActiveNodes,
-    clearActiveNodes,
+    addToAccessibleNodes,
     createPersonNode,
     createEventNode,
-    createCommunityNode
+    createCommunityNode,
+    llmAccessibleNodeIds,
+    getLLMAccessibleNodes,
+    toggleAllNodesLLMAccess,
   } = useNodes();
-  
+
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('AIzaSyDsGhQALbwf6jDAHKpZLu1bhVus5CQ-ERQ');
+  const [apiKeyInput, setApiKeyInput] = useState(
+    'AIzaSyDsGhQALbwf6jDAHKpZLu1bhVus5CQ-ERQ'
+  );
   const [showApiKeySection, setShowApiKeySection] = useState(!liveConnected);
   const [isApiKeySet, setIsApiKeySet] = useState(false);
-  
+
   // Node and MCP management states
   const [showNodeList, setShowNodeList] = useState(false);
   const [showNodeCreation, setShowNodeCreation] = useState(false);
   const [nodeCreationType, setNodeCreationType] = useState<NodeType>('person');
   const [showMCPManagement, setShowMCPManagement] = useState(false);
   const [contextualMessages, setContextualMessages] = useState<Message[]>([]);
-  
+
   const scrollViewRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -106,12 +111,13 @@ export default function AITransactionChat() {
 
   // Convert messages to contextual messages with node context
   useEffect(() => {
+    const llmAccessibleNodes = getLLMAccessibleNodes();
     const enhancedMessages = messages.map(msg => ({
       ...msg,
-      contextNodes: msg.role === 'assistant' ? activeNodes : undefined
+      contextNodes: msg.role === 'assistant' ? llmAccessibleNodes : undefined,
     }));
     setContextualMessages(enhancedMessages);
-  }, [messages, activeNodes]);
+  }, [messages, llmAccessibleNodeIds]);
 
   // // Update AI context when active nodes change
   // useEffect(() => {
@@ -123,12 +129,12 @@ export default function AITransactionChat() {
   // Set API key and connect
   const handleSetApiKey = () => {
     const trimmedApiKey = apiKeyInput.trim();
-    
+
     if (!trimmedApiKey) {
       Alert.alert('Invalid API Key', 'Please enter your API key.');
       return;
     }
-    
+
     setApiKey(trimmedApiKey);
     setIsApiKeySet(true);
   };
@@ -138,17 +144,23 @@ export default function AITransactionChat() {
       Alert.alert('API Key Required', 'Please set your API key first.');
       return;
     }
-    
+
     try {
       const success = await liveConnect();
       if (success) {
         setShowApiKeySection(false);
       } else {
-        Alert.alert('Connection Failed', 'Could not connect to AI. Please check your API key and try again.');
+        Alert.alert(
+          'Connection Failed',
+          'Could not connect to AI. Please check your API key and try again.'
+        );
       }
     } catch (error) {
       console.error('AI connection error:', error);
-      Alert.alert('Error', 'Failed to connect to AI. Please check your API key and try again.');
+      Alert.alert(
+        'Error',
+        'Failed to connect to AI. Please check your API key and try again.'
+      );
     }
   };
 
@@ -159,34 +171,34 @@ export default function AITransactionChat() {
       'Are you sure you want to disconnect from the AI assistant?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Disconnect', 
+        {
+          text: 'Disconnect',
           style: 'destructive',
           onPress: async () => {
             await liveDisconnect();
             setShowApiKeySection(true);
             setIsApiKeySet(false);
-          }
-        }
+          },
+        },
       ]
     );
   };
 
-  // Disconnect wallet
-  const handleDisconnectWallet = () => {
-    Alert.alert(
-      'Disconnect Wallet',
-      'Are you sure you want to disconnect your wallet?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Disconnect', 
-          style: 'destructive',
-          onPress: disconnectWallet
-        }
-      ]
-    );
-  };
+  // // Disconnect wallet
+  // const handleDisconnectWallet = () => {
+  //   Alert.alert(
+  //     'Disconnect Wallet',
+  //     'Are you sure you want to disconnect your wallet?',
+  //     [
+  //       { text: 'Cancel', style: 'cancel' },
+  //       {
+  //         text: 'Disconnect',
+  //         style: 'destructive',
+  //         onPress: disconnectWallet
+  //       }
+  //     ]
+  //   );
+  // };
 
   // Animate AI thinking indicator
   useEffect(() => {
@@ -214,19 +226,21 @@ export default function AITransactionChat() {
 
     setIsLoading(true);
     try {
+      const llmAccessibleNodes = getLLMAccessibleNodes();
       // Create user message with context
       const userMessage: Message = {
         id: Date.now().toString(),
         role: 'user',
         content: inputText.trim(),
         timestamp: new Date(),
-        contextNodes: activeNodes.length > 0 ? [...activeNodes] : undefined
+        contextNodes:
+          llmAccessibleNodes.length > 0 ? [...llmAccessibleNodes] : undefined,
       };
 
       setContextualMessages(prev => [...prev, userMessage]);
       await sendMessage(inputText.trim());
       setInputText('');
-      
+
       // Focus back to input and scroll to bottom
       setTimeout(() => {
         inputRef.current?.focus();
@@ -241,50 +255,50 @@ export default function AITransactionChat() {
   };
 
   const handleNodeSelect = (node: Node) => {
-    if (activeNodes.find(n => n.id === node.id)) {
-      removeFromActiveNodes(node.id);
-    } else {
-      addToActiveNodes(node);
-    }
+    const isAccessible = llmAccessibleNodeIds.has(node.id);
+    addToAccessibleNodes(node.id, !isAccessible);
   };
 
-  const handleCreateNode = (nodeType: NodeType) => {
-    setNodeCreationType(nodeType);
-    setShowNodeCreation(true);
-    setShowNodeList(false);
-  };
+  // const handleCreateNode = (nodeType: NodeType) => {
+  //   setNodeCreationType(nodeType);
+  //   setShowNodeCreation(true);
+  //   setShowNodeList(false);
+  // };
 
-  const handleSaveNode = (node: Node) => {
-    // This is now handled by specific handlers
-    setShowNodeCreation(false);
-  };
+  // const handleSaveNode = (node: Node) => {
+  //   // This is now handled by specific handlers
+  //   setShowNodeCreation(false);
+  // };
 
-  const handleSavePersonNode = async (node: PersonNode) => {
-    await createPersonNode(node);
-    setShowNodeCreation(false);
-  };
+  // const handleSavePersonNode = async (node: PersonNode) => {
+  //   await createPersonNode(node);
+  //   setShowNodeCreation(false);
+  // };
 
-  const handleSaveEventNode = async (node: EventNode) => {
-    await createEventNode(node);
-    setShowNodeCreation(false);
-  };
+  // const handleSaveEventNode = async (node: EventNode) => {
+  //   await createEventNode(node);
+  //   setShowNodeCreation(false);
+  // };
 
-  const handleSaveCommunityNode = async (node: CommunityNode) => {
-    await createCommunityNode(node);
-    setShowNodeCreation(false);
-  };
+  // const handleSaveCommunityNode = async (node: CommunityNode) => {
+  //   await createCommunityNode(node);
+  //   setShowNodeCreation(false);
+  // };
 
-  const handleCancelNodeCreation = () => {
-    setShowNodeCreation(false);
-  };
+  // const handleCancelNodeCreation = () => {
+  //   setShowNodeCreation(false);
+  // };
 
-  const handleSuggestionPress = (suggestion: string) => {
-    setInputText(suggestion);
-  };
+  // const handleSuggestionPress = (suggestion: string) => {
+  //   setInputText(suggestion);
+  // };
 
-  const MessageBubble = ({ message, isUser }: { 
-    message: any; 
-    isUser: boolean; 
+  const MessageBubble = ({
+    message,
+    isUser,
+  }: {
+    message: any;
+    isUser: boolean;
   }) => (
     <View
       className={`flex-row mx-4 my-1 ${
@@ -303,22 +317,28 @@ export default function AITransactionChat() {
             : 'bg-white rounded-bl-sm border border-gray-300'
         }`}
       >
-        <Text className={`text-base leading-6 ${isUser ? 'text-white' : 'text-gray-900'}`}>
+        <Text
+          className={`text-base leading-6 ${isUser ? 'text-white' : 'text-gray-900'}`}
+        >
           {message.content}
         </Text>
 
         {message.contextNodes && message.contextNodes.length > 0 && (
           <View className="mt-2 gap-1">
-            <Text className={`text-xs font-medium ${isUser ? 'text-white/70' : 'text-gray-500'}`}>
+            <Text
+              className={`text-xs font-medium ${isUser ? 'text-white/70' : 'text-gray-500'}`}
+            >
               Context:
             </Text>
             {message.contextNodes.map((node: Node) => (
-              <View 
-                key={node.id} 
+              <View
+                key={node.id}
                 className="px-2 py-1 rounded-xl self-start"
                 style={{ backgroundColor: NodeTypeColors[node.type] + '20' }}
               >
-                <Text className={`text-xs ${isUser ? 'text-white' : 'text-gray-700'}`}>
+                <Text
+                  className={`text-xs ${isUser ? 'text-white' : 'text-gray-700'}`}
+                >
                   {NodeTypeIcons[node.type]} {node.name}
                 </Text>
               </View>
@@ -326,29 +346,35 @@ export default function AITransactionChat() {
           </View>
         )}
 
-        <Text className={`text-xs mt-1 ${isUser ? 'text-white/70' : 'text-gray-500'}`}>
-          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        <Text
+          className={`text-xs mt-1 ${isUser ? 'text-white/70' : 'text-gray-500'}`}
+        >
+          {new Date(message.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
         </Text>
       </View>
     </View>
   );
 
   const renderNodeItem = ({ item }: { item: Node }) => {
-    const isActive = activeNodes.find(n => n.id === item.id);
+    const isAccessible = llmAccessibleNodeIds.has(item.id);
     const isSelected = selectedNode?.id === item.id;
-    
+
     return (
       <TouchableOpacity
         className={`bg-surface-secondary rounded-xl p-4 mb-3 border ${
-          isActive ? 'border-warm-primary bg-warm-primary/10' : 
-          isSelected ? 'bg-accent-amber/10' : 'border-warm-primary/20'
+          isAccessible
+            ? 'border-warm-primary bg-warm-primary/10'
+            : isSelected
+              ? 'bg-accent-amber/10'
+              : 'border-warm-primary/20'
         }`}
         onPress={() => handleNodeSelect(item)}
       >
         <View className="flex-row items-center mb-2">
-          <Text className="text-2xl mr-3">
-            {NodeTypeIcons[item.type]}
-          </Text>
+          <Text className="text-2xl mr-3">{NodeTypeIcons[item.type]}</Text>
           <View className="flex-1">
             <Text className="text-base font-semibold text-neutral-light">
               {item.name}
@@ -357,14 +383,15 @@ export default function AITransactionChat() {
               {item.type}
             </Text>
           </View>
-          {isActive && (
-            <Text className="text-base text-warm-primary font-bold">
-              ✓
-            </Text>
+          {isAccessible && (
+            <Text className="text-base text-warm-primary font-bold">✓</Text>
           )}
         </View>
         {item.description && (
-          <Text className="text-sm text-neutral-medium leading-5" numberOfLines={2}>
+          <Text
+            className="text-sm text-neutral-medium leading-5"
+            numberOfLines={2}
+          >
             {item.description}
           </Text>
         )}
@@ -372,18 +399,27 @@ export default function AITransactionChat() {
     );
   };
 
-  const SuggestionChip = ({ text, onPress }: { text: string; onPress: () => void }) => (
-    <TouchableOpacity className="bg-white px-4 py-2 rounded-2xl border border-gray-300" onPress={onPress}>
+  const SuggestionChip = ({
+    text,
+    onPress,
+  }: {
+    text: string;
+    onPress: () => void;
+  }) => (
+    <TouchableOpacity
+      className="bg-white px-4 py-2 rounded-2xl border border-gray-300"
+      onPress={onPress}
+    >
       <Text className="text-sm text-blue-500 font-medium">{text}</Text>
     </TouchableOpacity>
   );
 
   const suggestions = [
-    "Check my balance",
-    "Show transaction history", 
-    "Send 0.1 SOL",
-    "Request airdrop",
-    "Create new contact"
+    'Check my balance',
+    'Show transaction history',
+    'Send 0.1 SOL',
+    'Request airdrop',
+    'Create new contact',
   ];
 
   return (
@@ -393,7 +429,6 @@ export default function AITransactionChat() {
         // colors={['#FFFFFF', '#F8F9FA']}
         className="px-4 pt-2 pb-2 border-b border-gray-300 bg-neutral-medium"
       >
-        
         {/* Top Row: Wallet & AI Status */}
         <View className="flex-row justify-between items-center pb-1">
           {/* Wallet Status */}
@@ -409,17 +444,22 @@ export default function AITransactionChat() {
 
           {/* AI Status */}
           <View className="flex-row items-center">
-            <View className={`w-2 h-2 rounded-full mr-2 ${liveConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-            <Text className="text-sm font-semibold text-gray-900">AI Assistant</Text>
+            <View
+              className={`w-2 h-2 rounded-full mr-2 ${liveConnected ? 'bg-green-500' : 'bg-red-500'}`}
+            />
+            <Text className="text-sm font-semibold text-gray-900">
+              AI Assistant
+            </Text>
             {liveConnected && (
-              <TouchableOpacity className="ml-2 p-1" onPress={handleDisconnectAI}>
+              <TouchableOpacity
+                className="ml-2 p-1"
+                onPress={handleDisconnectAI}
+              >
                 <Ionicons name="power" size={14} color="#FF3B30" />
               </TouchableOpacity>
             )}
           </View>
         </View>
-
-
 
         {/* Management Buttons Row */}
         {liveConnected && (
@@ -433,7 +473,7 @@ export default function AITransactionChat() {
                 Nodes ({nodes.length})
               </Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               className="flex-1 bg-white px-3 py-2 rounded-lg border border-gray-300 flex-row items-center justify-center gap-2"
               onPress={() => setShowMCPManagement(true)}
@@ -444,20 +484,21 @@ export default function AITransactionChat() {
           </View>
         )}
 
-
-
-
         {/* API Key Section - Show when not connected */}
         {showApiKeySection && (
           <View className="mt-2 p-4 bg-white rounded-xl border border-gray-300">
-            <Text className="text-base font-bold text-gray-900 mb-1">Connect AI Assistant</Text>
-            <Text className="text-sm text-gray-500 mb-2">Enter your Gemini API key to enable AI features</Text>
-            
+            <Text className="text-base font-bold text-gray-900 mb-1">
+              Connect AI Assistant
+            </Text>
+            <Text className="text-sm text-gray-500 mb-2">
+              Enter your Gemini API key to enable AI features
+            </Text>
+
             <View className="flex-row gap-2 items-center">
               <TextInput
                 className="flex-1 border border-gray-300 rounded-lg px-3 text-sm bg-gray-50 h-10"
                 value={apiKeyInput}
-                onChangeText={(text) => {
+                onChangeText={text => {
                   setApiKeyInput(text);
                   setIsApiKeySet(false); // Reset API key set status when input changes
                 }}
@@ -467,19 +508,23 @@ export default function AITransactionChat() {
                 autoCorrect={false}
                 secureTextEntry={false}
               />
-              
+
               {/* Set API Key Button */}
               <TouchableOpacity
                 className={`rounded-lg w-10 h-10 items-center justify-center ${
-                  !apiKeyInput.trim() ? 'bg-gray-300' : isApiKeySet ? 'bg-green-500' : 'bg-blue-500'
+                  !apiKeyInput.trim()
+                    ? 'bg-gray-300'
+                    : isApiKeySet
+                      ? 'bg-green-500'
+                      : 'bg-blue-500'
                 }`}
                 onPress={handleSetApiKey}
                 disabled={!apiKeyInput.trim() || isApiKeySet}
               >
-                <Ionicons 
-                  name={isApiKeySet ? "checkmark" : "key"} 
-                  size={16} 
-                  color="white" 
+                <Ionicons
+                  name={isApiKeySet ? 'checkmark' : 'key'}
+                  size={16}
+                  color="white"
                 />
               </TouchableOpacity>
 
@@ -498,19 +543,21 @@ export default function AITransactionChat() {
                   className="rounded-lg flex-row items-center justify-center gap-1.5 h-10 px-3"
                 >
                   <Ionicons name="sparkles" size={16} color="white" />
-                  <Text className="text-white text-sm font-semibold">Connect</Text>
+                  <Text className="text-white text-sm font-semibold">
+                    Connect
+                  </Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
-            
+
             {isApiKeySet && (
               <Text className="text-xs text-green-600 mt-2">
-                ✓ API key set successfully. You can now connect to the AI assistant.
+                ✓ API key set successfully. You can now connect to the AI
+                assistant.
               </Text>
             )}
           </View>
         )}
-
       </View>
 
       {/* Active Nodes Bar */}
@@ -518,28 +565,28 @@ export default function AITransactionChat() {
         <View className="bg-white border-b border-gray-300 py-2">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row items-center px-4 gap-2">
-              <Text className="text-sm text-gray-600 font-medium">
-                Active:
-              </Text>
-              {activeNodes.map(node => (
+              <Text className="text-sm text-gray-600 font-medium">Active:</Text>
+              {getLLMAccessibleNodes().map((node: Node) => (
                 <TouchableOpacity
                   key={node.id}
                   className="px-3 py-1.5 rounded-2xl"
-                  style={{ backgroundColor: NodeTypeColors[node.type] }}
-                  onPress={() => removeFromActiveNodes(node.id)}
+                  style={{
+                    backgroundColor:
+                      NodeTypeColors[node.type as keyof typeof NodeTypeColors],
+                  }}
+                  onPress={() => addToAccessibleNodes(node.id, false)}
                 >
                   <Text className="text-xs text-white font-medium">
-                    {NodeTypeIcons[node.type]} {node.name} ×
+                    {NodeTypeIcons[node.type as keyof typeof NodeTypeIcons]}{' '}
+                    {node.name} ×
                   </Text>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity
                 className="px-2 py-1"
-                onPress={clearActiveNodes}
+                onPress={() => toggleAllNodesLLMAccess(false)}
               >
-                <Text className="text-xs text-gray-500">
-                  Clear All
-                </Text>
+                <Text className="text-xs text-gray-500">Clear All</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -547,13 +594,13 @@ export default function AITransactionChat() {
       )}
 
       {/* Main Chat Interface */}
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {/* Messages */}
-        <ScrollView 
+        <ScrollView
           ref={scrollViewRef}
           className="flex-1"
           showsVerticalScrollIndicator={false}
@@ -564,15 +611,20 @@ export default function AITransactionChat() {
               <View className="w-20 h-20 rounded-full bg-blue-100 items-center justify-center mb-6">
                 <Ionicons name="sparkles" size={32} color="#007AFF" />
               </View>
-              <Text className="text-2xl font-bold text-gray-900 mb-3">AI Solana Assistant</Text>
-              <Text className="text-base text-gray-500 text-center leading-6 mb-8">
-                I can help you manage your Solana wallet, send transactions, check balances, and more!
+              <Text className="text-2xl font-bold text-gray-900 mb-3">
+                AI Solana Assistant
               </Text>
-              
+              <Text className="text-base text-gray-500 text-center leading-6 mb-8">
+                I can help you manage your Solana wallet, send transactions,
+                check balances, and more!
+              </Text>
+
               {/* Suggestion Chips */}
               {liveConnected && (
                 <View className="self-stretch">
-                  <Text className="text-base font-semibold text-gray-900 mb-4 text-center">Try asking:</Text>
+                  <Text className="text-base font-semibold text-gray-900 mb-4 text-center">
+                    Try asking:
+                  </Text>
                   <View className="flex-row flex-wrap justify-center gap-2">
                     {suggestions.map((suggestion, index) => (
                       <SuggestionChip
@@ -586,7 +638,7 @@ export default function AITransactionChat() {
               )}
             </View>
           ) : (
-            messages.map((message) => (
+            messages.map(message => (
               <MessageBubble
                 key={message.id}
                 message={message}
@@ -594,7 +646,6 @@ export default function AITransactionChat() {
               />
             ))
           )}
-          
 
           {/* AI Thinking Indicator */}
           {isLoading && (
@@ -602,7 +653,10 @@ export default function AITransactionChat() {
               <View className="w-8 h-8 rounded-full bg-blue-100 items-center justify-center mr-2 self-end">
                 <Ionicons name="sparkles" size={16} color="#007AFF" />
               </View>
-              <Animated.View className="bg-white px-4 py-3 rounded-2xl rounded-bl-sm border border-gray-300" style={{ opacity: pulseAnim }}>
+              <Animated.View
+                className="bg-white px-4 py-3 rounded-2xl rounded-bl-sm border border-gray-300"
+                style={{ opacity: pulseAnim }}
+              >
                 <View className="flex-row gap-1">
                   <View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
                   <View className="w-1.5 h-1.5 rounded-full bg-gray-400" />
@@ -613,8 +667,6 @@ export default function AITransactionChat() {
           )}
         </ScrollView>
 
-
-
         {/* Input Area */}
         {liveConnected && (
           <View className="bg-white border-t border-gray-300 px-4 py-3">
@@ -624,17 +676,23 @@ export default function AITransactionChat() {
                 className="flex-1 border border-gray-300 rounded-xl px-2 text-base bg-gray-50 h-10"
                 value={inputText}
                 onChangeText={setInputText}
-                placeholder={connected ? "Message AI Assistant..." : "Connect wallet to enable transactions"}
+                placeholder={
+                  connected
+                    ? 'Message AI Assistant...'
+                    : 'Connect wallet to enable transactions'
+                }
                 placeholderTextColor="#C7C7CC"
                 multiline
                 maxLength={500}
                 editable={liveConnected}
               />
-              
+
               {/* Send Button */}
               <TouchableOpacity
                 className={`w-10 h-10 rounded-full items-center justify-center mr-2 ${
-                  (!inputText.trim() || !liveConnected || isLoading) ? 'bg-gray-400' : 'bg-blue-500'
+                  !inputText.trim() || !liveConnected || isLoading
+                    ? 'bg-gray-400'
+                    : 'bg-blue-500'
                 }`}
                 onPress={handleSendMessage}
                 disabled={!inputText.trim() || !liveConnected || isLoading}
@@ -646,20 +704,16 @@ export default function AITransactionChat() {
                 )}
               </TouchableOpacity>
 
-              {/* Voice Control: FIX: GET AUDIO TRANSCRIPTION PACKAGE TO WORK ON MOBILE*/}      
+              {/* Voice Control: FIX: GET AUDIO TRANSCRIPTION PACKAGE TO WORK ON MOBILE*/}
               <VoiceControls
                 isListening={isListening}
                 onStartListening={startListening}
                 onStopListening={stopListening}
               />
-              
-
             </View>
           </View>
         )}
       </KeyboardAvoidingView>
-
-
 
       {/* Node List Modal */}
       <Modal
@@ -693,14 +747,16 @@ export default function AITransactionChat() {
               }}
             >
               <Text className="text-white text-center font-semibold">
-                Create New Node
+                Manage Nodes
               </Text>
             </TouchableOpacity>
 
             {nodes.length === 0 ? (
               <View className="flex-1 items-center justify-center">
                 <Ionicons name="people-outline" size={64} color="#D1D5DB" />
-                <Text className="text-lg font-semibold text-gray-600 mt-4 mb-2">No Nodes Yet</Text>
+                <Text className="text-lg font-semibold text-gray-600 mt-4 mb-2">
+                  No Nodes Yet
+                </Text>
                 <Text className="text-sm text-gray-500 text-center">
                   Create your first node to start building your network
                 </Text>
@@ -709,7 +765,7 @@ export default function AITransactionChat() {
               <FlatList
                 data={nodes}
                 renderItem={renderNodeItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={item => item.id}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 20 }}
               />
@@ -727,7 +783,9 @@ export default function AITransactionChat() {
       >
         <SafeAreaView className="flex-1 bg-gray-50">
           <View className="flex-row items-center justify-between bg-white px-5 py-4 border-b border-gray-200">
-            <Text className="text-xl font-bold text-gray-900">Node Management</Text>
+            <Text className="text-xl font-bold text-gray-900">
+              Node Management
+            </Text>
             <TouchableOpacity
               className="w-8 h-8 rounded-full bg-black/10 items-center justify-center"
               onPress={() => setShowNodeCreation(false)}
@@ -738,7 +796,6 @@ export default function AITransactionChat() {
           <ManualNodeManagement />
         </SafeAreaView>
       </Modal>
-      
 
       {/* MCP Management Modal */}
       <Modal
@@ -753,7 +810,9 @@ export default function AITransactionChat() {
             className="pt-12 pb-4 px-4"
           >
             <View className="flex-row items-center justify-between">
-              <Text className="text-xl font-bold text-gray-900">MCP Servers</Text>
+              <Text className="text-xl font-bold text-gray-900">
+                MCP Servers
+              </Text>
               <TouchableOpacity
                 className="w-8 h-8 rounded-full bg-black/10 items-center justify-center"
                 onPress={() => setShowMCPManagement(false)}
@@ -769,5 +828,3 @@ export default function AITransactionChat() {
     </View>
   );
 }
-
-

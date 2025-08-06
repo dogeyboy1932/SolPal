@@ -5,10 +5,6 @@ export const LLM_CONFIG: LiveConfig =
   model: "models/gemini-2.0-flash-exp",
   generationConfig: {
     responseModalities: "text"
-    // responseModalities: "audio", // Ensure this is one of the allowed types
-    // speechConfig: {
-    //   voiceConfig: { prebuiltVoiceConfig: { voiceName: "Charon" } },
-    // },
   },
   systemInstruction: {
     parts: [{
@@ -16,6 +12,8 @@ export const LLM_CONFIG: LiveConfig =
       You are to help the user executing tasks or retrieving information using the tools provided. 
       USE THE TOOLS WHEN POSSIBLE. DON'T ASK FOR INOFRMATION THAT CAN BE RETRIEVED USING THE TOOLS. DON'T ASK FOR PERMISSION TO USE THE TOOLS.
       DON'T PROVIDE FABRICATED INFORMATION. IF YOU ARE USING THE TOOLS, YOU RESPONSE MUST BE FORMED FROM THE TOOLS OUTPUT
+
+      NO MATTER WHAT THE AUDIO INPUT IS, YOU MUST ALWAYS RESPOND IN ENGLISH.
 
       **Key Workflows:**
       - Send money: search_nodes → validate_wallet_address → create_sol_transfer
