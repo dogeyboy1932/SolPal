@@ -406,7 +406,7 @@ export class MultimodalLiveClient extends EventEmitter<MultimodalLiveClientEvent
       },
     };
 
-    console.log(`📤 Sending realtime input: ${data.realtimeInput.mediaChunks.map((c) => c.data)}`);
+    // console.log(`📤 Sending realtime input: ${data.realtimeInput.mediaChunks.map((c) => c.data)}`);
 
     this._sendDirect(data);
     // this.log(`client.realtimeInput`, message);

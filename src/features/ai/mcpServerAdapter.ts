@@ -157,22 +157,22 @@ export class MobileMCPClient {
     // - No more empty parameter objects!
   }
 
-  /**
-   * Update node context (for node management servers)
-   */
-  updateNodeContext(nodeContext: any) {
-    this.context.nodeContext = nodeContext;
+  // /**
+  //  * Update node context (for node management servers)
+  //  */
+  // updateNodeContext(nodeContext: any) {
+  //   this.context.nodeContext = nodeContext;
     
-    // Update node servers with new context
-    for (const [serverType, server] of this.activeServers) {
-      if (serverType === 'nodes') {
-        // Initialize node server with node context if available
-        // This will be implemented when we integrate with NodeContext
-      }
-    }
+  //   // Update node servers with new context
+  //   for (const [serverType, server] of this.activeServers) {
+  //     if (serverType === 'nodes') {
+  //       // Initialize node server with node context if available
+  //       // This will be implemented when we integrate with NodeContext
+  //     }
+  //   }
     
-    console.log(`🔄 Updated node context for active servers`);
-  }
+  //   console.log(`🔄 Updated node context for active servers`);
+  // }
 
   /**
    * Get all available tools from currently active servers

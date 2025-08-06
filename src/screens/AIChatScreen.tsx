@@ -66,7 +66,7 @@ export default function AITransactionChat() {
     isListening,
     startListening,
     stopListening,
-    updateNodeContext
+    // updateNodeContext
   } = useGemini();
 
   const {
@@ -113,12 +113,12 @@ export default function AITransactionChat() {
     setContextualMessages(enhancedMessages);
   }, [messages, activeNodes]);
 
-  // Update AI context when active nodes change
-  useEffect(() => {
-    if (liveConnected) {
-      updateNodeContext(activeNodes);
-    }
-  }, [activeNodes, liveConnected, updateNodeContext]);
+  // // Update AI context when active nodes change
+  // useEffect(() => {
+  //   if (liveConnected) {
+  //     updateNodeContext(activeNodes);
+  //   }
+  // }, [activeNodes, liveConnected, updateNodeContext]);
 
   // Set API key and connect
   const handleSetApiKey = () => {
@@ -286,21 +286,27 @@ export default function AITransactionChat() {
     message: any; 
     isUser: boolean; 
   }) => (
-    <View className={`flex-row mx-4 my-1 ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <View
+      className={`flex-row mx-4 my-1 ${
+        isUser ? 'justify-end' : 'justify-start'
+      }`}
+    >
       {!isUser && (
         <View className="w-8 h-8 rounded-full bg-blue-100 items-center justify-center mr-2 self-end">
           <Ionicons name="sparkles" size={16} color="#007AFF" />
         </View>
       )}
-      <View className={`max-w-3/4 px-4 py-3 rounded-2xl ${
-        isUser 
-          ? 'bg-blue-500 rounded-br-sm' 
-          : 'bg-white rounded-bl-sm border border-gray-300'
-      }`}>
+      <View
+        className={`max-w-[75%] px-4 py-3 rounded-2xl ${
+          isUser
+            ? 'bg-blue-500 rounded-br-sm'
+            : 'bg-white rounded-bl-sm border border-gray-300'
+        }`}
+      >
         <Text className={`text-base leading-6 ${isUser ? 'text-white' : 'text-gray-900'}`}>
           {message.content}
         </Text>
-        
+
         {message.contextNodes && message.contextNodes.length > 0 && (
           <View className="mt-2 gap-1">
             <Text className={`text-xs font-medium ${isUser ? 'text-white/70' : 'text-gray-500'}`}>
@@ -319,7 +325,7 @@ export default function AITransactionChat() {
             ))}
           </View>
         )}
-        
+
         <Text className={`text-xs mt-1 ${isUser ? 'text-white/70' : 'text-gray-500'}`}>
           {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Text>
@@ -589,6 +595,7 @@ export default function AITransactionChat() {
             ))
           )}
           
+
           {/* AI Thinking Indicator */}
           {isLoading && (
             <View className="flex-row mx-4 my-1">
@@ -605,6 +612,8 @@ export default function AITransactionChat() {
             </View>
           )}
         </ScrollView>
+
+
 
         {/* Input Area */}
         {liveConnected && (
@@ -637,16 +646,20 @@ export default function AITransactionChat() {
                 )}
               </TouchableOpacity>
 
-              {/* Voice Control */}
+              {/* Voice Control: FIX: GET AUDIO TRANSCRIPTION PACKAGE TO WORK ON MOBILE*/}      
               <VoiceControls
                 isListening={isListening}
                 onStartListening={startListening}
                 onStopListening={stopListening}
               />
+              
+
             </View>
           </View>
         )}
       </KeyboardAvoidingView>
+
+
 
       {/* Node List Modal */}
       <Modal

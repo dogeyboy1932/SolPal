@@ -14,7 +14,7 @@ import { MultimodalLiveClient } from './liveClient';
 import { CONST_CONFIG } from '../../config/ai_config';
 
 // Voice functionality for React Native
-import { AudioRecorder } from '../voice/AudioRecorder';
+import { UnifiedAudioRecorder } from '../voice/AudioRecorder';
 import { VoicePermissions } from '../voice/VoicePermissions';
 import { useWallet } from '@/contexts/WalletContext';
 import { PublicKey } from '@solana/web3.js';
@@ -34,7 +34,7 @@ interface GeminiContextType {
 
   sendMessage: (message: string) => void;
   setApiKey: (apiKey: string) => void;
-  updateNodeContext: (activeNodes: Node[]) => void;
+  // updateNodeContext: (activeNodes: Node[]) => void;
 
   liveClient: MultimodalLiveClient;
   messages: Array<{id: string, role: 'user' | 'assistant', content: string, timestamp: Date}>;
@@ -70,7 +70,7 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
   // Voice state (following mcpb-latent pattern)
   const [voiceModeEnabled, setVoiceModeEnabled] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [audioRecorder] = useState(() => new AudioRecorder());
+  const [audioRecorder] = useState(() => new UnifiedAudioRecorder());
   
   // Additional state for AIConnectionContext compatibility
   const [activeMCPServers, setActiveMCPServers] = useState<Record<string, boolean>>({});
@@ -471,40 +471,45 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
     console.log('🛑 Stopped listening');
   }, [isListening, audioRecorder]);
 
-  // Update node context for AI
-  const updateNodeContext = useCallback((activeNodes: Node[]) => {
-    if (!liveConnected || activeNodes.length === 0) return;
-    
-    // Create a context message about active nodes
-    const contextInfo = activeNodes.map(node => {
-      let nodeInfo = `${node.type}: ${node.name}`;
-      if (node.description) nodeInfo += ` - ${node.description}`;
-      
-      // Add type-specific information
-      if (node.type === 'person' && 'walletAddress' in node && node.walletAddress) {
-        nodeInfo += ` (Wallet: ${node.walletAddress})`;
-      }
-      if (node.type === 'event' && 'date' in node && node.date) {
-        nodeInfo += ` (Date: ${new Date(node.date).toLocaleDateString()})`;
-      }
-      if (node.type === 'community' && 'communityType' in node && node.communityType) {
-        nodeInfo += ` (Type: ${node.communityType})`;
-      }
-      
-      return nodeInfo;
-    }).join(', ');
 
-    // Send context update as a system-level instruction
-    const contextMessage = `[SYSTEM CONTEXT UPDATE] Current active nodes for context: ${contextInfo}. Use this information to provide relevant assistance.`;
+
+  // // Update node context for AI
+  // const updateNodeContext = useCallback((activeNodes: Node[]) => {
+  //   if (!liveConnected || activeNodes.length === 0) return;
     
-    // Send context message (won't be displayed in chat)
-    try {
-      liveClient.send([{ text: contextMessage }]);
-      console.log('🔄 Updated AI context with active nodes:', activeNodes.map(n => n.name));
-    } catch (error) {
-      console.warn('⚠️ Failed to update node context:', error);
-    }
-  }, [liveConnected, liveClient]);
+  //   // Create a context message about active nodes
+  //   const contextInfo = activeNodes.map(node => {
+  //     let nodeInfo = `${node.type}: ${node.name}`;
+  //     if (node.description) nodeInfo += ` - ${node.description}`;
+      
+  //     // Add type-specific information
+  //     if (node.type === 'person' && 'walletAddress' in node && node.walletAddress) {
+  //       nodeInfo += ` (Wallet: ${node.walletAddress})`;
+  //     }
+  //     if (node.type === 'event' && 'date' in node && node.date) {
+  //       nodeInfo += ` (Date: ${new Date(node.date).toLocaleDateString()})`;
+  //     }
+  //     if (node.type === 'community' && 'communityType' in node && node.communityType) {
+  //       nodeInfo += ` (Type: ${node.communityType})`;
+  //     }
+      
+  //     return nodeInfo;
+  //   }).join(', ');
+
+  //   // Send context update as a system-level instruction
+  //   const contextMessage = `[SYSTEM CONTEXT UPDATE] Current active nodes for context: ${contextInfo}. Use this information to provide relevant assistance.`;
+    
+  //   // Send context message (won't be displayed in chat)
+  //   try {
+  //     liveClient.send([{ text: contextMessage }]);
+  //     console.log('🔄 Updated AI context with active nodes:', activeNodes.map(n => n.name));
+  //   } catch (error) {
+  //     console.warn('⚠️ Failed to update node context:', error);
+  //   }
+  // }, [liveConnected, liveClient]);
+
+
+
 
   // Compatibility functions for AIConnectionContext
   const connect = useCallback(async () => {
@@ -631,7 +636,7 @@ export const GeminiProvider = ({ children }: { children: ReactNode }) => {
 
       sendMessage,
       setApiKey,
-      updateNodeContext,
+      // updateNodeContext,
       liveClient,
       messages,
 

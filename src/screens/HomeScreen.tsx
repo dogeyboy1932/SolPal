@@ -37,10 +37,6 @@ export const HomeScreen: React.FC = () => {
   return (
     <View className="flex-1 bg-surface-primary ">
       <SafeAreaView className="flex-1">
-        {/* iOS-style status bar spacing */}
-        {Platform.OS === 'ios' && (
-          <View style={{ height: RNStatusBar.currentHeight || 44 }} />
-        )}
 
         {/* Warm AI Header with Balanced Gradient */}
         <LinearGradient
@@ -105,7 +101,7 @@ export const HomeScreen: React.FC = () => {
         <View className="flex-1 bg-surface-primary">
           {activeTab === 'chat' ? (
             <AITransactionChat />
-          ) : (
+           ) : (
             <ManualOperationsScreen />
           )}
         </View>
@@ -154,13 +150,6 @@ export const HomeScreen: React.FC = () => {
               </View>
             </TouchableOpacity>
           </View>
-          
-          {/* iOS Home Indicator */}
-          {Platform.OS === 'ios' && (
-            <View className="items-center py-2">
-              <View className="w-32 h-1 bg-neutral-medium/30 rounded-full" />
-            </View>
-          )}
         </Surface>
       </SafeAreaView>
     </View>
