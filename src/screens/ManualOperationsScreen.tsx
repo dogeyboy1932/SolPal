@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -34,11 +34,19 @@ import { WalletOperations } from '@/features/wallet/WalletOperations';
 
 export const ManualOperationsScreen: React.FC = () => {
   const { connected, connecting, publicKey, disconnect } = useWallet();
-  const { liveConnected, liveDisconnect } = useGemini();
+  const { stopListening } = useGemini();
   const [refreshing, setRefreshing] = React.useState(false);
   const [activeSection, setActiveSection] = React.useState<'balance' | 'send' | 'history' | 'templates' | 'operations' | 'builder' | 'advanced' | 'backup' | 'ai_status' | 'mcp' | 'nodes' | 'node_access' 
   // | 'smart_ai' 
   | 'e2e_test'>('balance');
+
+
+  useEffect(() => {
+    // Stop listening when component unmounts
+    return () => {
+      stopListening();
+    };
+  }, [stopListening]);
 
   // Cross-platform alert function
   const showAlert = (title: string, message: string, buttons: Array<{text: string, onPress?: () => void, style?: 'default' | 'cancel' | 'destructive'}>) => {

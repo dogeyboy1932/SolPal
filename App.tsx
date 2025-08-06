@@ -16,10 +16,7 @@ import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { Provider as PaperProvider } from 'react-native-paper';
 
 // Coffee Shop Theme Configuration
-import { 
-  warmAIPaperTheme, 
-  warmAIGluestackConfig 
-} from './src/config/theme';
+import { warmAIPaperTheme, warmAIGluestackConfig } from './src/config/theme';
 
 // App Context Providers
 import { WalletProvider } from './src/contexts/WalletContext';

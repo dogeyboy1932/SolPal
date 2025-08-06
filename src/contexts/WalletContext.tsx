@@ -76,8 +76,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
           const authorizationResult = await wallet.authorize({
             cluster: 'devnet',
             identity: {
-              name: 'AI Solana Mobile',
-              uri: 'https://ai-solana-mobile.app',
+              name: 'SolPal',
+              uri: 'https://solpal.app',
               icon: 'favicon.ico',
             },
           });

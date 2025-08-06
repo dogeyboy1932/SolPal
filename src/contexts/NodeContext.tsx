@@ -395,7 +395,12 @@ export const NodeProvider = ({ children }: { children: ReactNode }) => {
 
   const deleteNode = useCallback(
     async (id: string) => {
-      setNodes(prev => prev.filter(node => node.id !== id));
+      console.log('Deleting node with id:', id);
+      setNodes(prev => {
+        const newNodes = prev.filter(node => node.id !== id);
+        console.log('New nodes:', newNodes);
+        return newNodes;
+      });
       if (selectedNode?.id === id) {
         setSelectedNode(undefined);
       }

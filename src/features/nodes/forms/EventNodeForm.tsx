@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { EventNode, CreateEventNodeData, UpdateEventNodeData } from '../../../types/nodes';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import {
+  EventNode,
+  CreateEventNodeData,
+  UpdateEventNodeData,
+} from '../../../types/nodes';
 import { useNodes } from '../../../contexts/NodeContext';
+import { useWallet } from '../../../contexts/WalletContext';
 
 interface EventNodeFormProps {
   node?: EventNode;
@@ -10,7 +23,10 @@ interface EventNodeFormProps {
   isEditing?: boolean;
 }
 
-const eventTypeOptions: Array<{ label: string; value: EventNode['eventType'] }> = [
+const eventTypeOptions: Array<{
+  label: string;
+  value: EventNode['eventType'];
+}> = [
   { label: 'Conference', value: 'conference' },
   { label: 'Meetup', value: 'meetup' },
   { label: 'Party', value: 'party' },
@@ -31,10 +47,11 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
   node,
   onSave,
   onCancel,
-  isEditing = false
+  isEditing = false,
 }) => {
   const { createEventNode, updateEventNode } = useNodes();
-  
+  const { publicKey } = useWallet();
+
   const [formData, setFormData] = useState<CreateEventNodeData>({
     name: node?.name || '',
     description: node?.description || '',
@@ -43,12 +60,13 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
     location: node?.location || '',
     eventType: node?.eventType || 'meetup',
     organizer: node?.organizer || '',
+    organizerPublicKey: node?.organizerPublicKey || '',
     ticketPrice: node?.ticketPrice,
     maxAttendees: node?.maxAttendees,
     requirements: node?.requirements || '',
-    tags: node?.tags || []
+    tags: node?.tags || [],
   });
-  
+
   const [dateString, setDateString] = useState(
     formatDateForInput(formData.date)
   );
@@ -69,11 +87,16 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
     setEndDateString(dateStr);
     setFormData(prev => ({
       ...prev,
-      endDate: dateStr ? parseInputDate(dateStr) : undefined
+      endDate: dateStr ? parseInputDate(dateStr) : undefined,
     }));
   };
 
   const handleSave = async () => {
+    if (!publicKey) {
+      Alert.alert('Error', 'Please connect your wallet to create an event.');
+      return;
+    }
+
     if (!formData.name.trim()) {
       Alert.alert('Error', 'Event name is required');
       return;
@@ -84,15 +107,22 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
       return;
     }
 
+    console.log("TRYING TO EDIT")
+
     try {
       setIsSaving(true);
-      
+
+      const dataToSave = {
+        ...formData,
+        organizerPublicKey: publicKey,
+      };
+
       if (isEditing && node) {
-        await updateEventNode(node.id, formData as UpdateEventNodeData);
-        const updatedNode = { ...node, ...formData, updatedAt: new Date() };
+        await updateEventNode(node.id, dataToSave as UpdateEventNodeData);
+        const updatedNode = { ...node, ...dataToSave, updatedAt: new Date() };
         onSave?.(updatedNode as EventNode);
       } else {
-        const newNode = await createEventNode(formData);
+        const newNode = await createEventNode(dataToSave);
         onSave?.(newNode);
       }
     } catch (error) {
@@ -107,7 +137,7 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
     if (newTag.trim() && !formData.tags?.includes(newTag.trim())) {
       setFormData(prev => ({
         ...prev,
-        tags: [...(prev.tags || []), newTag.trim()]
+        tags: [...(prev.tags || []), newTag.trim()],
       }));
       setNewTag('');
     }
@@ -116,7 +146,7 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
   const removeTag = (tagToRemove: string) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags?.filter(tag => tag !== tagToRemove) || []
+      tags: prev.tags?.filter(tag => tag !== tagToRemove) || [],
     }));
   };
 
@@ -133,7 +163,9 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           <TextInput
             style={styles.input}
             value={formData.name}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
+            onChangeText={text =>
+              setFormData(prev => ({ ...prev, name: text }))
+            }
             placeholder="Enter event name"
             placeholderTextColor="#999"
           />
@@ -145,7 +177,9 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           <TextInput
             style={[styles.input, styles.textArea]}
             value={formData.description}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, description: text }))}
+            onChangeText={text =>
+              setFormData(prev => ({ ...prev, description: text }))
+            }
             placeholder="Event description"
             placeholderTextColor="#999"
             multiline
@@ -157,19 +191,25 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
         <View style={styles.fieldContainer}>
           <Text style={styles.label}>Event Type</Text>
           <View style={styles.typeContainer}>
-            {eventTypeOptions.map((option) => (
+            {eventTypeOptions.map(option => (
               <TouchableOpacity
                 key={option.value}
                 style={[
                   styles.typeButton,
-                  formData.eventType === option.value && styles.typeButtonActive
+                  formData.eventType === option.value &&
+                    styles.typeButtonActive,
                 ]}
-                onPress={() => setFormData(prev => ({ ...prev, eventType: option.value }))}
+                onPress={() =>
+                  setFormData(prev => ({ ...prev, eventType: option.value }))
+                }
               >
-                <Text style={[
-                  styles.typeButtonText,
-                  formData.eventType === option.value && styles.typeButtonTextActive
-                ]}>
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    formData.eventType === option.value &&
+                      styles.typeButtonTextActive,
+                  ]}
+                >
                   {option.label}
                 </Text>
               </TouchableOpacity>
@@ -207,7 +247,9 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           <TextInput
             style={styles.input}
             value={formData.location}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, location: text }))}
+            onChangeText={text =>
+              setFormData(prev => ({ ...prev, location: text }))
+            }
             placeholder="Event location"
             placeholderTextColor="#999"
           />
@@ -219,7 +261,9 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           <TextInput
             style={styles.input}
             value={formData.organizer}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, organizer: text }))}
+            onChangeText={text =>
+              setFormData(prev => ({ ...prev, organizer: text }))
+            }
             placeholder="Event organizer"
             placeholderTextColor="#999"
           />
@@ -231,7 +275,7 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           <TextInput
             style={styles.input}
             value={formData.ticketPrice?.toString() || ''}
-            onChangeText={(text) => {
+            onChangeText={text => {
               const price = text ? parseFloat(text) : undefined;
               setFormData(prev => ({ ...prev, ticketPrice: price }));
             }}
@@ -247,7 +291,7 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           <TextInput
             style={styles.input}
             value={formData.maxAttendees?.toString() || ''}
-            onChangeText={(text) => {
+            onChangeText={text => {
               const count = text ? parseInt(text) : undefined;
               setFormData(prev => ({ ...prev, maxAttendees: count }));
             }}
@@ -263,7 +307,9 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           <TextInput
             style={[styles.input, styles.textArea]}
             value={formData.requirements}
-            onChangeText={(text) => setFormData(prev => ({ ...prev, requirements: text }))}
+            onChangeText={text =>
+              setFormData(prev => ({ ...prev, requirements: text }))
+            }
             placeholder="Any special requirements"
             placeholderTextColor="#999"
             multiline
@@ -308,7 +354,7 @@ export const EventNodeForm: React.FC<EventNodeFormProps> = ({
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={[styles.button, styles.saveButton]}
             onPress={handleSave}

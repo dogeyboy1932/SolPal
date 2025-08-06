@@ -364,32 +364,36 @@ export default function AITransactionChat() {
 
     return (
       <TouchableOpacity
-        className={`bg-surface-secondary rounded-xl p-4 mb-3 border ${
+        className={`rounded-2xl p-4 mb-3 border-2 transition-all duration-150 ${
           isAccessible
-            ? 'border-warm-primary bg-warm-primary/10'
+            ? 'border-green-500 bg-green-50'
             : isSelected
-              ? 'bg-accent-amber/10'
-              : 'border-warm-primary/20'
+              ? 'border-amber-500 bg-amber-50'
+              : 'border-neutral-300 bg-white'
         }`}
         onPress={() => handleNodeSelect(item)}
+        activeOpacity={0.9}
       >
         <View className="flex-row items-center mb-2">
-          <Text className="text-2xl mr-3">{NodeTypeIcons[item.type]}</Text>
+          <Text className="text-2xl mr-4">{NodeTypeIcons[item.type]}</Text>
+
           <View className="flex-1">
-            <Text className="text-base font-semibold text-neutral-light">
+            <Text className="text-base font-semibold text-black">
               {item.name}
             </Text>
-            <Text className="text-sm text-neutral-medium capitalize">
+            <Text className="text-sm text-neutral-500 capitalize">
               {item.type}
             </Text>
           </View>
+
           {isAccessible && (
-            <Text className="text-base text-warm-primary font-bold">✓</Text>
+            <Text className="text-lg text-green-600 font-bold">✓</Text>
           )}
         </View>
+
         {item.description && (
           <Text
-            className="text-sm text-neutral-medium leading-5"
+            className="text-sm text-neutral-500 leading-5"
             numberOfLines={2}
           >
             {item.description}
@@ -487,12 +491,29 @@ export default function AITransactionChat() {
         {/* API Key Section - Show when not connected */}
         {showApiKeySection && (
           <View className="mt-2 p-4 bg-white rounded-xl border border-gray-300">
-            <Text className="text-base font-bold text-gray-900 mb-1">
-              Connect AI Assistant
-            </Text>
-            <Text className="text-sm text-gray-500 mb-2">
-              Enter your Gemini API key to enable AI features
-            </Text>
+            
+            <View className="flex-row justify-between items-start">
+              <View className="flex-1 pr-4">
+                <Text className="text-base font-bold text-gray-900 mb-1">
+                  Connect AI Assistant
+                </Text>
+                <Text className="text-sm text-gray-500 mb-2">
+                  Enter your Gemini API key to enable AI features
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                className="bg-blue-500 px-4 py-3 rounded-xl"
+                onPress={() => {
+                  setShowNodeList(false);
+                  setShowNodeCreation(true);
+                }}
+              >
+                <Text className="text-white text-center font-semibold">
+                  Manage Nodes
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             <View className="flex-row gap-2 items-center">
               <TextInput
@@ -612,7 +633,7 @@ export default function AITransactionChat() {
                 <Ionicons name="sparkles" size={32} color="#007AFF" />
               </View>
               <Text className="text-2xl font-bold text-gray-900 mb-3">
-                AI Solana Assistant
+                Call me SolPal! 👋
               </Text>
               <Text className="text-base text-gray-500 text-center leading-6 mb-8">
                 I can help you manage your Solana wallet, send transactions,
@@ -738,7 +759,7 @@ export default function AITransactionChat() {
             </View>
           </LinearGradient>
 
-          <View className="p-4 flex-1">
+          <View className="p-4 flex-1 bg-neutral-medium">
             <TouchableOpacity
               className="bg-blue-500 px-4 py-3 rounded-xl mb-4"
               onPress={() => {

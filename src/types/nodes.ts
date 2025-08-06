@@ -22,6 +22,7 @@ export interface PersonNode extends BaseNode {
   lastTransactionDate?: Date;
   totalTransactions?: number;
   tags?: string[];
+  ownedNFTs?: string[];
 }
 
 export interface EventNode extends BaseNode {
@@ -38,11 +39,14 @@ export interface EventNode extends BaseNode {
     | 'other';
   attendees?: string[]; // Array of person node IDs
   organizer?: string; // Person node ID or external organizer name
+  organizerPublicKey: string;
   ticketPrice?: number;
   maxAttendees?: number;
   currentAttendees?: number;
   requirements?: string;
   tags?: string[];
+  mintedNFTs?: string[];
+  nftCollectionAddress?: string;
 }
 
 export interface CommunityNode extends BaseNode {
@@ -91,6 +95,7 @@ export interface CreateEventNodeData {
   location?: string;
   eventType: EventNode['eventType'];
   organizer?: string;
+  organizerPublicKey: string;
   ticketPrice?: number;
   maxAttendees?: number;
   requirements?: string;
