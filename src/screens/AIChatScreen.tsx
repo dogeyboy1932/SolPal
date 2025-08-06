@@ -712,26 +712,20 @@ export default function AITransactionChat() {
         presentationStyle="pageSheet"
         onRequestClose={() => setShowNodeCreation(false)}
       >
-        <Modal
-          visible={showNodeCreation}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setShowNodeCreation(false)}
-        >
-          <SafeAreaView className="flex-1 bg-gray-50">
-            <View className="flex-row items-center justify-between bg-white px-5 py-4 border-b border-gray-200">
-              <Text className="text-xl font-bold text-gray-900">Node Management</Text>
-              <TouchableOpacity
-                className="w-8 h-8 rounded-full bg-black/10 items-center justify-center"
-                onPress={() => setShowNodeCreation(false)}
-              >
-                <Ionicons name="close" size={20} color="#333" />
-              </TouchableOpacity>
-            </View>
-            <ManualNodeManagement />
-          </SafeAreaView>
-        </Modal>
+        <SafeAreaView className="flex-1 bg-gray-50">
+          <View className="flex-row items-center justify-between bg-white px-5 py-4 border-b border-gray-200">
+            <Text className="text-xl font-bold text-gray-900">Node Management</Text>
+            <TouchableOpacity
+              className="w-8 h-8 rounded-full bg-black/10 items-center justify-center"
+              onPress={() => setShowNodeCreation(false)}
+            >
+              <Ionicons name="close" size={20} color="#333" />
+            </TouchableOpacity>
+          </View>
+          <ManualNodeManagement />
+        </SafeAreaView>
       </Modal>
+      
 
       {/* MCP Management Modal */}
       <Modal

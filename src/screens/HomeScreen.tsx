@@ -20,6 +20,8 @@ import { SettingsScreen } from '../../src/screens/SettingsScreen';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
 import { PrivateKeyInput } from '@/features/wallet/PrivateKeyInput';
 
+
+
 type TabType = 'chat' | 'manual' | 'settings';
 
 export const HomeScreen: React.FC = () => {
@@ -52,7 +54,7 @@ export const HomeScreen: React.FC = () => {
               <View className="flex-row justify-between items-center my-1">
                 <View className="flex-1">
                   <Text className="text-3xl font-bold text-neutral-light font-ios">
-                    AI Solana Mobile
+                    SolPal
                   </Text>
                   <Text className="text-base text-accent-gold font-ios">
                     Intelligent blockchain interactions
