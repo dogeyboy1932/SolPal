@@ -257,10 +257,8 @@ export const WalletOperations: React.FC = () => {
             <Text className="text-lg font-semibold text-blue-800 mb-2">Account Information</Text>
             <Text className="text-sm text-blue-700 mb-1">Address: {data.address}</Text>
             <Text className="text-sm text-blue-700 mb-1">Balance: {data.balance} SOL</Text>
-            <Text className="text-sm text-blue-700 mb-1">Owner: {data.owner}</Text>
             <Text className="text-sm text-blue-700 mb-1">Executable: {data.executable ? 'Yes' : 'No'}</Text>
             <Text className="text-sm text-blue-700 mb-1">Rent Epoch: {data.rentEpoch}</Text>
-            <Text className="text-sm text-blue-700">Data Size: {data.dataSize} bytes</Text>
           </View>
         );
 

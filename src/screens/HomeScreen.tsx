@@ -25,11 +25,10 @@ export const HomeScreen: React.FC = () => {
   return (
     <View className="flex-1 bg-[#0d0d0d]">
       <SafeAreaView className="flex-1">
-        <View className="p-5 bg-[#1a1a1a] border-b-2 border-[#00f6ff]">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-4xl font-bold text-[#00f6ff] font-mono tracking-widest">
-              SolPal
-            </Text>
+        <View className="px-4 pt-5 pb-1 bg-[#1a1a1a] border-b-2 border-[#00f6ff]">
+          <View className="flex-row justify-between items-center mb-2">
+            <Ionicons name="logo-android" size={28} color="#00f6ff" />
+
             <View className="flex-row items-center gap-4">
               <TouchableOpacity
                 className="p-2 bg-[#00f6ff]/20 rounded-full"
@@ -47,8 +46,9 @@ export const HomeScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
           </View>
-          <Card className="bg-[#1a1a1a] border-2 border-[#ff00ff]/40 rounded-xl shadow-lg shadow-cyan-500/50">
-            <Card.Content className="p-4">
+          
+          <Card className="bg-[#1a1a1a] border-2 border-[#ff00ff]/40 rounded-xl shadow-lg shadow-cyan-500/50 p-1">
+            <Card.Content className="p-2">
               <PrivateKeyInput />
               <View className="h-4" />
               <WalletConnectButton />
@@ -64,7 +64,7 @@ export const HomeScreen: React.FC = () => {
         </View>
         <View className="flex-row bg-[#1a1a1a] border-t-2 border-[#00f6ff]">
           <TouchableOpacity
-            className={`flex-1 py-3 items-center justify-center ${
+            className={`flex-1 py-1 items-center justify-center ${
               activeTab === 'chat' ? 'bg-[#00f6ff]/20' : ''
             }`}
             onPress={() => setActiveTab('chat')}
@@ -84,7 +84,7 @@ export const HomeScreen: React.FC = () => {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className={`flex-1 py-3 items-center justify-center ${
+            className={`flex-1 py-1 items-center justify-center ${
               activeTab === 'manual' ? 'bg-[#00f6ff]/20' : ''
             }`}
             onPress={() => setActiveTab('manual')}

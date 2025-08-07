@@ -273,7 +273,7 @@ export default function AITransactionChat() {
     onPress: () => void;
   }) => (
     <TouchableOpacity
-      className="bg-[#1a1a1a] px-4 py-2 rounded-2xl border border-[#00f6ff]/40"
+      className="bg-[#1a1a1a] px-4 py-2 m-0.5 rounded-2xl border border-[#00f6ff]/40"
       onPress={onPress}
     >
       <Text className="text-sm text-[#00f6ff] font-medium">{text}</Text>
@@ -452,13 +452,13 @@ export default function AITransactionChat() {
         >
           {messages.length === 0 ? (
             <View className="items-center px-8 py-6">
-              <View className="w-20 h-20 rounded-full bg-[#00f6ff]/20 items-center justify-center mb-6">
+              <View className="w-20 h-20 rounded-full bg-[#00f6ff]/20 items-center justify-center mb-3">
                 <Ionicons name="sparkles" size={32} color="#00f6ff" />
               </View>
               <Text className="text-2xl font-bold text-white mb-3">
                 Call me SolPal! 👋
               </Text>
-              <Text className="text-base text-gray-400 text-center leading-6 mb-8">
+              <Text className="text-base text-gray-400 text-center leading-6 mb-4">
                 I can help you manage your Solana wallet, send transactions,
                 check balances, and more!
               </Text>
@@ -507,11 +507,11 @@ export default function AITransactionChat() {
           )}
         </ScrollView>
         {liveConnected && (
-          <View className="bg-[#1a1a1a] border-t-2 border-[#00f6ff]/40 px-4 py-3">
-            <View className="flex-row items-center gap-2">
+          <View className="bg-[#1a1a1a] border-t border-[#00f6ff]/40 px-3 py-2">
+            <View className="flex-row items-end gap-2">
               <TextInput
                 ref={inputRef}
-                className="flex-1 border-2 border-[#00f6ff]/40 rounded-full px-4 text-lg bg-gray-800 h-12 text-white"
+                className="flex-1 border border-[#00f6ff]/40 rounded-xl px-2 text-base bg-gray-800 h-10 text-white"
                 value={inputText}
                 onChangeText={setInputText}
                 placeholder={
@@ -525,7 +525,7 @@ export default function AITransactionChat() {
                 editable={liveConnected}
               />
               <TouchableOpacity
-                className={`w-12 h-12 rounded-full items-center justify-center ${
+                className={`w-10 h-10 rounded-full items-center justify-center mr-2 ${
                   !inputText.trim() || !liveConnected || isLoading
                     ? 'bg-gray-600'
                     : 'bg-[#00f6ff]'
@@ -536,7 +536,7 @@ export default function AITransactionChat() {
                 {isLoading ? (
                   <ActivityIndicator size="small" color="black" />
                 ) : (
-                  <Ionicons name="send" size={24} color="black" />
+                  <Ionicons name="send" size={20} color="black" />
                 )}
               </TouchableOpacity>
               <VoiceControls
