@@ -16,7 +16,7 @@ import { Surface, Card, Avatar } from 'react-native-paper';
 // Components
 import AITransactionChat from '@/screens/AIChatScreen';
 import { ManualOperationsScreen } from '../../src/screens/ManualOperationsScreen';
-import { SettingsScreen } from '../../src/screens/SettingsScreen';
+import { ProfileScreen } from './ProfileScreen';
 import { EventsScreen } from '../../src/screens/EventsScreen';
 import { WalletConnectButton } from '@/features/wallet/WalletConnectButton';
 import { PrivateKeyInput } from '@/features/wallet/PrivateKeyInput';
@@ -28,7 +28,7 @@ export const HomeScreen: React.FC = () => {
 
   // If settings is active, show the settings screen
   if (activeTab === 'settings') {
-    return <SettingsScreen onBack={() => setActiveTab('chat')} />;
+    return <ProfileScreen onBack={() => setActiveTab('chat')} />;
   }
 
   // If events is active, show the events screen
@@ -66,14 +66,14 @@ export const HomeScreen: React.FC = () => {
                   >
                     <Ionicons name="calendar" size={20} color="#E49B3F" />
                   </TouchableOpacity>
-                  
+
                   {/* Settings Button */}
                   <TouchableOpacity
                     className="w-10 h-10 rounded-full bg-accent-amber/20 items-center justify-center cursor-pointer"
                     onPress={() => setActiveTab('settings')}
                     activeOpacity={0.7}
                   >
-                    <Ionicons name="settings" size={20} color="#E49B3F" />
+                    <Ionicons name="person" size={20} color="#E49B3F" />
                   </TouchableOpacity>
                 </View>
               </View>
