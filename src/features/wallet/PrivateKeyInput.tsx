@@ -17,7 +17,7 @@ import bs58 from 'bs58';
 
 export const PrivateKeyInput: React.FC = () => {
   const { connectWithPrivateKey, connecting, connected } = useWallet();
-  const [privateKey, setPrivateKey] = useState('2b3bWprtxLc9QkYhmy4UFTR9zjiWuJUm3kWR7EnTeWYe5ZXkGLRiqq14R1f78iKBMRrhgnABWD2cH3ftLpPwbW3a');
+  const [privateKey, setPrivateKey] = useState('');
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [showModal, setShowModal] = useState(false);
 

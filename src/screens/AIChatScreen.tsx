@@ -68,9 +68,7 @@ export default function AITransactionChat() {
 
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState(
-    'AIzaSyDsGhQALbwf6jDAHKpZLu1bhVus5CQ-ERQ'
-  );
+  const [apiKeyInput, setApiKeyInput] = useState('');
   const [showApiKeySection, setShowApiKeySection] = useState(!liveConnected);
   const [isApiKeySet, setIsApiKeySet] = useState(false);
 
