@@ -16,7 +16,10 @@ import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { Provider as PaperProvider } from 'react-native-paper';
 
 // Coffee Shop Theme Configuration
-import { warmAIPaperTheme, warmAIGluestackConfig } from './src/config/theme';
+import {
+  cyberpunkPaperTheme,
+  cyberpunkGluestackConfig,
+} from './src/config/theme';
 
 // App Context Providers
 import { WalletProvider } from './src/contexts/WalletContext';
@@ -26,8 +29,8 @@ import { HomeScreen } from './src/screens/HomeScreen';
 
 export default function App() {
   return (
-    <GluestackUIProvider config={warmAIGluestackConfig}>
-      <PaperProvider theme={warmAIPaperTheme}>
+    <GluestackUIProvider config={cyberpunkGluestackConfig}>
+      <PaperProvider theme={cyberpunkPaperTheme}>
         <SafeAreaProvider>
           <WalletProvider>
             <NodeProvider>
